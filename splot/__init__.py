@@ -21,12 +21,12 @@ def hist(data,bin_num=None,density=True,norm=1,c=None,xinvert=False,xlim=None,yl
 		plabel=[plabel]*L
 	for i in range(L):
 		if xlog:
-			bins=np.logspace(np.log10(np.min(data[i])),np.log10(np.max(data[i])),num=bin_num[i])
+			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
 		else:
-			if np.min(data[i])==np.max(data[i]):
-				bins=np.linspace(np.min(data[i])-0.5,np.max(data[i])+0.5,num=bin_num[i])
+			if np.nanmin(data[i])==np.nanmax(data[i]):
+				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
 			else:
-				bins=np.linspace(np.min(data[i]),np.max(data[i]),num=bin_num[i])
+				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
 		y,x=np.histogram(data[i],bins=bins,density=density)
 		y*=norm[i]
 		plot.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],rasterized=True)
@@ -53,8 +53,8 @@ def hist(data,bin_num=None,density=True,norm=1,c=None,xinvert=False,xlim=None,yl
 			plot.gca().invert_yaxis()
 		plot.grid()
 
-def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,zlog=True,
-			title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
+def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,
+			xlog=False,ylog=False,zlog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
 	import scipy.stats as stats
 	import matplotlib.colors as clr
@@ -70,31 +70,33 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,yl
 	else:
 		cmap='viridis'
 	if xlog:
-		X=np.logspace(np.log10(np.min(x)),np.log10(np.max(x)),num=bin_num)
+		X=np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num)
 	else:
-		if np.min(x)==np.max(x):
-			X=np.linspace(np.min(x)-0.5,np.max(x)+0.5,num=bin_num)
+		if np.nanmin(x)==np.nanmax(x):
+			X=np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num)
 		else:
-			X=np.linspace(np.min(x),np.max(x),num=bin_num)
+			X=np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num)
 	if ylog:
-		Y=np.logspace(np.log10(np.min(y)),np.log10(np.max(y)),num=bin_num)
+		Y=np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num)
 	else:
-		if np.min(y)==np.max(y):
-			Y=np.linspace(np.min(y)-0.5,np.max(y)+0.5,num=bin_num)
+		if np.nanmin(y)==np.nanmax(y):
+			Y=np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num)
 		else:
-			Y=np.linspace(np.min(y),np.max(y),num=bin_num)
+			Y=np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num)
 	if c is None:
 		Z=np.histogram2d(x,y,bins=[X,Y],normed=density)[0]
 		Z*=norm
 	else:
 		Z=stats.binned_statistic_2d(x,y,c,statistic=cstat,bins=[X,Y])[0]
 	if zlog:
-		plot.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(),vmin=clim[0],vmax=clim[1],cmap=cmap,rasterized=True)
+		plot.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,rasterized=True)
 	else:
 		plot.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],cmap=cmap,rasterized=True)
 	if clabel is not None:
 		cbar=plot.colorbar()
 		cbar.set_label(clabel)
+		if crotate:
+			cbar.ax.invert_yaxis()
 	if not multi:
 		if xlog:
 			plot.xscale('log')
@@ -114,11 +116,9 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,yl
 			plot.gca().invert_xaxis()
 		if yinvert:
 			plot.gca().invert_yaxis()
-		if cinvert:
-			cbar.ax.invert_yaxis()
 		plot.grid()
 
-def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cinvert=False,clog=False,title=None,
+def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,clog=False,title=None,
 		xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
@@ -129,9 +129,9 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,clim=[None,None],xinve
 	else:
 		cmap='viridis'
 	if x is None:
-		x=np.linspace(np.min(im,axis=0),np.max(im,axis=0),len(im[:,0])+1)
+		x=np.linspace(np.nanmin(im,axis=0),np.nanmax(im,axis=0),len(im[:,0])+1)
 	if y is None:
-		y=np.linspace(np.min(im,axis=1),np.max(im,axis=1),len(im[0,:])+1)
+		y=np.linspace(np.nanmin(im,axis=1),np.nanmax(im,axis=1),len(im[0,:])+1)
 	plot.pcolormesh(x,y,im,vmin=clim[0],vmax=clim[1],cmap=cmap,rasterized=True)
 	if clabel is not None:
 		cbar=plot.colorbar()
@@ -151,7 +151,7 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,clim=[None,None],xinve
 			plot.gca().invert_xaxis()
 		if yinvert:
 			plot.gca().invert_yaxis()
-		if cinvert:
+		if crotate:
 			cbar.ax.invert_yaxis()
 		plot.grid()		
 
