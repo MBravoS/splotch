@@ -1,4 +1,4 @@
-def hist(data,bin_num=None,density=True,norm=1,c=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
+def hist(data,bin_num=None,dens=True,norm=1,c=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
@@ -11,10 +11,16 @@ def hist(data,bin_num=None,density=True,norm=1,c=None,xinvert=False,xlim=None,yl
 		bin_num=[int((len(d))**0.5) for d in data]
 	if type(bin_num) is not list:
 		bin_num=[bin_num+1]*L
-	if type(norm)!=int and type(norm)!=float:
-		norm=[norm[i]*len(data[i]) for i in range(L)]
+	if dens:
+		if type(norm)!=int and type(norm)!=float:
+			norm=[norm[i]*len(data[i]) for i in range(L)]
+		else:
+			norm=[norm*len(d) for d in data]
 	else:
-		norm=[norm*len(d) for d in data]
+		if type(norm)!=int and type(norm)!=float:
+			norm=[norm[i] for i in range(L)]
+		else:
+			norm=[norm for d in data]
 	if c is None or type(c)==str:
 		c=[c]*L
 	if plabel is None:
@@ -27,7 +33,7 @@ def hist(data,bin_num=None,density=True,norm=1,c=None,xinvert=False,xlim=None,yl
 				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
 			else:
 				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
-		y,x=np.histogram(data[i],bins=bins,density=density)
+		y,x=np.histogram(data[i],bins=bins,density=dens)
 		y*=norm[i]
 		plot.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],rasterized=True)
 	if plabel[0] is not None:
@@ -252,3 +258,84 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,xinvert=False,yinvert=False,cinv
 			cbar.ax.invert_yaxis()
 		plot.grid()
 
+#def sigma_cont(x,y,percent=0.68
+#						
+#				binned_stat=None,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,c=None,
+#				s=['solid','dashed','doted'],clabel=None,plabel=None,title=None,lab_loc=0,multi=False)):
+#	import numpy as np
+#	import .base_func as base
+#	import matplotlib.cm as cm
+#	import matplotlib.pyplot as plot
+#	
+#	if type(p) is not list:
+#		p=[p]
+#	if bin_num is None:
+#		bin_num=int((len(x))**0.4)
+#	else:
+#		bin_num+=1
+#	norm=norm*len(x)
+#	if cinvert:
+#		cmap='viridis_r'
+#	else:
+#		cmap='viridis'
+#	bins=[]
+#	if xlog:
+#		bins.append(np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num))
+#	else:
+#		if np.nanmin(x)==np.nanmax(x):
+#			bins.append(np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num))
+#		else:
+#			bins.append(np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num))
+#	if ylog:
+#		bins.append(np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num))
+#	else:
+#		if np.nanmin(y)==np.nanmax(y):
+#			bins.append(np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num))
+#		else:
+#			bins.append(np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num))
+#	X=(bins[0][:-1]+bins[0][1:])/2
+#	Y=(bins[1][:-1]+bins[1][1:])/2
+#	if binned_stat is None:
+#		Z=np.histogram2d(x,y,bins=bins,normed=density)[0]
+#		Z*=norm
+#	else:
+#		Z=stats.binned_statistic_2d(x,y,binned_stat,statistic=cstat,bins=bins)[0]
+#	CS=[]
+#	if c is None:
+#		if len(percent)<4:
+#			c='k'
+#		else:
+#			if len(s)<4:
+#				s=['solid']*len(p)
+#			colour=cmap(np.linspace(0,1,len(percent)))
+#	else:
+#		colour=cmap(c)
+#	for p in percent:
+#		level=[base.percent_finder(Z,p)]
+#		CS.append(plot.contour(X,X,Z,level,colors=[colour[i],],linewidths=1.5,linestyles=lines[i]))
+#		if labels is not None:
+#			CS[i-np.min(subset)].collections[0].set_label(labels[i])
+#	plot.grid()
+#	if xlabel is not None:
+#		plot.xlabel(xlabel)
+#	if ylabel is not None:
+#		plot.ylabel(ylabel)
+#	if labels is not None:
+#		plot.legend(loc=lab_loc)
+#	if xlim is not None:
+#		plot.xlim(xlim)
+#	if ylim is not None:
+#		plot.ylim(ylim)
+#	if xlog==True:
+#		plot.xscale('log')
+#	if ylog==True:
+#		plot.yscale('log')
+#	if xinvert==True:
+#		plot.gca().invert_xaxis()
+#	if yinvert==True:
+#		plot.gca().invert_yaxis()
+#	if hold_graph!=True:
+#		plot.show()
+#	if save_fig==True:
+#		plot.savefig('../MILL_Graph/'+fig_name,dpi=200)
+#
