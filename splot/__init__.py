@@ -8,7 +8,7 @@ def hist(data,bin_num=None,dens=True,norm=1,c=None,xinvert=False,xlim=None,ylim=
 		data=[data]
 	L=len(data)
 	if bin_num is None:
-		bin_num=[int((len(d))**0.5) for d in data]
+		bin_num=[int((len(d))**0.4) for d in data]
 	if type(bin_num) is not list:
 		bin_num=[bin_num+1]*L
 	if dens:
@@ -71,10 +71,9 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,yl
 	else:
 		bin_num+=1
 	norm=norm*len(x)
+	cmap='viridis'
 	if cinvert:
-		cmap='viridis_r'
-	else:
-		cmap='viridis'
+		cmap+='_r'
 	if xlog:
 		X=np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num)
 	else:
@@ -130,10 +129,9 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,clim=[None,None],xinve
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plot
 	
+	cmap='viridis'
 	if cinvert:
-		cmap='viridis_r'
-	else:
-		cmap='viridis'
+		cmap+='_r'
 	if x is None:
 		x=np.linspace(np.nanmin(im,axis=0),np.nanmax(im,axis=0),len(im[:,0])+1)
 	if y is None:
@@ -224,10 +222,9 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,xinvert=False,yinvert=False,cinv
 		marker_size=[marker_size]*len(x)
 	if type(marker_type) is not list:
 		marker_type=[marker_type]*len(x)
+	cmap='viridis'
 	if cinvert:
-		cmap='viridis_r'
-	else:
-		cmap='viridis'
+		cmap+='_r'
 	for i in range(len(x)):
 		plot.scatter(x[i],y[i],s=marker_size[i],c=colour[i],label=plabel[i],marker=marker_type[i],edgecolors='none',alpha=a,cmap=cmap,rasterized=True)
 	if not multi:
@@ -258,84 +255,86 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,xinvert=False,yinvert=False,cinv
 			cbar.ax.invert_yaxis()
 		plot.grid()
 
-#def sigma_cont(x,y,percent=0.68
-#						
-#				binned_stat=None,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,c=None,
-#				s=['solid','dashed','doted'],clabel=None,plabel=None,title=None,lab_loc=0,multi=False)):
-#	import numpy as np
-#	import .base_func as base
-#	import matplotlib.cm as cm
-#	import matplotlib.pyplot as plot
-#	
-#	if type(p) is not list:
-#		p=[p]
-#	if bin_num is None:
-#		bin_num=int((len(x))**0.4)
-#	else:
-#		bin_num+=1
-#	norm=norm*len(x)
-#	if cinvert:
-#		cmap='viridis_r'
-#	else:
-#		cmap='viridis'
-#	bins=[]
-#	if xlog:
-#		bins.append(np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num))
-#	else:
-#		if np.nanmin(x)==np.nanmax(x):
-#			bins.append(np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num))
-#		else:
-#			bins.append(np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num))
-#	if ylog:
-#		bins.append(np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num))
-#	else:
-#		if np.nanmin(y)==np.nanmax(y):
-#			bins.append(np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num))
-#		else:
-#			bins.append(np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num))
-#	X=(bins[0][:-1]+bins[0][1:])/2
-#	Y=(bins[1][:-1]+bins[1][1:])/2
-#	if binned_stat is None:
-#		Z=np.histogram2d(x,y,bins=bins,normed=density)[0]
-#		Z*=norm
-#	else:
-#		Z=stats.binned_statistic_2d(x,y,binned_stat,statistic=cstat,bins=bins)[0]
-#	CS=[]
-#	if c is None:
-#		if len(percent)<4:
-#			c='k'
-#		else:
-#			if len(s)<4:
-#				s=['solid']*len(p)
-#			colour=cmap(np.linspace(0,1,len(percent)))
-#	else:
-#		colour=cmap(c)
-#	for p in percent:
-#		level=[base.percent_finder(Z,p)]
-#		CS.append(plot.contour(X,X,Z,level,colors=[colour[i],],linewidths=1.5,linestyles=lines[i]))
-#		if labels is not None:
-#			CS[i-np.min(subset)].collections[0].set_label(labels[i])
-#	plot.grid()
-#	if xlabel is not None:
-#		plot.xlabel(xlabel)
-#	if ylabel is not None:
-#		plot.ylabel(ylabel)
-#	if labels is not None:
-#		plot.legend(loc=lab_loc)
-#	if xlim is not None:
-#		plot.xlim(xlim)
-#	if ylim is not None:
-#		plot.ylim(ylim)
-#	if xlog==True:
-#		plot.xscale('log')
-#	if ylog==True:
-#		plot.yscale('log')
-#	if xinvert==True:
-#		plot.gca().invert_xaxis()
-#	if yinvert==True:
-#		plot.gca().invert_yaxis()
-#	if hold_graph!=True:
-#		plot.show()
-#	if save_fig==True:
-#		plot.savefig('../MILL_Graph/'+fig_name,dpi=200)
-#
+def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,cinvert=False,crotate=False,s=['solid','dashed','dotted'],
+				xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=['68%','95%'],lab_loc=0,multi=False):
+	import numpy as np
+	from .base_func import percent_finder
+	import matplotlib.cm as cm
+	import matplotlib.pyplot as plot
+	
+	if type(percent) is not list:
+		percent=[percent]
+	if bin_num is None:
+		bin_num=int((len(x))**0.4)
+	else:
+		bin_num+=1
+	cmap='viridis'
+	if cinvert:
+		cmap+='_r'
+	cmap=cm.get_cmap(cmap)
+	bins=[]
+	if xlog:
+		bins.append(np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num))
+	else:
+		if np.nanmin(x)==np.nanmax(x):
+			bins.append(np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num))
+		else:
+			bins.append(np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num))
+	if ylog:
+		bins.append(np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num))
+	else:
+		if np.nanmin(y)==np.nanmax(y):
+			bins.append(np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num))
+		else:
+			bins.append(np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num))
+	X=(bins[0][:-1]+bins[0][1:])/2
+	Y=(bins[1][:-1]+bins[1][1:])/2
+	Z=np.histogram2d(x,y,bins=bins)[0]
+	CS=[]
+	if c is None:
+		if len(percent)<4:
+			c=['k']*len(percent)
+		else:
+			if len(s)<4:
+				s=['solid']*len(p)
+			c=cmap(np.linspace(clim[0],clim[1],len(percent)))
+	else:
+		c=cmap(c)
+		s=['solid']*len(p)
+	if type(clabel) is not list:
+		clabel=[clabel]*len(x)
+	for i in range(len(percent)):
+		#level=[base.percent_finder(Z,p)]
+		level=[percent_finder(Z,percent[i])]
+		CS.append(plot.contour(X,Y,Z,level,colors=[c[i],],linewidths=1.5,linestyles=s[i]))
+		if clabel[0] is not None:
+			CS[i].collections[0].set_label(clabel[i])
+	if clabel[0] is not None:
+		if c[0]=='k':
+			plot.legend(loc=lab_loc)
+		else:
+			cbar=plot.colorbar()
+			cbar.set_label(clabel)
+			if crotate:
+				cbar.ax.invert_yaxis()
+	if not multi:
+		if xlog:
+			plot.xscale('log')
+		if ylog:
+			plot.yscale('log')
+		if xlim is not None:
+			plot.xlim(xlim)
+		if ylim is not None:
+			plot.ylim(ylim)
+		if title is not None:
+			plot.title(title)
+		if xlabel is not None:
+			plot.xlabel(xlabel)
+		if ylabel is not None:
+			plot.ylabel(ylabel)
+		if xinvert:
+			plot.gca().invert_xaxis()
+		if yinvert:
+			plot.gca().invert_yaxis()
+		plot.grid()
+
