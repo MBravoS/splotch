@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='splot',
-      version='0.15',
+      version='0.2',
       description='SimplePlot is a small package with wrapper functions designed to simplify plotting calls from matplotlib',
       url='https://github.com/MBravoS/splot',
       author='Matías A. Bravo Santa Cruz',
