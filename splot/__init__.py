@@ -59,8 +59,8 @@ def hist(data,bin_num=None,dens=True,norm=1,c=None,xinvert=False,xlim=None,ylim=
 			plot.gca().invert_yaxis()
 		plot.grid()
 
-def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,
-			xlog=False,ylog=False,zlog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
+def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',cmap='viridis',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
+			cinvert=False,crotate=False,xlog=False,ylog=False,zlog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
 	import scipy.stats as stats
 	import matplotlib.colors as clr
@@ -71,7 +71,6 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,yl
 	else:
 		bin_num+=1
 	norm=norm*len(x)
-	cmap='viridis'
 	if cinvert:
 		cmap+='_r'
 	if xlog:
@@ -123,13 +122,12 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',xlim=None,yl
 			plot.gca().invert_yaxis()
 		plot.grid()
 
-def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,clog=False,title=None,
-		xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
+def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,
+		clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plot
 	
-	cmap='viridis'
 	if cinvert:
 		cmap+='_r'
 	if x is None:
@@ -196,8 +194,8 @@ def line(x,y,n=10,a=1,s='solid',c='k',xinvert=False,yinvert=False,cinvert=False,
 			plot.gca().invert_yaxis()
 		plot.grid()
 
-def scat(x,y,marker_size=20,marker_type='o',a=1,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,c=None,
-			clabel=None,plabel=None,title=None,lab_loc=0,multi=False):
+def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
+			xlabel=None,ylabel=None,c=None,clabel=None,plabel=None,title=None,lab_loc=0,multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plot
 	
@@ -222,7 +220,6 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,xinvert=False,yinvert=False,cinv
 		marker_size=[marker_size]*len(x)
 	if type(marker_type) is not list:
 		marker_type=[marker_type]*len(x)
-	cmap='viridis'
 	if cinvert:
 		cmap+='_r'
 	for i in range(len(x)):
@@ -255,8 +252,9 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,xinvert=False,yinvert=False,cinv
 			cbar.ax.invert_yaxis()
 		plot.grid()
 
-def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,cinvert=False,crotate=False,s=['solid','dashed','dotted'],
-				xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=['68%','95%'],lab_loc=0,multi=False):
+def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,
+				cinvert=False,crotate=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=['68%','95%'],
+				lab_loc=0,multi=False):
 	import numpy as np
 	from .base_func import percent_finder
 	import matplotlib.cm as cm
@@ -268,7 +266,6 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,xlim=None,ylim=No
 		bin_num=int((len(x))**0.4)
 	else:
 		bin_num+=1
-	cmap='viridis'
 	if cinvert:
 		cmap+='_r'
 	cmap=cm.get_cmap(cmap)
