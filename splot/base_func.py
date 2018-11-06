@@ -9,3 +9,10 @@ def percent_finder(data,p):
 	except ValueError:
 		min_value=np.min(data_sorted)
 	return(min_value)
+
+def styling():
+	from matplotlib import rcParams as rc
+	rc['figure.figsize']=(9,6)
+	rc['font.size']=20
+	rc['legend.fontsize']='small'
+
