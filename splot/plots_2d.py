@@ -1,12 +1,12 @@
 #### Definition of all wrappers for 2D plotting
 
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',cmap='viridis',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
+def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
 			cinvert=False,crotate=False,xlog=False,ylog=False,zlog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
-	import scipy.stats as stats
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plot
+	from .base_func import base_hist2D,plot2d
 	
 	if bin_num is None:
 		bin_num=int((len(x))**0.4)
@@ -15,25 +15,7 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',cmap='viridi
 	norm=norm*len(x)
 	if cinvert:
 		cmap+='_r'
-	if xlog:
-		X=np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num)
-	else:
-		if np.nanmin(x)==np.nanmax(x):
-			X=np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num)
-		else:
-			X=np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num)
-	if ylog:
-		Y=np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num)
-	else:
-		if np.nanmin(y)==np.nanmax(y):
-			Y=np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num)
-		else:
-			Y=np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num)
-	if c is None:
-		Z=np.histogram2d(x,y,bins=[X,Y],normed=density)[0]
-		Z*=norm
-	else:
-		Z=stats.binned_statistic_2d(x,y,c,statistic=cstat,bins=[X,Y])[0]
+	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,density,cstat,xlog,ylog)
 	if zlog:
 		plot.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,rasterized=True)
 	else:
@@ -44,30 +26,13 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat='mean',cmap='viridi
 		if crotate:
 			cbar.ax.invert_yaxis()
 	if not multi:
-		if xlog:
-			plot.xscale('log')
-		if ylog:
-			plot.yscale('log')
-		if xlim is not None:
-			plot.xlim(xlim)
-		if ylim is not None:
-			plot.ylim(ylim)
-		if title is not None:
-			plot.title(title)
-		if xlabel is not None:
-			plot.xlabel(xlabel)
-		if ylabel is not None:
-			plot.ylabel(ylabel)
-		if xinvert:
-			plot.gca().invert_xaxis()
-		if yinvert:
-			plot.gca().invert_yaxis()
-		plot.grid()
+		plot2d(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 
 # Image
 def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,
 		clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
+	from .base_func import plot2d
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plot
 	
@@ -81,29 +46,16 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 	if clabel is not None:
 		cbar=plot.colorbar()
 		cbar.set_label(clabel)
-	if not multi:
-		if xlim is not None:
-			plot.xlim(xlim)
-		if ylim is not None:
-			plot.ylim(ylim)
-		if title is not None:
-			plot.title(title)
-		if xlabel is not None:
-			plot.xlabel(xlabel)
-		if ylabel is not None:
-			plot.ylabel(ylabel)
-		if xinvert:
-			plot.gca().invert_xaxis()
-		if yinvert:
-			plot.gca().invert_yaxis()
 		if crotate:
 			cbar.ax.invert_yaxis()
-		plot.grid()	
+	if not multi:
+		plot2d(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 
 # Scatter
 def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
 			xlabel=None,ylabel=None,c=None,clabel=None,plabel=None,title=None,lab_loc=0,multi=False):
 	import numpy as np
+	from .base_func import plot2d
 	import matplotlib.pyplot as plot
 	
 	if type(x) is not list:
@@ -131,44 +83,23 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yin
 		cmap+='_r'
 	for i in range(len(x)):
 		plot.scatter(x[i],y[i],s=marker_size[i],c=colour[i],label=plabel[i],marker=marker_type[i],edgecolors='none',alpha=a,cmap=cmap,rasterized=True)
-	if not multi:
-		if xlabel is not None:
-			plot.xlabel(xlabel)
-		if ylabel is not None:
-			plot.ylabel(ylabel)
-		if clabel is not None:
-			cbar=plot.colorbar(fraction=0.046,pad=0.04)
-			cbar.set_label(clabel)
-		if plabel[0] is not None:
-			plot.legend(loc=lab_loc)
-		if xlim is not None:
-			plot.xlim(xlim)
-		if ylim is not None:
-			plot.ylim(ylim)
-		if title is not None:
-			plot.title(title)
-		if xlog:
-			plot.xscale('log')
-		if ylog:
-			plot.yscale('log')
-		if xinvert:
-			plot.gca().invert_xaxis()
-		if yinvert:
-			plot.gca().invert_yaxis()
-		if cinvert:
+	if clabel is not None:
+		cbar=plot.colorbar()
+		cbar.set_label(clabel)
+		if crotate:
 			cbar.ax.invert_yaxis()
-		plot.grid()
+	if not multi:
+		plot2d(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 
 # Contours encircling the densest part down to a certain percetange 
 def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,
 				cinvert=False,crotate=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=['68%','95%'],
 				lab_loc=0,multi=False):
 	import numpy as np
-	from .base_func import percent_finder,styling
 	import matplotlib.cm as cm
 	import matplotlib.pyplot as plot
+	from .base_func import base_hist2D,percent_finder,plot2d
 	
-	styling()
 	if type(percent) is not list:
 		percent=[percent]
 	if bin_num is None:
@@ -178,24 +109,9 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 	if cinvert:
 		cmap+='_r'
 	cmap=cm.get_cmap(cmap)
-	bins=[]
-	if xlog:
-		bins.append(np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num))
-	else:
-		if np.nanmin(x)==np.nanmax(x):
-			bins.append(np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num))
-		else:
-			bins.append(np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num))
-	if ylog:
-		bins.append(np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num))
-	else:
-		if np.nanmin(y)==np.nanmax(y):
-			bins.append(np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num))
-		else:
-			bins.append(np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num))
-	X=(bins[0][:-1]+bins[0][1:])/2
-	Y=(bins[1][:-1]+bins[1][1:])/2
-	Z=np.histogram2d(x,y,bins=bins)[0]
+	X,Y,Z=base_hist2D(x,y,c,bin_num,1,None,None,xlog,ylog)
+	X=(X[:-1]+Y[1:])/2
+	Y=(Y[:-1]+Y[1:])/2
 	CS=[]
 	if c is None:
 		if len(percent)<4:
@@ -210,7 +126,6 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 	if type(clabel) is not list:
 		clabel=[clabel]*len(x)
 	for i in range(len(percent)):
-		#level=[base.percent_finder(Z,p)]
 		level=[percent_finder(Z,percent[i])]
 		CS.append(plot.contour(X,Y,Z,level,colors=[c[i],],linewidths=1.5,linestyles=s[i]))
 		if clabel[0] is not None:
@@ -224,23 +139,5 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 			if crotate:
 				cbar.ax.invert_yaxis()
 	if not multi:
-		if xlog:
-			plot.xscale('log')
-		if ylog:
-			plot.yscale('log')
-		if xlim is not None:
-			plot.xlim(xlim)
-		if ylim is not None:
-			plot.ylim(ylim)
-		if title is not None:
-			plot.title(title)
-		if xlabel is not None:
-			plot.xlabel(xlabel)
-		if ylabel is not None:
-			plot.ylabel(ylabel)
-		if xinvert:
-			plot.gca().invert_xaxis()
-		if yinvert:
-			plot.gca().invert_yaxis()
-		plot.grid()
+		plot2d(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 
