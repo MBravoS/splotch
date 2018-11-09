@@ -35,7 +35,7 @@ def percent_finder(data,p):
 		min_value=np.min(data_sorted)
 	return(min_value)
 
-def plot2d(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert):
+def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert):
 	import matplotlib.pyplot as plot
 	
 	if xlog:

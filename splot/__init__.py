@@ -1,6 +1,6 @@
 from .plots_1d import *
 from .plots_2d import *
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 
 ### The following code is commented out, it should add the style file but it doesn't ###
 
