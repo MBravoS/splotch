@@ -93,7 +93,7 @@ def line(x,y,n=10,a=1,line_style='solid',c='k',xinvert=False,yinvert=False,cinve
 		y=np.logspace(np.log10(y[0]),np.log10(y[1]),num=n)
 	else:
 		y=np.linspace(y[0],y[1],num=n)
-	plt.plot(x,y,color=c,alpha=a,linestyle=s,rasterized=True,label=plabel)
+	plt.plot(x,y,color=c,alpha=a,linestyle=line_style,rasterized=True,label=plabel)
 	if plabel is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -112,6 +112,8 @@ def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',mark
 	if type(y) is not list:
 		y=[y]
 	L=len(x)
+	if type(a) is not list:
+		a=[a]*L
 	if type(line_colour) is not list:
 		line_colour=[line_colour]*L
 	if type(line_style) is not list:
@@ -129,8 +131,8 @@ def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',mark
 	if plabel is None:
 		plabel=[plabel]*L
 	for i in range(L):
-		plt.plot(x[i],y[i],label=plabel[i],linestyle=line_style[i],color=line_colour[i],markeredgecolor=marker_edge_colour[i],markeredgewidth=marker_edge_width[i],
-					markerfacecolor=marker_face_colour[i],markersize=marker_size[i],marker=marker_type[i],rasterized=True)
+		plt.plot(x[i],y[i],alpha=a[i],label=plabel[i],linestyle=line_style[i],color=line_colour[i],markeredgecolor=marker_edge_colour[i],
+					markeredgewidth=marker_edge_width[i],markerfacecolor=marker_face_colour[i],markersize=marker_size[i],marker=marker_type[i],rasterized=True)
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:

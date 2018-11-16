@@ -53,7 +53,7 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 
 # Scatter
 def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
-			xlabel=None,ylabel=None,c=None,clabel=None,plabel=None,title=None,lab_loc=0,multi=False):
+			xlabel=None,ylabel=None,c='k',clabel=None,plabel=None,title=None,lab_loc=0,multi=False):
 	import numpy as np
 	from .base_func import plot_finalizer
 	import matplotlib.pyplot as plt
