@@ -1,8 +1,8 @@
 #### Definition of all wrappers for 2D plotting
 
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis',xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
-			cinvert=False,crotate=False,xlog=False,ylog=False,zlog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
+def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis',a=1,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
+			cinvert=False,crotate=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -16,10 +16,11 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis'
 	if cinvert:
 		cmap+='_r'
 	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,density,cstat,xlog,ylog)
-	if zlog:
-		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,rasterized=True)
+	if clog:
+		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,alpha=a,rasterized=True)
 	else:
-		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],cmap=cmap,rasterized=True)
+		Z[Z==0]=np.nan
+		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],cmap=cmap,alpha=a,rasterized=True)
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
@@ -110,7 +111,7 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 		cmap+='_r'
 	cmap=cm.get_cmap(cmap)
 	X,Y,Z=base_hist2D(x,y,c,bin_num,1,None,None,xlog,ylog)
-	X=(X[:-1]+Y[1:])/2
+	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	CS=[]
 	if c is None:
@@ -127,7 +128,7 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 		clabel=[clabel]*len(x)
 	for i in range(len(percent)):
 		level=[percent_finder(Z,percent[i])]
-		CS.append(plt.contour(X,Y,Z,level,colors=[c[i],],linewidths=1.5,linestyles=s[i]))
+		CS.append(plt.contour(X,Y,Z.T,level,colors=[c[i],],linewidths=1.5,linestyles=s[i]))
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
