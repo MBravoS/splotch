@@ -133,7 +133,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 			c=['k']*len(percent)
 		else:
 			if len(s)<4:
-				s=['solid']*len(p)
+				s=['solid']*len(percent)
 			c=cmap(np.linspace(clim[0],clim[1],len(percent)))
 	else:
 		c=cmap(c)
