@@ -1,4 +1,4 @@
-# splot
+# splot (DEVELOPMENT BRANCH)
 SimplePlot is a small package with wrapper functions designed to simplify plotting calls from matplotlib.
 
 For the moment consider installing the package using `>pip install git+https://github.com/MBravoS/splot.git`.
