@@ -2,12 +2,14 @@
 
 # Histogram and 2D binned statistics
 def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis',a=1,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
-			cinvert=False,crotate=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
+			cinvert=False,crotate=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
-	from .base_func import base_hist2D,plot_finalizer
+	from .base_func import axes_handler,base_hist2D,plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if bin_num is None:
 		bin_num=int((len(x))**0.4)
 	else:
@@ -28,15 +30,19 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis'
 			cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 
 # Image
 def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,
-		clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,multi=False):
+		clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
-	from .base_func import plot_finalizer
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
+	from .base_func import axes_handler,plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if cinvert:
 		cmap+='_r'
 	if x is None:
@@ -51,14 +57,18 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 			cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 
 # Scatter
 def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
-			xlabel=None,ylabel=None,c='k',clabel=None,plabel=None,title=None,lab_loc=0,multi=False):
+			xlabel=None,ylabel=None,c='k',clabel=None,plabel=None,title=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
-	from .base_func import plot_finalizer
 	import matplotlib.pyplot as plt
+	from .base_func import axes_handler,plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if type(x) is not list:
 		x=[x]
 		y=[y]
@@ -91,16 +101,20 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yin
 			cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 
 # Contours encircling the densest part down to a certain percetange 
-def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,
-				cinvert=False,crotate=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=['68%','95%'],
-				lab_loc=0,multi=False):
+def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,
+				cinvert=False,crotate=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,
+				lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.cm as cm
 	import matplotlib.pyplot as plt
-	from .base_func import base_hist2D,percent_finder,plot_finalizer
+	from .base_func import axes_handler,base_hist2D,percent_finder,plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if type(percent) is not list:
 		percent=[percent]
 	if bin_num is None:
@@ -125,9 +139,12 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 		c=cmap(c)
 		s=['solid']*len(p)
 	if type(clabel) is not list:
-		clabel=[clabel]*len(x)
+		if clabel is None:
+			clabel=[str(np.round(p,1))+'%' for p in percent]
+		else:
+			clabel=[clabel]*len(x)
 	for i in range(len(percent)):
-		level=[percent_finder(Z,percent[i])]
+		level=[percent_finder(Z,percent[i]/100)]
 		CS.append(plt.contour(X,Y,Z.T,level,colors=[c[i],],linewidths=1.5,linestyles=s[i]))
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
@@ -141,4 +158,6 @@ def sigma_cont(x,y,percent=[0.6827,0.9545],bin_num=None,c=None,cmap='viridis',xl
 				cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 

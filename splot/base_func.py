@@ -1,3 +1,10 @@
+def axes_handler(new_axis):
+	import matplotlib.pyplot as plt
+	
+	curr_axis=plt.gca()
+	plt.sca(new_axis)
+	return(curr_axis)
+
 def base_hist2D(x,y,c,bin_num,norm,density,cstat,xlog,ylog):
 	import numpy as np
 	import scipy.stats as stats
@@ -36,25 +43,25 @@ def percent_finder(data,p):
 	return(min_value)
 
 def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert):
-	import matplotlib.pyplot as plot
+	import matplotlib.pyplot as plt
 	
 	if xlog:
-		plot.xscale('log')
+		plt.xscale('log')
 	if ylog:
-		plot.yscale('log')
+		plt.yscale('log')
 	if xlim is not None:
-		plot.xlim(xlim)
+		plt.xlim(xlim)
 	if ylim is not None:
-		plot.ylim(ylim)
+		plt.ylim(ylim)
 	if title is not None:
-		plot.title(title)
+		plt.title(title)
 	if xlabel is not None:
-		plot.xlabel(xlabel)
+		plt.xlabel(xlabel)
 	if ylabel is not None:
-		plot.ylabel(ylabel)
+		plt.ylabel(ylabel)
 	if xinvert:
-		plot.gca().invert_xaxis()
+		plt.gca().invert_xaxis()
 	if yinvert:
-		plot.gca().invert_yaxis()
-	plot.grid()
+		plt.gca().invert_yaxis()
+	plt.grid()
 

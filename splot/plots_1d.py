@@ -2,12 +2,14 @@
 
 #Histogram
 def hist(data,bin_num=None,dens=True,norm=1,c=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,multi=False):
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
 	from .base_func import plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if type(data) is not list:
 		data=[data]
 	L=len(data)
@@ -27,7 +29,7 @@ def hist(data,bin_num=None,dens=True,norm=1,c=None,xinvert=False,xlim=None,ylim=
 			norm=[norm for d in data]
 	if c is None or type(c)==str:
 		c=[c]*L
-	if plabel is None:
+	if type(plabel) is not list:
 		plabel=[plabel]*L
 	for i in range(L):
 		if xlog:
@@ -44,15 +46,19 @@ def hist(data,bin_num=None,dens=True,norm=1,c=None,xinvert=False,xlim=None,ylim=
 		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 
 #Step histogram
-def histstep(data,bin_num=None,dens=True,hist_type='step',c=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,multi=False):
+def histstep(data,bin_num=None,dens=True,hist_type='step',c='k',xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
 	from .base_func import plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if type(data) is not list:
 		data=[data]
 	L=len(data)
@@ -60,7 +66,7 @@ def histstep(data,bin_num=None,dens=True,hist_type='step',c=None,xinvert=False,x
 		bin_num=[int((len(d))**0.4) for d in data]
 	if type(bin_num) is not list:
 		bin_num=[bin_num+1]*L
-	if c is None or type(c)==str:
+	if type(c)==str:
 		c=[c]*L
 	if plabel is None:
 		plabel=[plabel]*L
@@ -72,19 +78,23 @@ def histstep(data,bin_num=None,dens=True,hist_type='step',c=None,xinvert=False,x
 				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
 			else:
 				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
-		plt.hist(data[i],bins=bins,density=dens,histtype=hist_type,label=plabel[i],rasterized=True)
+		plt.hist(data[i],bins=bins,density=dens,histtype=hist_type,color=c,label=plabel[i],rasterized=True)
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 
 # Generalized lines
 def line(x,y,n=10,a=1,line_style='solid',c='k',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
-			title=None,lab_loc=0,multi=False):
+			title=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if xlog:
 		x=np.logspace(np.log10(x[0]),np.log10(x[1]),num=n)
 	else:
@@ -98,15 +108,19 @@ def line(x,y,n=10,a=1,line_style='solid',c='k',xinvert=False,yinvert=False,cinve
 		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(ax)
 
 #Plots
 def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',marker_edge_width=0,marker_face_colour='k',marker_size=0,marker_type='o',
 			xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
-			title=None,lab_loc=0,multi=False):
+			title=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import plot_finalizer
 	
+	if ax is not None:
+		old_axes=axes_handler(ax)
 	if type(x) is not list:
 		x=[x]
 	if type(y) is not list:
@@ -137,4 +151,6 @@ def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',mark
 		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
 
