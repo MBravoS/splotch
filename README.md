@@ -6,6 +6,6 @@ The package is available in for installation using `>pip install splotch`, thoug
 *Current version*: 0.2.3.
 
 *Planned releases*:
-* Addition of filled contour plots, TBD if as part of plot2D.sigma_cont() or as a new function (0.2.4).
+* Addition of filled contour plots, TBD if as part of plots_2d.sigma_cont() or as a new function (0.2.4).
 * Replacement of `multi` variable with automated checks (0.2.5) Addition of the documentation (0.2.6).
 * Adding a default matplotlib style (0.3.0).
