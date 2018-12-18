@@ -3,6 +3,54 @@
 #Histogram
 def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,multi=False):
+	
+	"""Histogram function
+	
+	Parameters
+	----------
+	data : array-like or list
+		If list it is assumed that each elemement is array-like.
+	bin_num : int or list, optional
+		Number of bins.
+	dens :  bool or list, optional
+		If false the histogram returns raw counts.
+	norm : float or list, optional
+		Normalization of the counts.
+	c : str or list, optional
+		Color of the line.
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	plabel : str, optional
+		Sets the legend for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	bool
+		True if successful, False otherwise.
+	"""
+	
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -21,7 +69,7 @@ def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,yl
 		dens=[dens]*L
 	if type(norm) is not list:
 		norm=[norm]*L
-	if c is None or type(c)==str:
+	if type(c) is not list:
 		c=[c]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
