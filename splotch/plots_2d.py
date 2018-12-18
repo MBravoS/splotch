@@ -1,7 +1,7 @@
 #### Definition of all wrappers for 2D plotting
 
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis',a=1,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
+def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis',a=1,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
 			cinvert=False,crotate=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
@@ -14,10 +14,9 @@ def hist2D(x,y,bin_num=None,density=True,norm=1,c=None,cstat=None,cmap='viridis'
 		bin_num=int((len(x))**0.4)
 	else:
 		bin_num+=1
-	norm=norm*len(x)
 	if cinvert:
 		cmap+='_r'
-	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,density,cstat,xlog,ylog)
+	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog)
 	if clog:
 		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,alpha=a,rasterized=True)
 	else:
@@ -124,7 +123,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 	if cinvert:
 		cmap+='_r'
 	cmap=cm.get_cmap(cmap)
-	X,Y,Z=base_hist2D(x,y,c,bin_num,1,None,None,xlog,ylog)
+	X,Y,Z=base_hist2D(x,y,c,bin_num,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	CS=[]

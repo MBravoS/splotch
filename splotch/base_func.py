@@ -5,7 +5,7 @@ def axes_handler(new_axis):
 	plt.sca(new_axis)
 	return(curr_axis)
 
-def base_hist2D(x,y,c,bin_num,norm,density,cstat,xlog,ylog):
+def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 	import numpy as np
 	import scipy.stats as stats
 	
@@ -26,8 +26,9 @@ def base_hist2D(x,y,c,bin_num,norm,density,cstat,xlog,ylog):
 	if cstat:
 		Z=stats.binned_statistic_2d(x,y,c,statistic=cstat,bins=[X,Y])[0]
 	else:
-		Z=np.histogram2d(x,y,bins=[X,Y],density=density)[0]
-		Z*=norm
+		Z=np.histogram2d(x,y,bins=[X,Y],density=dens)[0]
+		if dens and norm:
+			Z*=1.0*len(x)/norm
 	return(X,Y,Z)
 
 def percent_finder(data,p):
