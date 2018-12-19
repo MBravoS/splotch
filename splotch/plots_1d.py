@@ -183,7 +183,7 @@ def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',mark
 		marker_size=[marker_size]*L
 	if type(marker_type) is not list:
 		marker_type=[marker_type]*L
-	if plabel is None:
+	if type(plabel) is not list:
 		plabel=[plabel]*L
 	for i in range(L):
 		plt.plot(x[i],y[i],alpha=a[i],label=plabel[i],linestyle=line_style[i],color=line_colour[i],markeredgecolor=marker_edge_colour[i],
