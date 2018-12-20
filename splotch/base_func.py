@@ -31,6 +31,26 @@ def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 			Z*=1.0*len(x)/norm
 	return(X,Y,Z)
 
+def dict_splicer(plot_dict,L):
+	dict_list=[]
+	dict_keys=plot_dict.keys()
+	if 'rasterized' not in dict_keys:
+		plot_dict['rasterized']=True
+	for i in range(L):
+		temp_dict={}
+		for k in dict_keys:
+			try:
+				temp=(i for i in plot_dict[k])
+			except TypeError:
+				temp_dict[k]=plot_dict[k]
+			else:
+				if type(plot_dict[k]) is str:
+					temp_dict[k]=plot_dict[k]
+				else:
+					temp_dict[k]=plot_dict[k][i]
+		dict_list.append(temp_dict)
+	return(dict_list)
+
 def percent_finder(data,p):
 	import numpy as np
 	

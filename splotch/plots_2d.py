@@ -2,7 +2,7 @@
 
 # Histogram and 2D binned statistics
 def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis',a=1,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
-			cinvert=False,crotate=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
+			cinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -18,14 +18,14 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis'
 		cmap+='_r'
 	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog)
 	if clog:
-		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,alpha=a,rasterized=True)
+		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,alpha=a)
 	else:
 		Z[Z==0]=np.nan
-		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],cmap=cmap,alpha=a,rasterized=True)
+		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],cmap=cmap,alpha=a)
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
-		if crotate:
+		if cbar_invert:
 			cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
@@ -33,7 +33,7 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis'
 		old_axes=axes_handler(old_axes)
 
 # Image
-def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,cinvert=False,crotate=False,
+def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,cinvert=False,cbar_invert=False,
 		clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
@@ -48,11 +48,11 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 		x=np.linspace(np.nanmin(im,axis=0),np.nanmax(im,axis=0),len(im[:,0])+1)
 	if y is None:
 		y=np.linspace(np.nanmin(im,axis=1),np.nanmax(im,axis=1),len(im[0,:])+1)
-	plt.pcolormesh(x,y,im,vmin=clim[0],vmax=clim[1],cmap=cmap,rasterized=True)
+	plt.pcolormesh(x,y,im,vmin=clim[0],vmax=clim[1],cmap=cmap)
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
-		if crotate:
+		if cbar_invert:
 			cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
@@ -60,43 +60,26 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 		old_axes=axes_handler(old_axes)
 
 # Scatter
-def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
-			xlabel=None,ylabel=None,c='k',clabel=None,plabel=None,title=None,lab_loc=0,ax=None,multi=False):
+def scat(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
+			xlabel=None,ylabel=None,clabel=None,plabel=None,title=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
-	from .base_func import axes_handler,plot_finalizer
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if type(x) is not list:
 		x=[x]
 		y=[y]
-	colour=[]
-	if c is None:
-		for i in range(len(x)):
-			colour.append(np.random.uniform(low=0,high=1,size=len(x[i])))
-	else:
-		if c is not list:
-			c=[c]
-		if type(c[0]) is not str:
-			for i in c:
-				colour.append(i)
-		else:
-			colour=c
 	if type(plabel) is not list:
 		plabel=[plabel]*len(x)
-	if type(marker_size) is not list:
-		marker_size=[marker_size]*len(x)
-	if type(marker_type) is not list:
-		marker_type=[marker_type]*len(x)
-	if cinvert:
-		cmap+='_r'
+	plot_par=dict_splicer(plot_par,L)
 	for i in range(len(x)):
-		plt.scatter(x[i],y[i],s=marker_size[i],c=colour[i],label=plabel[i],marker=marker_type[i],edgecolors='none',alpha=a,cmap=cmap,rasterized=True)
+		plt.scatter(x[i],y[i],**plot_par[i])
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
-		if crotate:
+		if cinvert:
 			cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
@@ -105,7 +88,7 @@ def scat(x,y,marker_size=20,marker_type='o',a=1,cmap='viridis',xinvert=False,yin
 
 # Contours encircling the densest part down to a certain percetange 
 def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,
-				cinvert=False,crotate=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,
+				cinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,
 				lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.cm as cm
@@ -153,7 +136,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 		else:
 			cbar=plt.colorbar()
 			cbar.set_label(clabel)
-			if crotate:
+			if cbar_invert:
 				cbar.ax.invert_yaxis()
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)

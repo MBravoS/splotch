@@ -1,8 +1,8 @@
 #### Definition of all wrappers for 1D plotting
 
 #Histogram
-def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,multi=False):
+def hist(data,bin_num=None,dens=True,norm=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	
 	"""Histogram function
 	
@@ -16,8 +16,6 @@ def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,yl
 		If false the histogram returns raw counts.
 	norm : float or list, optional
 		Normalization of the counts.
-	c : str or list, optional
-		Color of the line.
 	xinvert : bool or list, optional
 		If true inverts the x-axis.
 	xlim : tuple-like, optional
@@ -42,19 +40,21 @@ def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,yl
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
 	multi : bool, optional
 		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
 	
 	Returns
 	-------
 	bool
-		True if successful, False otherwise.
+		True if successful, False otherwise. NEEDS TO BE CHECKED
 	"""
 	
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
-	from .base_func import plot_finalizer
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -69,10 +69,9 @@ def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,yl
 		dens=[dens]*L
 	if type(norm) is not list:
 		norm=[norm]*L
-	if type(c) is not list:
-		c=[c]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
+	plot_par=dict_splicer(plot_par,L)
 	for i in range(L):
 		if xlog:
 			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
@@ -82,7 +81,7 @@ def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,yl
 		if dens[i]:
 			if norm[i]:
 				y*=1.0*len(data[i])/norm[i]
-		plt.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],rasterized=True)
+		plt.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -91,12 +90,12 @@ def hist(data,bin_num=None,dens=True,norm=None,c=None,xinvert=False,xlim=None,yl
 		old_axes=axes_handler(old_axes)
 
 #Step histogram
-def histstep(data,bin_num=None,dens=True,hist_type='step',c='k',xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,multi=False):
+def histstep(data,bin_num=None,dens=True,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
-	from .base_func import plot_finalizer
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -111,6 +110,7 @@ def histstep(data,bin_num=None,dens=True,hist_type='step',c='k',xinvert=False,xl
 		c=[c]*L
 	if plabel is None:
 		plabel=[plabel]*L
+	plot_par=dict_splicer(plot_par,L)
 	for i in range(L):
 		if xlog:
 			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
@@ -119,7 +119,7 @@ def histstep(data,bin_num=None,dens=True,hist_type='step',c='k',xinvert=False,xl
 				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
 			else:
 				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
-		plt.hist(data[i],bins=bins,density=dens,histtype=hist_type,color=c,label=plabel[i],rasterized=True)
+		plt.hist(data[i],bins=bins,density=dens,histtype=hist_type,color=c,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -128,11 +128,11 @@ def histstep(data,bin_num=None,dens=True,hist_type='step',c='k',xinvert=False,xl
 		old_axes=axes_handler(old_axes)
 
 # Generalized lines
-def line(x,y,n=10,a=1,line_style='solid',c='k',xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
-			title=None,lab_loc=0,ax=None,multi=False):
+def line(x,y,n=10,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
+			title=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
-	from .base_func import plot_finalizer
+	from .base_func import axes_handler,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -144,7 +144,7 @@ def line(x,y,n=10,a=1,line_style='solid',c='k',xinvert=False,yinvert=False,cinve
 		y=np.logspace(np.log10(y[0]),np.log10(y[1]),num=n)
 	else:
 		y=np.linspace(y[0],y[1],num=n)
-	plt.plot(x,y,color=c,alpha=a,linestyle=line_style,rasterized=True,label=plabel)
+	plt.plot(x,y,color=c,alpha=a,linestyle=line_style,label=plabel,**plot_par)
 	if plabel is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -153,12 +153,11 @@ def line(x,y,n=10,a=1,line_style='solid',c='k',xinvert=False,yinvert=False,cinve
 		old_axes=axes_handler(ax)
 
 #Plots
-def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',marker_edge_width=0,marker_face_colour='k',marker_size=0,marker_type='o',
-			xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
-			title=None,lab_loc=0,ax=None,multi=False):
+def plot(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
+			title=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
-	from .base_func import plot_finalizer
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -167,27 +166,11 @@ def plot(x,y,a=1,line_style='solid',line_colour=None,marker_edge_colour='k',mark
 	if type(y) is not list:
 		y=[y]
 	L=len(x)
-	if type(a) is not list:
-		a=[a]*L
-	if type(line_colour) is not list:
-		line_colour=[line_colour]*L
-	if type(line_style) is not list:
-		line_style=[line_style]*L
-	if type(marker_edge_colour) is not list:
-		marker_edge_colour=[marker_edge_colour]*L
-	if type(marker_edge_width) is not list:
-		marker_edge_width=[marker_edge_width]*L
-	if type(marker_face_colour) is not list:
-		marker_face_colour=[marker_face_colour]*L
-	if type(marker_size) is not list:
-		marker_size=[marker_size]*L
-	if type(marker_type) is not list:
-		marker_type=[marker_type]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
+	plot_par=dict_splicer(plot_par,L)
 	for i in range(L):
-		plt.plot(x[i],y[i],alpha=a[i],label=plabel[i],linestyle=line_style[i],color=line_colour[i],markeredgecolor=marker_edge_colour[i],
-					markeredgewidth=marker_edge_width[i],markerfacecolor=marker_face_colour[i],markersize=marker_size[i],marker=marker_type[i],rasterized=True)
+		plt.plot(x[i],y[i],alpha=a[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
