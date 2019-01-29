@@ -144,7 +144,7 @@ def line(x,y,n=10,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=Fals
 		y=np.logspace(np.log10(y[0]),np.log10(y[1]),num=n)
 	else:
 		y=np.linspace(y[0],y[1],num=n)
-	plt.plot(x,y,color=c,alpha=a,linestyle=line_style,label=plabel,**plot_par)
+	plt.plot(x,y,color=c,linestyle=line_style,label=plabel,**plot_par)
 	if plabel is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -170,7 +170,7 @@ def plot(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xli
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L)
 	for i in range(L):
-		plt.plot(x[i],y[i],alpha=a[i],label=plabel[i],**plot_par[i])
+		plt.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
