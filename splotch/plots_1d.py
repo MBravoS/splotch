@@ -106,9 +106,7 @@ def histstep(data,bin_num=None,dens=True,xinvert=False,xlim=None,ylim=None,yinve
 		bin_num=[int((len(d))**0.4) for d in data]
 	if type(bin_num) is not list:
 		bin_num=[bin_num+1]*L
-	if type(c)==str:
-		c=[c]*L
-	if plabel is None:
+	if type(plabel) is not list:
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L)
 	for i in range(L):
@@ -119,7 +117,7 @@ def histstep(data,bin_num=None,dens=True,xinvert=False,xlim=None,ylim=None,yinve
 				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
 			else:
 				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
-		plt.hist(data[i],bins=bins,density=dens,histtype=hist_type,color=c,label=plabel[i],**plot_par[i])
+		plt.hist(data[i],bins=bins,density=dens,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
