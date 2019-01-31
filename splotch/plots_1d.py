@@ -1,10 +1,13 @@
 #### Definition of all wrappers for 1D plotting
 
 #Histogram
-def hist(data,bin_num=None,dens=True,norm=None,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
+def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	
-	"""Histogram function
+	"""Histogram function.
+	
+	The plotting is done with pyplot.plot(), so histograms are shown with interpolated curves instead of the
+	more common stepwise curve. For this reason splotch.histstep is a better choice for small datasets. 
 	
 	Parameters
 	----------
@@ -16,11 +19,11 @@ def hist(data,bin_num=None,dens=True,norm=None,xinvert=False,xlim=None,ylim=None
 		If false the histogram returns raw counts.
 	norm : float or list, optional
 		Normalization of the counts.
-	xinvert : bool or list, optional
-		If true inverts the x-axis.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	yinvert : bool or list, optional
 		If true inverts the y-axis.
@@ -47,8 +50,7 @@ def hist(data,bin_num=None,dens=True,norm=None,xinvert=False,xlim=None,ylim=None
 	
 	Returns
 	-------
-	bool
-		True if successful, False otherwise. NEEDS TO BE CHECKED
+	None
 	"""
 	
 	import numpy as np
@@ -90,8 +92,58 @@ def hist(data,bin_num=None,dens=True,norm=None,xinvert=False,xlim=None,ylim=None
 		old_axes=axes_handler(old_axes)
 
 #Step histogram
-def histstep(data,bin_num=None,dens=True,xinvert=False,xlim=None,ylim=None,yinvert=False,xlog=False,ylog=True,
+def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+	
+	"""'Clasic' histogram function.
+	
+	This function is designed around pyplot.hist(), so it lacks the functionality to use arbitraty y-axis
+	normalisation of splotch.hist().
+	It is better choice for small datasets, as it plots with stepwise curves, instead of the interpolated
+	ones of splotch.hist().
+	
+	Parameters
+	----------
+	data : array-like or list
+		If list it is assumed that each elemement is array-like.
+	bin_num : int or list, optional
+		Number of bins.
+	dens :  bool or list, optional
+		If false the histogram returns raw counts.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	plabel : str, optional
+		Sets the legend for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	None
+	"""
+	
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -126,8 +178,8 @@ def histstep(data,bin_num=None,dens=True,xinvert=False,xlim=None,ylim=None,yinve
 		old_axes=axes_handler(old_axes)
 
 # Generalized lines
-def line(x,y,n=10,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
-			title=None,lab_loc=0,ax=None,plot_par={},multi=False):
+def line(x,y,n=10,xlim=None,ylim=None,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,title=None,
+			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,plot_finalizer
@@ -151,19 +203,68 @@ def line(x,y,n=10,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=Fals
 		old_axes=axes_handler(ax)
 
 #Plots
-def plot(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,ylabel=None,plabel=None,
-			title=None,lab_loc=0,ax=None,plot_par={},multi=False):
+def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,
+			plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
+	"""Base plotting function.
+	
+	This is a wrapper for pyplot.plot().
+	
+	Parameters
+	----------
+	x : array-like or list
+		If list it is assumed that each elemement is array-like. If y is not given, the given values pass to y and a
+		numpy array is generated with numpy.arange() for the x values.
+	y : array-like or list, optional
+		If list it is assumed that each elemement is array-like.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	plabel : str, optional
+		Sets the legend for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	None
+	"""
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if type(x) is not list:
 		x=[x]
-	if type(y) is not list:
-		y=[y]
 	L=len(x)
+	if y is None:
+		y=x
+		x=[np.arange(len(x[i])) for i in range(L)]
+	else:
+		if type(y) is not list:
+			y=[y]
 	if type(plabel) is not list:
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L)
