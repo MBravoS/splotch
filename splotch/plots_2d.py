@@ -1,8 +1,60 @@
 #### Definition of all wrappers for 2D plotting
 
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis',a=1,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,
-			cinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
+def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,
+			yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,
+			clabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+	
+	"""2D histogram function.
+	
+	Parameters
+	----------
+	x : array-like
+	y : array-like
+	bin_num : int or list, optional
+		Number of bins.
+	dens :  bool or list, optional
+		If false the histogram returns raw counts.
+	norm : float or list, optional
+		Normalization of the counts.
+	
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+	
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	plabel : str, optional
+		Sets the legend for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	None
+	"""
+	
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -11,17 +63,19 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis'
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if bin_num is None:
-		bin_num=int((len(x))**0.4)
+		bin_num=[int((len(x))**0.4)]*2
 	else:
-		bin_num+=1
-	if cinvert:
-		cmap+='_r'
+		if type(bin_num) is list:
+			bin_num=[b+1 for b in bin_num]
+		else:
+			bin_num=[bin_num+1]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog)
 	if clog:
-		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),cmap=cmap,alpha=a)
+		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par[0])
 	else:
-		Z[Z==0]=np.nan
-		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],cmap=cmap,alpha=a)
+		if cstat is None:
+			Z[Z==0]=np.nan
+		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par[0])
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
@@ -33,8 +87,9 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,cmap='viridis'
 		old_axes=axes_handler(old_axes)
 
 # Image
-def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,cinvert=False,cbar_invert=False,
-		clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
+def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,
+		cinvert=False,cbar_invert=False,clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
+		multi=False):
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -60,8 +115,8 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 		old_axes=axes_handler(old_axes)
 
 # Scatter
-def scat(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,
-			xlabel=None,ylabel=None,clabel=None,plabel=None,title=None,lab_loc=0,ax=None,plot_par={},multi=False):
+def scat(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,
+			ylabel=None,clabel=None,plabel=None,title=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -87,9 +142,9 @@ def scat(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xli
 		old_axes=axes_handler(old_axes)
 
 # Contours encircling the densest part down to a certain percetange 
-def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],xinvert=False,yinvert=False,
-				cinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,
-				lab_loc=0,ax=None,multi=False):
+def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],
+				xinvert=False,yinvert=False,cinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
+				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
 	import numpy as np
 	import matplotlib.cm as cm
 	import matplotlib.pyplot as plt

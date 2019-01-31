@@ -4,7 +4,7 @@
 def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	
-	"""Histogram function.
+	"""1D histogram function.
 	
 	The plotting is done with pyplot.plot(), so histograms are shown with interpolated curves instead of the
 	more common stepwise curve. For this reason splotch.histstep is a better choice for small datasets. 
@@ -95,7 +95,7 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	
-	"""'Clasic' histogram function.
+	"""'Clasic' 1D histogram function.
 	
 	This function is designed around pyplot.hist(), so it lacks the functionality to use arbitraty y-axis
 	normalisation of splotch.hist().
@@ -177,30 +177,30 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-# Generalized lines
-def line(x,y,n=10,xlim=None,ylim=None,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,title=None,
-			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
-	import numpy as np
-	import matplotlib.pyplot as plt
-	from .base_func import axes_handler,plot_finalizer
-	
-	if ax is not None:
-		old_axes=axes_handler(ax)
-	if xlog:
-		x=np.logspace(np.log10(x[0]),np.log10(x[1]),num=n)
-	else:
-		x=np.linspace(x[0],x[1],num=n)
-	if ylog:
-		y=np.logspace(np.log10(y[0]),np.log10(y[1]),num=n)
-	else:
-		y=np.linspace(y[0],y[1],num=n)
-	plt.plot(x,y,color=c,linestyle=line_style,label=plabel,**plot_par)
-	if plabel is not None:
-		plt.legend(loc=lab_loc)
-	if not multi:
-		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
-	if ax is not None:
-		old_axes=axes_handler(ax)
+# Generalized lines   NEEDS TO BE REDESIGNED
+#def line(x,y,n=10,xlim=None,ylim=None,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,title=None,
+#			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+#	import numpy as np
+#	import matplotlib.pyplot as plt
+#	from .base_func import axes_handler,plot_finalizer
+#	
+#	if ax is not None:
+#		old_axes=axes_handler(ax)
+#	if xlog:
+#		x=np.logspace(np.log10(x[0]),np.log10(x[1]),num=n)
+#	else:
+#		x=np.linspace(x[0],x[1],num=n)
+#	if ylog:
+#		y=np.logspace(np.log10(y[0]),np.log10(y[1]),num=n)
+#	else:
+#		y=np.linspace(y[0],y[1],num=n)
+#	plt.plot(x,y,color=c,linestyle=line_style,label=plabel,**plot_par)
+#	if plabel is not None:
+#		plt.legend(loc=lab_loc)
+#	if not multi:
+#		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+#	if ax is not None:
+#		old_axes=axes_handler(ax)
 
 #Plots
 def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,
