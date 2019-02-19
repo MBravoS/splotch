@@ -10,19 +10,19 @@ def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 	import scipy.stats as stats
 	
 	if xlog:
-		X=np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num)
+		X=np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num[0])
 	else:
 		if np.nanmin(x)==np.nanmax(x):
-			X=np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num)
+			X=np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num[0])
 		else:
-			X=np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num)
+			X=np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num[0])
 	if ylog:
-		Y=np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num)
+		Y=np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num[1])
 	else:
 		if np.nanmin(y)==np.nanmax(y):
-			Y=np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num)
+			Y=np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num[1])
 		else:
-			Y=np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num)
+			Y=np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num[1])
 	if cstat:
 		Z=stats.binned_statistic_2d(x,y,c,statistic=cstat,bins=[X,Y])[0]
 	else:
@@ -31,12 +31,12 @@ def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 			Z*=1.0*len(x)/norm
 	return(X,Y,Z)
 
-def dict_splicer(plot_dict,L):
+def dict_splicer(plot_dict,Ld,Lx):
 	dict_list=[]
 	dict_keys=plot_dict.keys()
 	if 'rasterized' not in dict_keys:
 		plot_dict['rasterized']=True
-	for i in range(L):
+	for i in range(Ld):
 		temp_dict={}
 		for k in dict_keys:
 			try:
@@ -44,7 +44,7 @@ def dict_splicer(plot_dict,L):
 			except TypeError:
 				temp_dict[k]=plot_dict[k]
 			else:
-				if type(plot_dict[k]) is str:
+				if type(plot_dict[k]) is str or len(plot_dict[k])==Lx[i]:
 					temp_dict[k]=plot_dict[k]
 				else:
 					temp_dict[k]=plot_dict[k][i]

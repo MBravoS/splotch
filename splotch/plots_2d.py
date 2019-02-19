@@ -10,37 +10,47 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 	Parameters
 	----------
 	x : array-like
+		Position of data points in the x axis.
 	y : array-like
+		Position of data points in the y axis.
 	bin_num : int or list, optional
 		Number of bins.
-	dens :  bool or list, optional
+	dens : bool or list, optional
 		If false the histogram returns raw counts.
 	norm : float or list, optional
 		Normalization of the counts.
-	
+	c : array-like, optional
+		If a valid argument is given in cstat, defines the value used for the binned statistics.
+	cstat: str or function, optional
+		Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
+		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and outputs an integer
+		 or float.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
-	
-	xinvert : bool or list, optional
-		If true inverts the x-axis.
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
-	yinvert : bool or list, optional
+	clim : list, optional
+		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
+	xinvert : bool, optional
+		If true inverts the x-axis.
+	yinvert : bool, optional
 		If true inverts the y-axis.
-	
-	xlog : bool or list, optional
+	cbar_invert : bool, optional
+		If True inverts the direction of the colour bar (not the colour map).
+	xlog : bool, optional
 		If True the scale of the x-axis is logarithmic.
-	ylog : bool or list, optional
+	ylog : bool, optional
 		If True the scale of the x-axis is logarithmic.
-	
+	clog : bool, optional
+		If True, the colour map is changed from linear to logarithmic.
 	title : str, optional
 		Sets the title of the plot
 	xlabel : str, optional
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
-		Sets the legend for the plot.
+	clabel : str, optional
+		Sets the legend for the colour axis.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -71,11 +81,11 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 			bin_num=[bin_num+1]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog)
 	if clog:
-		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par[0])
+		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
 		if cstat is None:
 			Z[Z==0]=np.nan
-		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par[0])
+		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
@@ -87,9 +97,55 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 		old_axes=axes_handler(old_axes)
 
 # Image
-def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[None,None],xinvert=False,yinvert=False,
-		cinvert=False,cbar_invert=False,clog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
-		multi=False):
+def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=False,
+		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+	
+	"""2D pixel-based image plotting function.
+	
+	Parameters
+	----------
+	im : array-like
+		Value for each pixel in an x-y 2D array, where the first dimension is the x-position and the second is the y-position.
+	x : array-like, optional
+		Position of data points in the x axis.
+	y : array-like, optional
+		Position of data points in the y axis.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	clim : list, optional
+		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
+	xinvert : bool, optional
+		If true inverts the x-axis.
+	yinvert : bool, optional
+		If true inverts the y-axis.
+	cbar_invert : bool, optional
+		If True inverts the direction of the colour bar (not the colour map).
+	clog : bool, optional
+		If True, the colour map is changed from linear to logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	clabel : str, optional
+		Sets the legend for the colour axis.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	None
+	"""
+	
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
@@ -97,26 +153,72 @@ def img(im,x=None,y=None,bin_num=None,xlim=None,ylim=None,cmap='viridis',clim=[N
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if cinvert:
-		cmap+='_r'
 	if x is None:
-		x=np.linspace(np.nanmin(im,axis=0),np.nanmax(im,axis=0),len(im[:,0])+1)
+		x=np.arange(len(im[:,0])+1)
 	if y is None:
-		y=np.linspace(np.nanmin(im,axis=1),np.nanmax(im,axis=1),len(im[0,:])+1)
-	plt.pcolormesh(x,y,im,vmin=clim[0],vmax=clim[1],cmap=cmap)
+		y=np.arange(len(im[0,:])+1)
+	if clog:
+		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
+	else:
+		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
 	if not multi:
-		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+		plot_finalizer(False,False,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
 # Scatter
-def scat(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xlim=None,ylim=None,xlabel=None,
-			ylabel=None,clabel=None,plabel=None,title=None,lab_loc=0,ax=None,plot_par={},multi=False):
+def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
+			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+	
+	"""2D pixel-based image plotting function.
+	
+	Parameters
+	----------
+	x : array-like or list
+		Position of data points in the x axis.
+	y : array-like or list
+		Position of data points in the y axis.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool, optional
+		If true inverts the x-axis.
+	yinvert : bool, optional
+		If true inverts the y-axis.
+	cbar_invert : bool, optional
+		If True inverts the direction of the colour bar (not the colour map).
+	xlog : bool, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool, optional
+		If True the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	clabel : str, optional
+		Sets the legend for the colour axis.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	None
+	"""
+	
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -126,16 +228,17 @@ def scat(x,y,xinvert=False,yinvert=False,cinvert=False,xlog=False,ylog=False,xli
 	if type(x) is not list:
 		x=[x]
 		y=[y]
-	if type(plabel) is not list:
-		plabel=[plabel]*len(x)
-	plot_par=dict_splicer(plot_par,L)
-	for i in range(len(x)):
+	L=len(x)
+	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
+	for i in range(L):
 		plt.scatter(x[i],y[i],**plot_par[i])
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
-		if cinvert:
+		if cbar_invert:
 			cbar.ax.invert_yaxis()
+	if 'label' in plot_par[0]:
+		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
@@ -155,9 +258,12 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 	if type(percent) is not list:
 		percent=[percent]
 	if bin_num is None:
-		bin_num=int((len(x))**0.4)
+		bin_num=[int((len(x))**0.4)]*2
 	else:
-		bin_num+=1
+		if type(bin_num) is list:
+			bin_num=[b+1 for b in bin_num]
+		else:
+			bin_num=[bin_num+1]*2
 	if cinvert:
 		cmap+='_r'
 	cmap=cm.get_cmap(cmap)

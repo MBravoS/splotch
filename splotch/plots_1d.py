@@ -73,7 +73,7 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 		norm=[norm]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	plot_par=dict_splicer(plot_par,L)
+	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
 		if xlog:
 			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
@@ -160,7 +160,7 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		bin_num=[bin_num+1]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	plot_par=dict_splicer(plot_par,L)
+	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
 		if xlog:
 			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
@@ -267,7 +267,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 			y=[y]
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	plot_par=dict_splicer(plot_par,L)
+	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
 	for i in range(L):
 		plt.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
