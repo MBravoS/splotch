@@ -56,7 +56,7 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 	import numpy as np
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
-	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -75,14 +75,13 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
-		if xlog:
-			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
-		else:
-			bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
-		y,x=np.histogram(data[i],bins=bins,density=dens[i])
+		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
+		y,x=np.histogram(temp_data,bins=bins,density=dens[i])
 		if dens[i]:
 			if norm[i]:
 				y*=1.0*len(data[i])/norm[i]
+		if xlog:
+			x=10**x
 		plt.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
@@ -162,14 +161,8 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
-		if xlog:
-			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
-		else:
-			if np.nanmin(data[i])==np.nanmax(data[i]):
-				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
-			else:
-				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
-		plt.hist(data[i],bins=bins,density=dens,label=plabel[i],**plot_par[i])
+		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
+		plt.hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:

@@ -9,27 +9,29 @@ def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 	import numpy as np
 	import scipy.stats as stats
 	
-	if xlog:
-		X=np.logspace(np.log10(np.nanmin(x)),np.log10(np.nanmax(x)),num=bin_num[0])
-	else:
-		if np.nanmin(x)==np.nanmax(x):
-			X=np.linspace(np.nanmin(x)-0.5,np.nanmax(x)+0.5,num=bin_num[0])
-		else:
-			X=np.linspace(np.nanmin(x),np.nanmax(x),num=bin_num[0])
-	if ylog:
-		Y=np.logspace(np.log10(np.nanmin(y)),np.log10(np.nanmax(y)),num=bin_num[1])
-	else:
-		if np.nanmin(y)==np.nanmax(y):
-			Y=np.linspace(np.nanmin(y)-0.5,np.nanmax(y)+0.5,num=bin_num[1])
-		else:
-			Y=np.linspace(np.nanmin(y),np.nanmax(y),num=bin_num[1])
+	x_temp,x_bins_hist,x_bins_plot=binned_axis(x,bin_num=bin_num[0],log=xlog)
+	y_temp,y_bins_hist,y_bins_plot=binned_axis(y,bin_num=bin_num[1],log=ylog)
 	if cstat:
-		Z=stats.binned_statistic_2d(x,y,c,statistic=cstat,bins=[X,Y])[0]
+		Z=stats.binned_statistic_2d(x_temp,y_temp,c,statistic=cstat,bins=[x_bins_hist,y_bins_hist])[0]
 	else:
-		Z=np.histogram2d(x,y,bins=[X,Y],density=dens)[0]
+		Z=np.histogram2d(x_temp,y_temp,bins=[x_bins_hist,y_bins_hist],density=dens)[0]
 		if dens and norm:
 			Z*=1.0*len(x)/norm
-	return(X,Y,Z)
+	return(x_bins_plot,y_bins_plot,Z)
+
+def binned_axis(data,bin_num,log=False):
+	import numpy as np
+	
+	if log:
+		data=np.log10(data)
+	if np.nanmin(data)==np.nanmax(data):
+		hist_bins=np.linspace(np.nanmin(data)-0.5,np.nanmax(data)+0.5,num=bin_num)
+	else:
+		hist_bins=np.linspace(np.nanmin(data),np.nanmax(data),num=bin_num)
+	plot_bins=hist_bins*1.0
+	if log:
+		plot_bins=10**plot_bins
+	return(data,hist_bins,plot_bins)
 
 def dict_splicer(plot_dict,Ld,Lx):
 	dict_list=[]
