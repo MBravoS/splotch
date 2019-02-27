@@ -75,14 +75,12 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
-		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
-		y,x=np.histogram(temp_data,bins=bins,density=dens[i])
+		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_num[i],log=xlog)
+		y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
 		if dens[i]:
 			if norm[i]:
 				y*=1.0*len(data[i])/norm[i]
-		if xlog:
-			x=10**x
-		plt.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],**plot_par[i])
+		plt.plot((bins_plot[0:-1]+bins_plot[1:])/2,y,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
