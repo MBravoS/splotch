@@ -21,7 +21,7 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 		Normalization of the counts.
 	c : array-like, optional
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
-	cstat: str or function, optional
+	cstat : str or function, optional
 		Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
 		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and outputs an integer
 		 or float.

@@ -1,7 +1,7 @@
 #### Definition of all wrappers for 1D plotting
 
 #Histogram
-def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
+def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	
 	"""1D histogram function.
@@ -19,6 +19,12 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 		If false the histogram returns raw counts.
 	norm : float or list, optional
 		Normalization of the counts.
+	v : array-like or list, optional
+		If a valid argument is given in cstat, defines the value used for the binned statistics.
+	vstat : str, function  or list, optional
+		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
+		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer
+		 or float.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -54,6 +60,7 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 	"""
 	
 	import numpy as np
+	import scipy.stats as stats
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer
@@ -71,12 +78,19 @@ def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False
 		dens=[dens]*L
 	if type(norm) is not list:
 		norm=[norm]*L
+	if type(v) is not list:
+		v=[v]*L
+	if type(vstat) is not list:
+		vstat=[vstat]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
 		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_num[i],log=xlog)
-		y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
+		if vstat:
+			y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
+		else:
+			y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
 		if dens[i]:
 			if norm[i]:
 				y*=1.0*len(data[i])/norm[i]
