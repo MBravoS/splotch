@@ -1,7 +1,7 @@
 #### Definition of all wrappers for 1D plotting
 
 #Histogram
-def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
+def hist(data,bin_num=None,dens=True,norm=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
 	
 	"""1D histogram function.
@@ -19,12 +19,6 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 		If false the histogram returns raw counts.
 	norm : float or list, optional
 		Normalization of the counts.
-	v : array-like or list, optional
-		If a valid argument is given in cstat, defines the value used for the binned statistics.
-	vstat : str, function  or list, optional
-		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
-		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer
-		 or float.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -60,10 +54,9 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	"""
 	
 	import numpy as np
-	import scipy.stats as stats
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
-	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -78,23 +71,19 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 		dens=[dens]*L
 	if type(norm) is not list:
 		norm=[norm]*L
-	if type(v) is not list:
-		v=[v]*L
-	if type(vstat) is not list:
-		vstat=[vstat]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
-		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_num[i],log=xlog)
-		if vstat[i]:
-			y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
+		if xlog:
+			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
 		else:
-			y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
+			bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
+		y,x=np.histogram(data[i],bins=bins,density=dens[i])
 		if dens[i]:
 			if norm[i]:
 				y*=1.0*len(data[i])/norm[i]
-		plt.plot((bins_plot[0:-1]+bins_plot[1:])/2,y,label=plabel[i],**plot_par[i])
+		plt.plot((x[0:-1]+x[1:])/2,y,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -173,8 +162,14 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
-		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
-		plt.hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
+		if xlog:
+			bins=np.logspace(np.log10(np.nanmin(data[i])),np.log10(np.nanmax(data[i])),num=bin_num[i])
+		else:
+			if np.nanmin(data[i])==np.nanmax(data[i]):
+				bins=np.linspace(np.nanmin(data[i])-0.5,np.nanmax(data[i])+0.5,num=bin_num[i])
+			else:
+				bins=np.linspace(np.nanmin(data[i]),np.nanmax(data[i]),num=bin_num[i])
+		plt.hist(data[i],bins=bins,density=dens,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
@@ -184,7 +179,7 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 
 
 # Generalized lines
-def axline(x=None,y=None,m=None,c=None,ax=None,line_par={}):
+def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}):
 	
 	"""Generalised axis lines.
 	
@@ -201,6 +196,10 @@ def axline(x=None,y=None,m=None,c=None,ax=None,line_par={}):
 		Slope(s) of diagonal axis line(s), defaults to 1 if not specified when c is given.
 	c : int or list, optional
 		Intercept points(s) of diagonal axis line(s), defaults to 0 if not specified when m is given.
+	plabel : str, optional
+		Sets label(s) for line(s) and plots legend.
+	lab_loc : int, optional
+		Defines the position of the legend. Defaults as lab_loc=0.
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
 	line_par : dict, optional
@@ -263,15 +262,19 @@ def axline(x=None,y=None,m=None,c=None,ax=None,line_par={}):
 			m = [1]*len(c) # set m to 1 for all c
 		L = len(c)
 	
+	if type(plabel) is not list:
+		plabel=[plabel]*L
+	elif (len(plabel) != L):
+		raise ValueError("Length of plabel list ({0}) must match the number of lines given ({1}).".format(len(plabel),L))
 	# Organise the line parameters dictionary    
 	line_par=dict_splicer(line_par,L,[1]*L) 
 	    
 	if (x is not None):
 		for ii, xx in enumerate(x):
-			ax.axvline(x=xx,**line_par[ii])
+			ax.axvline(x=xx,**line_par[ii],label=plabel[ii])
 	if (y is not None):
 		for ii, yy in enumerate(y):
-			ax.axhline(y=yy,**line_par[ii])
+			ax.axhline(y=yy,**line_par[ii],label=plabel[ii])
 	if (m is not None):
 		for ii, pars in enumerate(zip(m,c)):
 			mm = pars[0]; cc = pars[1]
@@ -279,11 +282,13 @@ def axline(x=None,y=None,m=None,c=None,ax=None,line_par={}):
 			xLims = ax.get_xlim()
 			yLims = ax.get_ylim()
 			
-			ax.plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],**line_par[ii])
+			ax.plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],label=plabel[ii],**line_par[ii])
 			
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
 			
+	if plabel[0] is not None:
+		plt.legend(loc=lab_loc)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
