@@ -87,7 +87,7 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	for i in range(L):
 		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_num[i],log=xlog)
-		if vstat:
+		if vstat[i]:
 			y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
 			y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
