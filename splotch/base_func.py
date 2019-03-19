@@ -46,6 +46,20 @@ def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 			Z*=1.0*len(x)/norm
 	return(X,Y,Z)
 
+def binned_axis(data,bin_num,log=False):
+	import numpy as np
+	
+	if log:
+		data=np.log10(data)
+	if np.nanmin(data)==np.nanmax(data):
+		hist_bins=np.linspace(np.nanmin(data)-0.5,np.nanmax(data)+0.5,num=bin_num)
+	else:
+		hist_bins=np.linspace(np.nanmin(data),np.nanmax(data),num=bin_num)
+	plot_bins=hist_bins*1.0
+	if log:
+		plot_bins=10**plot_bins
+	return(data,hist_bins,plot_bins)
+
 def dict_splicer(plot_dict,Ld,Lx):
 	dict_list=[]
 	dict_keys=plot_dict.keys()
