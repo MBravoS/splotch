@@ -237,7 +237,7 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
-	if 'label' in plot_par[0]:
+	if plot_par[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
