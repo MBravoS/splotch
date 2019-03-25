@@ -229,9 +229,11 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 		x=[x]
 		y=[y]
 	L=len(x)
+	if type(plabel) is not list:
+		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
 	for i in range(L):
-		plt.scatter(x[i],y[i],**plot_par[i])
+		plt.scatter(x[i],y[i],label=plabel[i],**plot_par[i])
 	if clabel is not None:
 		cbar=plt.colorbar()
 		cbar.set_label(clabel)
