@@ -328,8 +328,65 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 
 # Contours encircling the densest part down to a certain percetange 
 def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],
-				xinvert=False,yinvert=False,cinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
+				xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
 				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,multi=False):
+	
+	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
+	
+	Parameters
+	----------
+	x : array-like
+		Position of data points in the x axis.
+	y : array-like
+		Position of data points in the y axis.
+	percent : float or list, optional.
+		The percentages of the sample that the contours encircle.
+	bin_num : int or list, optional
+		Number of bins.
+	c : float or list, optional
+		The colours of the contours, from the given colour map.
+	cmap : str, optional
+		The colour map to be used, viridis by default.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	clim : list, optional
+		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
+	xinvert : bool, optional
+		If true inverts the x-axis.
+	yinvert : bool, optional
+		If true inverts the y-axis.
+	cbar_invert : bool, optional
+		If True inverts the direction of the colour bar (not the colour map).
+	s= str or list, optional.
+		Defines the linestyle of the contours.
+	xlog : bool, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool, optional
+		If True the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	clabel : str, optional
+		Sets the legend for the colour axis.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_par : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function.
+	multi : bool, optional
+		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
+	
+	Returns
+	-------
+	None
+	"""
+	
 	import numpy as np
 	import matplotlib.cm as cm
 	import matplotlib.pyplot as plt
