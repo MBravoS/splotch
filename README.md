@@ -3,10 +3,11 @@
 
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
-*Current version*: 0.2.4 (**IN DEVELOPMENT**).
+*Current version*: 0.2.4.
 
 *Planned releases*:
-* Addition of the documentation (0.2.4).
-* Addition of filled contour plots, TBD if as part of plots_2d.sigma_cont() or as a new function (0.2.5).
-* Replacement of `multi` variable with automated checks (0.2.6).
+* Replacement of `multi` variable with automated checks (0.2.5).
+* Addition of level contour plots (0.2.6).
+* Addition of the option of filled contours for both sigma and level contour plots (0.2.7).
+* Addition of "pizza slices" plots (0.2.8).
 * Addition a default matplotlib style (0.3.0).
