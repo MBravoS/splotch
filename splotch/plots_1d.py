@@ -170,7 +170,10 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	
 	Returns
 	-------
-	None
+	bins_edges : list
+		List containing the arrays with the bin edges for each of the histograms drawn.
+	n : list
+		List containing the arrays with the values for each histogram drawn.
 	"""
 	
 	import numpy as np
@@ -199,6 +202,8 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	if type(plabel) is not list:
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
+	bin_edges=[]
+	n_return=[]
 	for i in range(L):
 		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_num[i],log=xlog)
 		if vstat[i]:
@@ -209,12 +214,15 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 			if norm[i]:
 				y*=1.0*len(data[i])/norm[i]
 		plt.plot((bins_plot[0:-1]+bins_plot[1:])/2,y,label=plabel[i],**plot_par[i])
+		bin_edges.append(bins_plot)
+		n_return.append(y)
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	if not multi:
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+	return(bin_edges,n_return)
 
 #Step histogram
 def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,

@@ -142,7 +142,12 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 	
 	Returns
 	-------
-	None
+	bin_edges_x : array
+		The bin edges for the x axis.
+	bin_edges_y : array
+		The bin edges for the y axis.
+	n : array
+		The values of the histogram.
 	"""
 	
 	import numpy as np
@@ -175,6 +180,7 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+	return(X,Y,Z.T)
 
 # Image
 def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=False,
@@ -384,7 +390,12 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 	
 	Returns
 	-------
-	None
+	bin_edges_x : array
+		The bin edges for the x axis.
+	bin_edges_y : array
+		The bin edges for the y axis.
+	n : array
+		The values of the underlying histogram.
 	"""
 	
 	import numpy as np
@@ -442,4 +453,4 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
-
+	return(X,Y,Z.T)
