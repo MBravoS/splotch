@@ -414,8 +414,6 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 			bin_num=[b+1 for b in bin_num]
 		else:
 			bin_num=[bin_num+1]*2
-	if cinvert:
-		cmap+='_r'
 	cmap=cm.get_cmap(cmap)
 	X,Y,Z=base_hist2D(x,y,c,bin_num,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
