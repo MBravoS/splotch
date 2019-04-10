@@ -116,7 +116,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 
 #Histogram
 def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
 	
 	"""1D histogram function.
 	
@@ -165,8 +165,6 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 		Use the given axes to make the plot, defaults to the current axes.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
-	multi : bool, optional
-		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
 	
 	Returns
 	-------
@@ -218,15 +216,14 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 		n_return.append(y)
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	if not multi:
-		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 	return(bin_edges,n_return)
 
 #Step histogram
 def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
 	
 	"""'Clasic' 1D histogram function.
 	
@@ -269,8 +266,6 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		Use the given axes to make the plot, defaults to the current axes.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
-	multi : bool, optional
-		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
 	
 	Returns
 	-------
@@ -299,13 +294,12 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		plt.hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	if not multi:
-		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 #Plots
 def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,
-			plabel=None,lab_loc=0,ax=None,plot_par={},multi=False):
+			plabel=None,lab_loc=0,ax=None,plot_par={}):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -347,8 +341,6 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		Use the given axes to make the plot, defaults to the current axes.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
-	multi : bool, optional
-		If True, holds the application of x/ylog, x/yinvert and grid, to avoid duplication.
 	
 	Returns
 	-------
@@ -373,8 +365,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		plt.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	if not multi:
-		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 

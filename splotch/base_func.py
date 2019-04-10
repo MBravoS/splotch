@@ -98,8 +98,10 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert):
 	if ylabel is not None:
 		plt.ylabel(ylabel)
 	if xinvert:
-		plt.gca().invert_xaxis()
+		if not plt.gca().xaxis_inverted():
+			plt.gca().invert_xaxis()
 	if yinvert:
-		plt.gca().invert_yaxis()
-	plt.grid()
+		if not plt.gca().yaxis_inverted():
+			plt.gca().invert_yaxis()
+	plt.grid(b=True,which='major',axis='both')
 
