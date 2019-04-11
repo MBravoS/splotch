@@ -57,13 +57,15 @@ def binned_axis(data,btype,bins,log=False):
 		if np.nanmin(d)==np.nanmax(d):
 			h=np.linspace(np.nanmin(d)-0.5,np.nanmax(d)+0.5,num=b)
 		else:
+			d=np.sort(d)
 			L=len(d)
 			w_l=math.floor(L/b)
 			w_h=math.ceil(L/b)
-			n_l=b*m.ceil(L/b)-L
+			n_l=b*math.ceil(L/b)-L
 			n_h=b-n_l
 			n=np.concatenate([np.ones(math.ceil(n_l/2))*w_l,np.ones(n_h)*w_h,np.ones(math.floor(n_l/2))*w_l]).astype('int32')
 			h=np.array([np.nanmin(d)]+[(d[i-1]+d[i])/2 for i in np.cumsum(n)[:-1]]+[np.nanmax(d)])
+			print(h)
 		return(h)
 	
 	if log:

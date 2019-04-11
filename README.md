@@ -3,7 +3,7 @@
 
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
-*Current version*: 0.2.6.0
+*Current version*: 0.2.6.1
 
 *Planned releases*:
 * Documentation of internal functions on base_func (0.2.7.0).

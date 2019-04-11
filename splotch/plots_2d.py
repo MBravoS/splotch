@@ -88,12 +88,13 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 		Position of data points in the x axis.
 	y : array-like
 		Position of data points in the y axis.
-	
-	
-	bins : int or list, optional
-		Number of bins.
-	
-	
+	bin_type : {'number','width','edges','equal'}, optional
+		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
+		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
+		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
+		float and 'edges' if ndarray.
+	bins : int, float, array-like or list, optional
+		Gives the values for the bins, according to bin_type.
 	dens : bool or list, optional
 		If false the histogram returns raw counts.
 	norm : float or list, optional
@@ -336,12 +337,13 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		Position of data points in the y axis.
 	percent : float or list, optional.
 		The percentages of the sample that the contours encircle.
-	
-	
-	bins : int or list, optional
-		Number of bins.
-	
-	
+	bin_type : {'number','width','edges','equal'}, optional
+		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
+		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
+		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
+		float and 'edges' if ndarray.
+	bins : int, float, array-like or list, optional
+		Gives the values for the bins, according to bin_type.
 	c : float or list, optional
 		The colours of the contours, from the given colour map.
 	cmap : str, optional

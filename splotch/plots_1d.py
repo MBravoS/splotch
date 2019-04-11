@@ -127,12 +127,13 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,xlim
 	----------
 	data : array-like or list
 		If list it is assumed that each elemement is array-like.
-	
-	
-	bins : int or list, optional
-		Number of bins.
-	
-	
+	bin_type : {'number','width','edges','equal'}, optional
+		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
+		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
+		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
+		float and 'edges' if ndarray.
+	bins : int, float, array-like or list, optional
+		Gives the values for the bins, according to bin_type.
 	dens :  bool or list, optional
 		If false the histogram returns raw counts.
 	norm : float or list, optional
