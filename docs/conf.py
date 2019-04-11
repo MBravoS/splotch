@@ -22,7 +22,7 @@ copyright = '2019, Matías Bravo, Robin Cook'
 author = 'Matías Bravo, Robin Cook'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.5.0'
+release = '0.2.6.0'
 
 
 # -- General configuration ---------------------------------------------------

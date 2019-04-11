@@ -75,10 +75,8 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-
-
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,
+def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,
 			yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,
 			clabel=None,lab_loc=0,ax=None,plot_par={}):
 	
@@ -90,8 +88,12 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 		Position of data points in the x axis.
 	y : array-like
 		Position of data points in the y axis.
-	bin_num : int or list, optional
+	
+	
+	bins : int or list, optional
 		Number of bins.
+	
+	
 	dens : bool or list, optional
 		If false the histogram returns raw counts.
 	norm : float or list, optional
@@ -152,14 +154,13 @@ def hist2D(x,y,bin_num=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if bin_num is None:
-		bin_num=[int((len(x))**0.4)]*2
-	else:
-		if type(bin_num) is list:
-			bin_num=[b+1 for b in bin_num]
-		else:
-			bin_num=[bin_num+1]*2
-	X,Y,Z=base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog)
+	if type(bin_type) is not list:
+		bin_type=[bin_type]*2
+	if type(bins) is not list:
+		if bins is None:
+			bins=int((len(x))**0.4)
+		bins=[bins]*2
+	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,norm,dens,cstat,xlog,ylog)
 	if clog:
 		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
@@ -321,7 +322,7 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 		old_axes=axes_handler(old_axes)
 
 # Contours encircling the densest part down to a certain percetange 
-def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],
+def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],
 				xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
 				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None):
 	
@@ -335,8 +336,12 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 		Position of data points in the y axis.
 	percent : float or list, optional.
 		The percentages of the sample that the contours encircle.
-	bin_num : int or list, optional
+	
+	
+	bins : int or list, optional
 		Number of bins.
+	
+	
 	c : float or list, optional
 		The colours of the contours, from the given colour map.
 	cmap : str, optional
@@ -393,15 +398,14 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_num=None,c=None,cmap='viridis',xlim
 		old_axes=axes_handler(ax)
 	if type(percent) is not list:
 		percent=[percent]
-	if bin_num is None:
-		bin_num=[int((len(x))**0.4)]*2
-	else:
-		if type(bin_num) is list:
-			bin_num=[b+1 for b in bin_num]
-		else:
-			bin_num=[bin_num+1]*2
+	if type(bin_type) is not list:
+		bin_type=[bin_type]*2
+	if type(bins) is not list:
+		if bins is None:
+			bins=int((len(x))**0.4)
+		bins=[bins]*2
 	cmap=cm.get_cmap(cmap)
-	X,Y,Z=base_hist2D(x,y,c,bin_num,None,None,None,xlog,ylog)
+	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	CS=[]

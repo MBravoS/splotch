@@ -20,12 +20,12 @@ def axes_handler(new_axis):
 	plt.sca(new_axis)
 	return(curr_axis)
 
-def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
+def base_hist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	import numpy as np
 	import scipy.stats as stats
 	
-	x_temp,x_bins_hist,x_bins_plot=binned_axis(x,bin_num=bin_num[0],log=xlog)
-	y_temp,y_bins_hist,y_bins_plot=binned_axis(y,bin_num=bin_num[1],log=ylog)
+	x_temp,x_bins_hist,x_bins_plot=binned_axis(x,bin_type[0],bin_num[0],log=xlog)
+	y_temp,y_bins_hist,y_bins_plot=binned_axis(y,bin_type[1],bin_num[1],log=ylog)
 	if cstat:
 		Z=stats.binned_statistic_2d(x_temp,y_temp,c,statistic=cstat,bins=[x_bins_hist,y_bins_hist])[0]
 	else:
@@ -34,15 +34,45 @@ def base_hist2D(x,y,c,bin_num,norm,dens,cstat,xlog,ylog):
 			Z*=1.0*len(x)/norm
 	return(x_bins_plot,y_bins_plot,Z)
 
-def binned_axis(data,bin_num,log=False):
+def binned_axis(data,btype,bins,log=False):
+	import math
 	import numpy as np
+	
+	def N(d,b):
+		if np.nanmin(d)==np.nanmax(d):
+			h=np.linspace(np.nanmin(d)-0.5,np.nanmax(d)+0.5,num=b)
+		else:
+			h=np.linspace(np.nanmin(d),np.nanmax(d),num=b+1)
+		return(h)
+	def W(d,b):
+		if np.nanmin(d)==np.nanmax(d):
+			h=np.array([np.nanmin(d)-b/2,np.nanmax(d)+b/2])
+		else:
+			L=math.ceil((np.nanmax(d)-np.nanmin(d))/b)
+			h=np.nanmin(d)+np.linspace(0,L*b,num=L)
+		return(h)
+	def E(d,b):
+		return(b)
+	def Q(d,b):
+		if np.nanmin(d)==np.nanmax(d):
+			h=np.linspace(np.nanmin(d)-0.5,np.nanmax(d)+0.5,num=b)
+		else:
+			L=len(d)
+			w_l=math.floor(L/b)
+			w_h=math.ceil(L/b)
+			n_l=b*m.ceil(L/b)-L
+			n_h=b-n_l
+			n=np.concatenate([np.ones(math.ceil(n_l/2))*w_l,np.ones(n_h)*w_h,np.ones(math.floor(n_l/2))*w_l]).astype('int32')
+			h=np.array([np.nanmin(d)]+[(d[i-1]+d[i])/2 for i in np.cumsum(n)[:-1]]+[np.nanmax(d)])
+		return(h)
 	
 	if log:
 		data=np.log10(data)
-	if np.nanmin(data)==np.nanmax(data):
-		hist_bins=np.linspace(np.nanmin(data)-0.5,np.nanmax(data)+0.5,num=bin_num)
-	else:
-		hist_bins=np.linspace(np.nanmin(data),np.nanmax(data),num=bin_num)
+	if btype is None:
+		bdict={int:'number',float:'width',np.ndarray:'edges'}
+		btype=bdict[type(bins)]
+	bfunc={'number':N,'width':W,'edges':E,'equal':Q}
+	hist_bins=bfunc[btype](data,bins)
 	plot_bins=hist_bins*1.0
 	if log:
 		plot_bins=10**plot_bins

@@ -115,7 +115,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 		old_axes=axes_handler(old_axes)
 
 #Histogram
-def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
+def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
 			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
 	
 	"""1D histogram function.
@@ -127,8 +127,12 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	----------
 	data : array-like or list
 		If list it is assumed that each elemement is array-like.
-	bin_num : int or list, optional
+	
+	
+	bins : int or list, optional
 		Number of bins.
+	
+	
 	dens :  bool or list, optional
 		If false the histogram returns raw counts.
 	norm : float or list, optional
@@ -185,10 +189,13 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	if type(data) is not list:
 		data=[data]
 	L=len(data)
-	if bin_num is None:
-		bin_num=[int((len(d))**0.4) for d in data]
-	if type(bin_num) is not list:
-		bin_num=[bin_num+1]*L
+	if type(bin_type) is not list:
+		bin_type=[bin_type]*L
+	if type(bins) is not list:
+		if bins is not None:
+			bins=[bins]*L
+		else:
+			bins=[int((len(d))**0.4) for d in data]
 	if type(dens) is not list:
 		dens=[dens]*L
 	if type(norm) is not list:
@@ -203,7 +210,7 @@ def hist(data,bin_num=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=
 	bin_edges=[]
 	n_return=[]
 	for i in range(L):
-		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_num[i],log=xlog)
+		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog)
 		if vstat[i]:
 			y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
