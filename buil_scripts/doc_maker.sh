@@ -1,0 +1,3 @@
+cd ../docs
+make html
+
