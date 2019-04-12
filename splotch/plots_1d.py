@@ -115,8 +115,9 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 		old_axes=axes_handler(old_axes)
 
 #Histogram
-def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
+def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
+			xinvert=False,yinvert=False,xlog=False,ylog=True,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
+			ax=None,plot_par={}):
 	
 	"""1D histogram function.
 	
@@ -144,6 +145,14 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,xlim
 		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
 		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer
 		 or float.
+	
+	
+	count_style : dict, optional
+		Defines a change of line style if number of counts in bins get under and/or over a given range. The key
+		'low'/'high' is for setting the upper/lower limit of for the change of style. The key 'low_style'/'high_style'
+		is used for setting the line style. If the style key is not given defaults to 'dotted' for 'low_style' and
+		'dashed' for 'high_style', setting the intermidiate values to a 'solid' line style.
+	
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -213,15 +222,77 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,xlim
 	for i in range(L):
 		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog)
 		if vstat[i]:
-			y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
+			temp_y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
-			y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
+			temp_y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
 		if dens[i]:
 			if norm[i]:
-				y*=1.0*len(data[i])/norm[i]
-		plt.plot((bins_plot[0:-1]+bins_plot[1:])/2,y,label=plabel[i],**plot_par[i])
+				temp_y*=1.0*len(data[i])/norm[i]
+		if ylog:
+			temp_y=np.where(temp_y==0,np.nan,temp_y)
+		y=np.array([temp_y[0]]+[j for j in temp_y])
+		if count_style:
+			if dens[i]:
+				raw_counts=np.histogram(temp_data,bins=bins_hist,density=False)[0]
+				raw_counts=np.array([raw_counts[0]]+[j for j in raw_counts])
+			else:
+				raw_counts=y
+			if 'low' not in count_style.keys():
+				count_style['low']=-np.inf
+			if 'high' not in count_style.keys():
+				count_style['high']=np.inf
+			sel_low=raw_counts<count_style['low']
+			sel_high=raw_counts>count_style['high']
+			sel_mid=np.ones(len(raw_counts)).astype('bool')&~sel_low&~sel_high
+			print(sel_low[1:])
+			print(sel_high[1:])
+			for j in range(len(raw_counts)-1):
+				if not sel_low[j] and sel_low[j+1]:
+					sel_low[j]=True
+				if not sel_high[j] and sel_high[j+1]:
+					sel_high[j]=True
+			for j in range(1,len(raw_counts))[::-1]:
+				if not sel_low[j] and sel_low[j-1]:
+					sel_low[j]=True
+				if not sel_high[j] and sel_high[j-1]:
+					sel_high[j]=True
+				#if sel_mid[j] and not sel_mid[j-1]:
+				#	sel_mid[j]=False
+			if 'low_style' not in count_style.keys() and 'high_style' not in count_style.keys():
+				plot_par[i]['linestyle']='solid'
+			if 'low_style' not in count_style.keys():
+				count_style['low_style']='dotted'
+			if 'high_style' not in count_style.keys():
+				count_style['high_style']='dashed'
+			low_plot_par={k:plot_par[i][k] for k in plot_par[i].keys()}
+			low_plot_par['linestyle']=count_style['low_style']
+			high_plot_par={k:plot_par[i][k] for k in plot_par[i].keys()}
+			high_plot_par['linestyle']=count_style['high_style']
+			col=None
+			if np.sum(sel_low)>0:
+				low_plabel='n<'+str(count_style['low'])
+				if plabel[i] is not None:
+					low_plabel=plabel[i]+', '+low_plabel
+				p=plt.step(bins_plot,np.where(sel_low,y,np.nan),label=low_plabel,**low_plot_par)
+				col=p[0].get_color()
+			if np.sum(sel_high)>0:
+				high_plabel='n>'+str(count_style['high'])
+				if plabel[i] is not None:
+					high_plabel=plabel[i]+', '+high_plabel
+				if col is None:
+					p=plt.step(bins_plot,np.where(sel_high,y,np.nan),label=high_plabel,**high_plot_par)
+					col=p[0].get_color()
+				else:
+					high_plot_par['color']=col
+					plt.step(bins_plot,np.where(sel_high,y,np.nan),label=high_plabel,**high_plot_par)
+			if np.sum(sel_mid)>0:
+				if col is not None:
+					plot_par[i]['color']=col
+				plt.step(bins_plot,np.where(sel_mid,y,np.nan),label=plabel[i],**plot_par[i])
+		else:
+			plt.step(bins_plot,y,label=plabel[i],**plot_par[i])
 		bin_edges.append(bins_plot)
-		n_return.append(y)
+		n_return.append(temp_y)
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
@@ -306,8 +377,8 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 #Plots
-def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,
-			plabel=None,lab_loc=0,ax=None,plot_par={}):
+def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
+			ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer

@@ -1,8 +1,8 @@
 #### Definition of all wrappers for 2D plotting
 
 #Errorbars
-def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,
-			plabel=None,lab_loc=0,ax=None,plot_par={}):
+def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
+			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -76,9 +76,9 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 		old_axes=axes_handler(old_axes)
 
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,
-			yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,ylabel=None,
-			clabel=None,lab_loc=0,ax=None,plot_par={}):
+def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],
+			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,
+			ylabel=None,clabel=None,lab_loc=0,ax=None,plot_par={}):
 	
 	"""2D histogram function.
 	
@@ -187,7 +187,8 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinv
 	Parameters
 	----------
 	im : array-like
-		Value for each pixel in an x-y 2D array, where the first dimension is the x-position and the second is the y-position.
+		Value for each pixel in an x-y 2D array, where the first dimension is the x-position and the second is
+		the y-position.
 	x : array-like, optional
 		Position of data points in the x axis.
 	y : array-like, optional
@@ -323,8 +324,8 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 		old_axes=axes_handler(old_axes)
 
 # Contours encircling the densest part down to a certain percetange 
-def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='viridis',xlim=None,ylim=None,clim=[0.33,0.67],
-				xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
+def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='viridis',xlim=None,ylim=None,
+				clim=[0.33,0.67],xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
 				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None):
 	
 	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
