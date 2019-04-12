@@ -145,14 +145,11 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
 		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer
 		 or float.
-	
-	
 	count_style : dict, optional
 		Defines a change of line style if number of counts in bins get under and/or over a given range. The key
 		'low'/'high' is for setting the upper/lower limit of for the change of style. The key 'low_style'/'high_style'
 		is used for setting the line style. If the style key is not given defaults to 'dotted' for 'low_style' and
 		'dashed' for 'high_style', setting the intermidiate values to a 'solid' line style.
-	
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
