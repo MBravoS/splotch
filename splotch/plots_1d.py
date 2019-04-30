@@ -425,14 +425,14 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(x) is not list:
+	if type(x) is not list or len(np.shape(x)) == 1:
 		x=[x]
 	L=len(x)
 	if y is None:
 		y=x
 		x=[np.arange(len(x[i])) for i in range(L)]
 	else:
-		if type(y) is not list:
+		if type(y) is not list or len(np.shape(y)) == 1:
 			y=[y]
 	if type(plabel) is not list:
 		plabel=[plabel]*L
