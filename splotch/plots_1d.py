@@ -253,8 +253,6 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 					sel_low[j]=True
 				if not sel_high[j] and sel_high[j-1]:
 					sel_high[j]=True
-				#if sel_mid[j] and not sel_mid[j-1]:
-				#	sel_mid[j]=False
 			if 'low_style' not in count_style.keys() and 'high_style' not in count_style.keys():
 				plot_par[i]['linestyle']='solid'
 			if 'low_style' not in count_style.keys():
@@ -425,14 +423,14 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(x) is not list or len(np.shape(x)) == 1:
+	if type(x) is not list or len(np.shape(x))==1:
 		x=[x]
 	L=len(x)
 	if y is None:
 		y=x
 		x=[np.arange(len(x[i])) for i in range(L)]
 	else:
-		if type(y) is not list or len(np.shape(y)) == 1:
+		if type(y) is not list or len(np.shape(y))==1:
 			y=[y]
 	if type(plabel) is not list:
 		plabel=[plabel]*L

@@ -303,8 +303,9 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(x) is not list:
+	if type(x) is not list or len(np.shape(x))==1:
 		x=[x]
+	if type(y) is not list or len(np.shape(y))==1:
 		y=[y]
 	L=len(x)
 	if type(plabel) is not list:
@@ -414,14 +415,22 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	CS=[]
 	if c is None:
 		if len(percent)<4:
-			c=['k']*len(percent)
+			col_ax=plt.gca()
+			l=col_ax.plot([1,2,3])
+			c=[l[0].get_color()]*len(percent)
+			l.pop(0).remove()
+			del l
+			del col_ax
 		else:
 			if len(s)<4:
 				s=['solid']*len(percent)
 			c=cmap(np.linspace(clim[0],clim[1],len(percent)))
 	else:
-		c=cmap(c)
-		s=['solid']*len(p)
+		if type(c) is str:
+			c=[c]*len(percent)
+		else:
+			c=cmap(c)
+			s=['solid']*len(p)
 	if type(clabel) is not list:
 		if clabel is None:
 			clabel=[str(np.round(p,1))+'%' for p in percent]
@@ -433,7 +442,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
-		if c[0]=='k':
+		if len(c)==1 or c[0]==c[1]:
 			plt.legend(loc=lab_loc)
 		else:
 			cbar=plt.colorbar()
