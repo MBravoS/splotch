@@ -2,7 +2,7 @@
 
 #Errorbars
 def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
-			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
+			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -45,6 +45,8 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -71,14 +73,14 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 		plt.errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
 # Histogram and 2D binned statistics
 def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],
 			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,
-			ylabel=None,clabel=None,lab_loc=0,ax=None,plot_par={}):
+			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	
 	"""2D histogram function.
 	
@@ -135,6 +137,8 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -173,14 +177,14 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 	return(X,Y,Z.T)
 
 # Image
 def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=False,
-		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,plot_par={}):
+		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	
 	"""2D pixel-based image plotting function.
 	
@@ -219,6 +223,8 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinv
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -253,7 +259,7 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinv
 
 # Scatter
 def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
-			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
+			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	
 	"""2D pixel-based image plotting function.
 	
@@ -289,6 +295,8 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -320,14 +328,14 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 			cbar.ax.invert_yaxis()
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
 # Contours encircling the densest part down to a certain percetange 
 def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='viridis',xlim=None,ylim=None,
 				clim=[0.33,0.67],xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
-				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None):
+				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None):
 	
 	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
 	
@@ -380,6 +388,8 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -449,7 +459,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 			cbar.set_label(clabel)
 			if cbar_invert:
 				cbar.ax.invert_yaxis()
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 	return(X,Y,Z.T)

@@ -117,7 +117,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 #Histogram
 def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
 			xinvert=False,yinvert=False,xlog=False,ylog=True,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
-			ax=None,plot_par={}):
+			ax=None,grid=None,plot_par={}):
 	
 	"""1D histogram function.
 	
@@ -174,6 +174,8 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -290,14 +292,14 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		n_return.append(temp_y)
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 	return(bin_edges,n_return)
 
 #Step histogram
 def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	
 	"""'Clasic' 1D histogram function.
 	
@@ -338,6 +340,8 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -368,12 +372,13 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		plt.hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+
 #Plots
 def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
-			ylabel=None,plabel=None,lab_loc=0,ax=None,plot_par={}):
+			ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -413,6 +418,8 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
 	
@@ -439,7 +446,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		plt.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
 		plt.legend(loc=lab_loc)
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
