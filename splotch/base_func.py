@@ -112,7 +112,6 @@ def percent_finder(data,p):
 	return(min_value)
 
 def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_control):
-	from .defaults import Params
 	import matplotlib.pyplot as plt
 	
 	if xlog:
@@ -136,6 +135,7 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		if not plt.gca().yaxis_inverted():
 			plt.gca().invert_yaxis()
 	if grid_control is None:
+		from .defaults import Params
 		grid_control=Params.grid
 	plt.grid(b=grid_control,which='major',axis='both')
 

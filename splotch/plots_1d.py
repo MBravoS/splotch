@@ -116,7 +116,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 
 #Histogram
 def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
-			xinvert=False,yinvert=False,xlog=False,ylog=True,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
+			xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
 			ax=None,grid=None,plot_par={}):
 	
 	"""1D histogram function.
@@ -215,6 +215,9 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		vstat=[vstat]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
+	if ylog is None:
+		from .defaults import Params
+		ylog=Params.hist1D_yaxis_log
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	bin_edges=[]
 	n_return=[]
@@ -243,8 +246,6 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 			sel_low=raw_counts<count_style['low']
 			sel_high=raw_counts>count_style['high']
 			sel_mid=np.ones(len(raw_counts)).astype('bool')&~sel_low&~sel_high
-			print(sel_low[1:])
-			print(sel_high[1:])
 			for j in range(len(raw_counts)-1):
 				if not sel_low[j] and sel_low[j+1]:
 					sel_low[j]=True

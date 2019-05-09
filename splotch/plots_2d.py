@@ -79,7 +79,7 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 
 # Histogram and 2D binned statistics
 def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],
-			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=True,title=None,xlabel=None,
+			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
 			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	
 	"""2D histogram function.
@@ -166,6 +166,9 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,norm,dens,cstat,xlog,ylog)
+	if clog is None:
+		from .defaults import Params
+		clog=Params.hist2D_caxis_log
 	if clog:
 		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
@@ -183,7 +186,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 	return(X,Y,Z.T)
 
 # Image
-def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=False,
+def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=None,
 		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
 	
 	"""2D pixel-based image plotting function.
@@ -244,6 +247,9 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinv
 		x=np.arange(len(im[:,0])+1)
 	if y is None:
 		y=np.arange(len(im[0,:])+1)
+	if clog is None:
+		from .defaults import Params
+		clog=Params.img_caxis_log
 	if clog:
 		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
@@ -354,8 +360,9 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		float and 'edges' if ndarray.
 	bins : int, float, array-like or list, optional
 		Gives the values for the bins, according to bin_type.
-	c : float or list, optional
-		The colours of the contours, from the given colour map.
+	c : str, float or list, optional
+		The colours of the contours. If float or list of floats, they must be in the range [0,1], as the colours are
+		taken from the given colour map.
 	cmap : str, optional
 		The colour map to be used, viridis by default.
 	xlim : tuple-like, optional
@@ -429,8 +436,6 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 			l=col_ax.plot([1,2,3])
 			c=[l[0].get_color()]*len(percent)
 			l.pop(0).remove()
-			del l
-			del col_ax
 		else:
 			if len(s)<4:
 				s=['solid']*len(percent)
