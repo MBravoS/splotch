@@ -105,10 +105,9 @@ def binned_axis(data,btype,bins,log=False):
 		The bin centers.
 	
 	"""
+	from numpy import linspace,nanmax,nanmin
 	
 	def N(d,b):
-		from numpy import linspace,nanmax,nanmin
-		
 		if nanmin(d)==nanmax(d):
 			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b)
 		else:
@@ -117,8 +116,6 @@ def binned_axis(data,btype,bins,log=False):
 	
 	def W(d,b):
 		from math import ceil
-		from numpy import linspace,nanmax,nanmin
-		
 		if nanmin(d)==nanmax(d):
 			h=array([nanmin(d)-b/2,nanmax(d)+b/2])
 		else:
@@ -130,10 +127,7 @@ def binned_axis(data,btype,bins,log=False):
 		return(b)
 	
 	def Q(d,b):
-		from numpy import nanmax,nanmin
-		
 		if nanmin(d)==nanmax(d):
-			from numpy import linspace
 			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b)
 		else:
 			from math import ceil,floor
@@ -149,6 +143,7 @@ def binned_axis(data,btype,bins,log=False):
 		return(h)
 	
 	if log:
+		from numpy import log10
 		data=log10(data)
 	if btype is None:
 		from numpy import ndarray
@@ -158,7 +153,6 @@ def binned_axis(data,btype,bins,log=False):
 	hist_bins=bfunc[btype](data,bins)
 	plot_bins=hist_bins*1.0
 	if log:
-		from numpy import log10
 		plot_bins=10**plot_bins
 	return(data,hist_bins,plot_bins)
 
@@ -220,19 +214,19 @@ def percent_finder(data,p):
 		Level for the contour.
 	"""
 	from numpy import cumsum,sort
-	from numpy import min as nmin
-	from numpy import sum as nsum
+	from numpy import min as np_min
+	from numpy import sum as np_sum
 	
 	data_sorted=sort(ravel(data))[::-1]
 	data_fraction=cumsum(data_sorted)
-	data_fraction/=nsum(data_sorted)
+	data_fraction/=np_sum(data_sorted)
 	try:
-		min_value=nmin(data_sorted[data_fraction<p])
+		min_value=np_min(data_sorted[data_fraction<p])
 	except ValueError:
-		min_value=nmin(data_sorted)
+		min_value=np_min(data_sorted)
 	return(min_value)
 
-def plot_finalizer(xlog,ylog,p_xlim,p_ylim,p_title,p_xlabel,p_ylabel,p_xinvert,p_yinvert,grid_control):
+def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_control):
 	"""New axis handler
 	
 	This function is a base-level function used by most other plotting functions to set the current Axes instance
@@ -244,19 +238,19 @@ def plot_finalizer(xlog,ylog,p_xlim,p_ylim,p_title,p_xlabel,p_ylabel,p_xinvert,p
 		If True, the x-axis scale is set to 'log'.
 	ylog : None or bool
 		If True, the y-axis scale is set to 'log'.
-	p_xlim : None or array-like
+	xlim : None or array-like
 		If given, defines the low and high limits for the x-axis. The first two elements must be int and/or float.
-	p_ylim : None or array-like
+	ylim : None or array-like
 		If given, defines the low and high limits for the y-axis. The first two elements must be int and/or float.
-	p_title : None or str
+	title : None or str
 		If given, defines the title of the figure.
-	p_xlabel : None or str
+	xlabel : None or str
 		If given, defines the label of the x-axis.
-	p_ylabel : None or str
+	ylabel : None or str
 		If given, defines the label of the y-axis.
-	p_xinvert : None or bool
+	xinvert : None or bool
 		If True, ensures the x-axis is inverted. If False, ensures the x-axis is not inverted.
-	p_yinvert : None or bool
+	yinvert : None or bool
 		If True, ensures the y-axis is inverted. If False, ensures the y-axis is not inverted.
 	grid_control : None or bool
 		If True, ensures the grid is turned on. If False, ensures the grid is turned off.
@@ -265,32 +259,35 @@ def plot_finalizer(xlog,ylog,p_xlim,p_ylim,p_title,p_xlabel,p_ylabel,p_xinvert,p
 	-------
 	None
 	"""
-	from matplotlib.pyplot import gca,grid,title,xlabel,xlim,xscale,ylabel,ylim,yscale
+	from .defaults import Params
+	from matplotlib.pyplot import gca,grid,xscale,yscale
+	from matplotlib.pyplot import title as plt_title
+	from matplotlib.pyplot import xlabel as plt_xlabel
+	from matplotlib.pyplot import xlim as plot_xlim
+	from matplotlib.pyplot import ylabel as plt_ylabel
+	from matplotlib.pyplot import ylim as plt_ylim
 	
 	if xlog:
 		xscale('log')
 	if ylog:
 		yscale('log')
-	if p_xlim is not None:
-		xlim(p_xlim)
-	if p_ylim is not None:
-		ylim(p_ylim)
-	if p_title is not None:
-		title(p_title)
-	if p_xlabel is not None:
-		xlabel(p_xlabel)
-	if p_ylabel is not None:
-		ylabel(p_ylabel)
-	if p_xinvert:
+	if xlim is not None:
+		plt_xlim(xlim)
+	if ylim is not None:
+		plt_ylim(ylim)
+	if title is not None:
+		plt_title(title)
+	if xlabel is not None:
+		plt_xlabel(xlabel)
+	if ylabel is not None:
+		plt_ylabel(ylabel)
+	if xinvert:
 		if not gca().xaxis_inverted():
 			gca().invert_xaxis()
-	if p_yinvert:
+	if yinvert:
 		if not gca().yaxis_inverted():
 			gca().invert_yaxis()
 	if grid_control is None:
-		from .defaults import Params
 		grid_control=Params.grid
-		grid_which=Params.grid_which
-		grid_axis=Params.grid_axis
-	grid(b=grid_control,which=grid_which,axis=grid_axis)
+	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
 

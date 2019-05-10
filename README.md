@@ -3,7 +3,7 @@
 
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
-*Current version*: 0.2.7.0
+*Current version*: 0.2.7.1
 
 *Planned releases*:
 * Addition of level contour plots (0.2.8.0).
