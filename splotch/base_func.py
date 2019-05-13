@@ -263,7 +263,7 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	from matplotlib.pyplot import gca,grid,xscale,yscale
 	from matplotlib.pyplot import title as plt_title
 	from matplotlib.pyplot import xlabel as plt_xlabel
-	from matplotlib.pyplot import xlim as plot_xlim
+	from matplotlib.pyplot import xlim as plt_xlim
 	from matplotlib.pyplot import ylabel as plt_ylabel
 	from matplotlib.pyplot import ylim as plt_ylim
 	
