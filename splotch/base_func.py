@@ -213,7 +213,7 @@ def percent_finder(data,p):
 	min_value : float
 		Level for the contour.
 	"""
-	from numpy import cumsum,sort
+	from numpy import cumsum,ravel,sort
 	from numpy import min as np_min
 	from numpy import sum as np_sum
 	
