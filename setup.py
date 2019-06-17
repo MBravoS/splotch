@@ -10,8 +10,9 @@ setup(name='splotch',
 		author_email='matias.bravo@icrar.org',
 		license='BSD-3-Clause',
 		packages=['splotch'],
+		include_package_data=True,
+		package_data={'splotch':['styles/*.style']},
 		#cmdclass={'install':new_install},
-		#package_data={'splot/styles':['splot/styles/astro.mplstyle',]},
 		install_requires=['numpy>=1.10','matplotlib>=2.2.0','scipy>=1.0.0'],
 		zip_safe=False)
 
