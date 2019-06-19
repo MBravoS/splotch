@@ -76,7 +76,7 @@ def base_hist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 			Z*=1.0*len(x)/norm
 	return(x_bins_plot,y_bins_plot,Z)
 
-def binned_axis(data,btype,bins,log=False):
+def binned_axis(data,btype,bins,log=False,plot_centre=True):
 	"""Bin construction for histograms
 	
 	This function is a base-level function used by all histogram-related functions to construct the bins.
@@ -93,7 +93,9 @@ def binned_axis(data,btype,bins,log=False):
 	bins : int, float, array-like or list
 		Gives the values for the bins, according to bin_type.
 	log: bool, optional
-		If True, the bins are constructed in logarithmic space and the logarithm of the data is returned. 
+		If True, the bins are constructed in logarithmic space and the logarithm of the data is returned.
+	plot_centre: bool, optional
+		If True, returns the midpoint values of the bins, instead of the edges.
 	
 	Returns
 	-------
@@ -152,6 +154,8 @@ def binned_axis(data,btype,bins,log=False):
 	bfunc={'number':N,'width':W,'edges':E,'equal':Q}
 	hist_bins=bfunc[btype](data,bins)
 	plot_bins=hist_bins*1.0
+	if plot_centre:
+		plot_bins=(plot_bins[:-1]+plot_bins[1:])/2
 	if log:
 		plot_bins=10**plot_bins
 	return(data,hist_bins,plot_bins)

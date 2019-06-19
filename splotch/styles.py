@@ -72,7 +72,7 @@ def reset_style():
     import splotch
     
     basedir = os.path.dirname(splotch.__file__)
-    print("{0}/styles/default.style".format(basedir))
+    #print("{0}/styles/default.style".format(basedir))
     splotch.use_style("{0}/styles/default.style".format(basedir))
     
     return(None)

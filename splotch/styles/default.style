@@ -637,23 +637,14 @@ animation.embed_limit : 20.0      ## Limit, in MB, of size of base64 encoded
 
 ##### SPLOTCH CONFIGURATION
 
-#### HISTOGRAMS
-#hist_dens      : True
-#hist_
-
-
-#### 1D PLOTS
+#### GRID
 #grid             : False
 #grid_which       : major
 #grid_axis        : both
 
+#### HISTOGRAMS
 #hist1D_yaxis_log : False
-#hist1D_xaxis_log : False
 #hist2D_caxis_log : False
 
+#### IMAGES
 #img_caxis_log    : False
-
-#plot1d_xinvert   : False
-#plot1d_yinvert   : False
-#plot1d_xlog      : False
-#plot1d_ylog      : False
