@@ -80,7 +80,7 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 # Histogram and 2D binned statistics
 def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],
 			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
-			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
+			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_par={},output=None):
 	
 	"""2D histogram function.
 	
@@ -141,15 +141,17 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
+	output : boolean, optional
+		If True, returns the edges and values of the histogram.
 	
 	Returns
 	-------
-	bin_edges_x : array
-		The bin edges for the x axis.
-	bin_edges_y : array
-		The bin edges for the y axis.
 	n : array
-		The values of the histogram.
+		The values of the histogram. Only provided if output is True.
+	bin_edges_x : array
+		The bin edges for the x axis. Only provided if output is True.
+	bin_edges_y : array
+		The bin edges for the y axis. Only provided if output is True.
 	"""
 	
 	import numpy as np
@@ -166,9 +168,12 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,norm,dens,cstat,xlog,ylog)
-	if clog is None:
+	if None in (clog,output):
 		from .defaults import Params
-		clog=Params.hist2D_caxis_log
+		if clog is None:
+			clog=Params.hist2D_caxis_log
+		if output is None:
+			output=Params.hist2D_output
 	if clog:
 		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
@@ -183,7 +188,8 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,norm=None,c=None,cstat=None,xli
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
-	return(X,Y,Z.T)
+	if output:
+		return(Z.T,X,Y)
 
 # Image
 def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=None,

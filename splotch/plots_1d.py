@@ -115,9 +115,9 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 		old_axes=axes_handler(old_axes)
 
 #Histogram
-def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
+def hist(data,bin_type=None,bins=None,dens=True,norm=None,smooth=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
 			xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
-			ax=None,grid=None,plot_par={}):
+			ax=None,grid=None,plot_par={},output=None):
 	
 	"""1D histogram function.
 	
@@ -139,6 +139,9 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		If false the histogram returns raw counts.
 	norm : float or list, optional
 		Normalization of the counts.
+	smooth : boolean, optional.
+		If True the histogram is plotted with a line that connects between the value of each bin, positioned at the
+		centre of the bins. Defaults to False, plotting with a stepped line, each step spanning the bin width.
 	v : array-like or list, optional
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	vstat : str, function  or list, optional
@@ -178,13 +181,15 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
+	output : boolean, optional
+		If True, returns the edges and values of the histogram.
 	
 	Returns
 	-------
-	bins_edges : list
-		List containing the arrays with the bin edges for each of the histograms drawn.
 	n : list
-		List containing the arrays with the values for each histogram drawn.
+		List containing the arrays with the values for each histogram drawn. Only provided if output is True.
+	bins_edges : list
+		List containing the arrays with the bin edges for each of the histograms drawn. Only provided if output is True.
 	"""
 	
 	import numpy as np
@@ -215,14 +220,22 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 		vstat=[vstat]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	if ylog is None:
+	if None in [ylog,smooth,output]:
 		from .defaults import Params
-		ylog=Params.hist1D_yaxis_log
+		if ylog is None:
+			ylog=Params.hist1D_yaxis_log
+		if smooth is None:
+			smooth=Params.hist1D_smooth
+		if output is None:
+			output=Params.hist1D_output
+	if type(smooth) is not list:
+		smooth=[smooth]*L
+	plot_smooth={True:plt.plot,False:plt.step}
 	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
 	bin_edges=[]
 	n_return=[]
 	for i in range(L):
-		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog)
+		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=smooth[i])
 		if vstat[i]:
 			temp_y=stats.binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
@@ -232,7 +245,9 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 				temp_y*=1.0*len(data[i])/norm[i]
 		if ylog:
 			temp_y=np.where(temp_y==0,np.nan,temp_y)
-		y=np.array([temp_y[0]]+[j for j in temp_y])
+		y=temp_y
+		if not smooth[i]:
+			y=np.array([y[0]]+[j for j in y])
 		if count_style:
 			if dens[i]:
 				raw_counts=np.histogram(temp_data,bins=bins_hist,density=False)[0]
@@ -271,24 +286,24 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 				low_plabel='n<'+str(count_style['low'])
 				if plabel[i] is not None:
 					low_plabel=plabel[i]+', '+low_plabel
-				p=plt.step(bins_plot,np.where(sel_low,y,np.nan),label=low_plabel,**low_plot_par)
+				p=plot_smooth[smooth[i]](bins_plot,np.where(sel_low,y,np.nan),label=low_plabel,**low_plot_par)
 				col=p[0].get_color()
 			if np.sum(sel_high)>0:
 				high_plabel='n>'+str(count_style['high'])
 				if plabel[i] is not None:
 					high_plabel=plabel[i]+', '+high_plabel
 				if col is None:
-					p=plt.step(bins_plot,np.where(sel_high,y,np.nan),label=high_plabel,**high_plot_par)
+					p=plot_smooth[smooth[i]](bins_plot,np.where(sel_high,y,np.nan),label=high_plabel,**high_plot_par)
 					col=p[0].get_color()
 				else:
 					high_plot_par['color']=col
-					plt.step(bins_plot,np.where(sel_high,y,np.nan),label=high_plabel,**high_plot_par)
+					plot_smooth[smooth[i]](bins_plot,np.where(sel_high,y,np.nan),label=high_plabel,**high_plot_par)
 			if np.sum(sel_mid)>0:
 				if col is not None:
 					plot_par[i]['color']=col
-				plt.step(bins_plot,np.where(sel_mid,y,np.nan),label=plabel[i],**plot_par[i])
+				plot_smooth[smooth[i]](bins_plot,np.where(sel_mid,y,np.nan),label=plabel[i],**plot_par[i])
 		else:
-			plt.step(bins_plot,y,label=plabel[i],**plot_par[i])
+			plot_smooth[smooth[i]](bins_plot,y,label=plabel[i],**plot_par[i])
 		bin_edges.append(bins_plot)
 		n_return.append(temp_y)
 	if plabel[0] is not None:
@@ -296,7 +311,8 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,v=None,vstat=None,coun
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
-	return(bin_edges,n_return)
+	if output:
+		return(n_return,bin_edges)
 
 #Step histogram
 def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
