@@ -643,8 +643,11 @@ animation.embed_limit : 20.0      ## Limit, in MB, of size of base64 encoded
 #grid_axis        : both
 
 #### HISTOGRAMS
+#hist1D_output    : False
+#hist1D_smooth    : False
 #hist1D_yaxis_log : False
 #hist2D_caxis_log : False
+#hist2D_output    : False
 
 #### IMAGES
 #img_caxis_log    : False
