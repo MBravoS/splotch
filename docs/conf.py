@@ -28,6 +28,7 @@ release = '0.3.0.3'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 
