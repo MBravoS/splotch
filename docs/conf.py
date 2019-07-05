@@ -34,6 +34,8 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc']
+.. automodule:: plots_1d
+   :members:
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
