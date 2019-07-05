@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../splotch'))
+sys.path.insert(0, os.path.abspath('../'))
 
 
 # -- Project information -----------------------------------------------------
@@ -22,7 +22,7 @@ copyright = '2019, Matías Bravo & Robin Cook'
 author = 'Matías Bravo & Robin Cook'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.0.3'
+release = '0.3.0.4'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True

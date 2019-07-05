@@ -1,2 +1,4 @@
-.. automodule:: base_func
-   :members:
+Base functions in for splotch.
+
+automodule:: base_func
+:members:
