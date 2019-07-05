@@ -10,14 +10,13 @@ Welcome to splotch's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+    docs/base_func
+    docs/plots_1d
+    docs/plots_2d
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-    docs/base_func
-    docs/plots_1d
-    docs/plots_2d
 * :ref:`search`
