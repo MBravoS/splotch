@@ -9,21 +9,27 @@ Welcome to splotch's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-
+   splotch base functions
+   ===================
+   .. 
+   automodule:: base_func
+      
+   :members:
+   splotch 1D plotting functions
+   =====================
+   .. 
+   automodule:: plots_1d
+      
+   :members:
+   splotch 2D plotting functions
+   =================
+   .. 
+   automodule:: plots_2d
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-   automodule:: base_func
-   :members:
-   
-   automodule:: plots_1d
-   :members:
-   
-   automodule:: plots_2d
-   :members:
 * :ref:`modindex`
 * :ref:`search`
 
