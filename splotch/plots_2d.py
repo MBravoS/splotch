@@ -468,13 +468,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
-		if len(c)==1 or c[0]==c[1]:
-			plt.legend(loc=lab_loc)
-		else:
-			cbar=plt.colorbar()
-			cbar.set_label(clabel)
-			if cbar_invert:
-				cbar.ax.invert_yaxis()
+		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
