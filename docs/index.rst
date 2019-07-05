@@ -17,6 +17,7 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-.. automodule:: plots_1d
-   :members:
+    base_func
+    plots_1d
+    plots_2d
 * :ref:`search`
