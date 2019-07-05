@@ -10,4 +10,5 @@ The package is available in for installation using `>pip install splotch`, thoug
 * Addition of error/dispersion band plots (0.3.2.0).
 * Addition of level contour plots (0.3.3.0).
 * Addition of the option of filled contours for both sigma and level contour plots (0.3.4.0).
-* Addition of "pizza slices" plots (0.3.5.0).
+* Addition of broken axis function (0.3.5.0)
+* Addition of "pizza slices" plots (0.3.6.0).
