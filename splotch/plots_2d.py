@@ -347,7 +347,7 @@ def scat(x,y,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,x
 # Contours encircling the densest part down to a certain percetange 
 def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='viridis',xlim=None,ylim=None,
 				clim=[0.33,0.67],xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
-				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None):
+				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None):
 	
 	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
 	
@@ -405,6 +405,8 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		If not given defaults to the value defined in splotch.Params.
 	plot_par : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function.
+	output : boolean, optional
+		If True, returns the edges and values of the histogram.
 	
 	Returns
 	-------
@@ -431,6 +433,9 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		if bins is None:
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
+	if output is None:
+		from .defaults import Params
+		output=Params.hist2D_output
 	cmap=cm.get_cmap(cmap)
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
@@ -473,4 +478,5 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
-	return(X,Y,Z.T)
+	if output:
+		return(Z.T,X,Y)
