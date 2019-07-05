@@ -17,7 +17,7 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-    base_func
-    plots_1d
-    plots_2d
+    docs/base_func
+    docs/plots_1d
+    docs/plots_2d
 * :ref:`search`
