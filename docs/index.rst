@@ -10,9 +10,9 @@ Welcome to splotch's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-    docs/base_func
-    docs/plots_1d
-    docs/plots_2d
+    base_func
+    plots_1d
+    plots_2d
 
 Indices and tables
 ==================
