@@ -1,7 +1,7 @@
 #### Definition of all wrappers for 1D plotting
 
 # Generalized lines
-def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}):
+def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Generalised axis lines.
 	
@@ -24,8 +24,13 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 		Defines the position of the legend. Defaults as lab_loc=0.
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
-	line_par : dict, optional
+	plot_kw : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+		A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html
+
 	Returns
 	-------
 	None
@@ -88,15 +93,21 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 		plabel=[plabel]*L
 	elif (len(plabel) != L):
 		raise ValueError("Length of plabel list ({0}) must match the number of lines given ({1}).".format(len(plabel),L))
-	# Organise the line parameters dictionary    
-	line_par=dict_splicer(line_par,L,[1]*L) 
-	    
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+
+	# Create 'L' number of plot kwarg dictionaries to pass into each plot call
+	plot_par = dict_splicer(plot_par,L,[1]*L)
+
 	if (x is not None):
 		for ii, xx in enumerate(x):
-			ax.axvline(x=xx,**line_par[ii],label=plabel[ii])
+			ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
 	if (y is not None):
 		for ii, yy in enumerate(y):
-			ax.axhline(y=yy,**line_par[ii],label=plabel[ii])
+			ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
 	if (m is not None):
 		for ii, pars in enumerate(zip(m,c)):
 			mm = pars[0]; cc = pars[1]
@@ -104,7 +115,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,line_par={}
 			xLims = ax.get_xlim()
 			yLims = ax.get_ylim()
 			
-			ax.plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],label=plabel[ii],**line_par[ii])
+			ax.plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],label=plabel[ii],**plot_par[ii])
 			
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
