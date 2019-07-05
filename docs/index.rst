@@ -17,4 +17,6 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
+.. automodule:: plots_1d
+   :members:
 * :ref:`search`
