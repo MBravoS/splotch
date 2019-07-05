@@ -10,23 +10,20 @@ Welcome to splotch's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-#    base_func
-#    plots_1d
-#    plots_2d
 
-automodule:: base_func
-:members:
-
-automodule:: plots_1d
-:members:
-
-automodule:: plots_2d
-:members:
 
 Indices and tables
 ==================
 
-#* :ref:`genindex`
-#* :ref:`modindex`
-#* :ref:`search`
+* :ref:`genindex`
+   automodule:: base_func
+   :members:
+   
+   automodule:: plots_1d
+   :members:
+   
+   automodule:: plots_2d
+   :members:
+* :ref:`modindex`
+* :ref:`search`
 
