@@ -1,2 +1,4 @@
-.. automodule:: plots_1d
-   :members:
+1-D plotting functions in for splotch.
+
+automodule:: plots_1d
+:members:
