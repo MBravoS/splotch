@@ -126,7 +126,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		old_axes=axes_handler(old_axes)
 
 #Histogram
-def hist(data,bin_type=None,bins=None,dens=True,norm=None,smooth=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
+def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
 			xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
 			ax=None,grid=None,plot_par={},output=None):
 	
@@ -148,8 +148,8 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,smooth=None,v=None,vst
 		Gives the values for the bins, according to bin_type.
 	dens :  bool or list, optional
 		If false the histogram returns raw counts.
-	norm : float or list, optional
-		Normalization of the counts.
+	scale : float or list, optional
+		Scaling the counts.
 	smooth : boolean, optional.
 		If True the histogram is plotted with a line that connects between the value of each bin, positioned at the
 		centre of the bins. Defaults to False, plotting with a stepped line, each step spanning the bin width.
@@ -223,8 +223,8 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,smooth=None,v=None,vst
 			bins=[int((len(d))**0.4) for d in data]
 	if type(dens) is not list:
 		dens=[dens]*L
-	if type(norm) is not list:
-		norm=[norm]*L
+	if type(scale) is not list:
+		scale=[scale]*L
 	if type(v) is not list:
 		v=[v]*L
 	if type(vstat) is not list:
@@ -252,8 +252,8 @@ def hist(data,bin_type=None,bins=None,dens=True,norm=None,smooth=None,v=None,vst
 		else:
 			temp_y=np.histogram(temp_data,bins=bins_hist,density=dens[i])[0]
 		if dens[i]:
-			if norm[i]:
-				temp_y*=1.0*len(data[i])/norm[i]
+			if scale[i]:
+				temp_y*=1.0*len(data[i])/scale[i]
 		if ylog:
 			temp_y=np.where(temp_y==0,np.nan,temp_y)
 		y=temp_y
