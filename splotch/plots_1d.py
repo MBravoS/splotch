@@ -29,7 +29,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	**kwargs: Line2D properties, optional
 		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
 		A list of available `Line2D` properties can be found here: 
-		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
 
 	Returns
 	-------
@@ -99,7 +99,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
 
-	# Create 'L' number of plot kwarg dictionaries to pass into each plot call
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 
 	if (x is not None):
@@ -406,7 +406,7 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 
 #Plots
 def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
-			ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
+			ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	import numpy as np
 	import matplotlib.pyplot as plt
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -448,8 +448,12 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		Use the given axes to make the plot, defaults to the current axes.
 	grid : boolean, optional
 		If not given defaults to the value defined in splotch.Params.
-	plot_par : dict, optional
-		Passes the given dictionary as a kwarg to the plotting function.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+		A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
 	
 	Returns
 	-------
@@ -469,7 +473,15 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 			y=[y]
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par = dict_splicer(plot_par,L,[1]*L)
+
 	for i in range(L):
 		plt.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if plabel[0] is not None:
