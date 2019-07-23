@@ -525,7 +525,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 
 	for i in range(len(percent)):
 		level=[percent_finder(Z,percent[i]/100)]
-		CS.append(plt.contour(X,Y,Z.T,levels=level,colors=[c[i],],linewidths=1.5,linestyles=s[i]))
+		CS.append(plt.contour(X,Y,Z.T,levels=level,colors=[c[i],],linestyles=s[i],**plot_par))
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
