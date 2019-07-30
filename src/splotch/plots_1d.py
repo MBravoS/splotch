@@ -120,7 +120,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
 			
-	if plabel[0] is not None:
+	if any(plabel):
 		plt.legend(loc=lab_loc)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
@@ -317,7 +317,7 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 			plot_smooth[smooth[i]](bins_plot,y,label=plabel[i],**plot_par[i])
 		bin_edges.append(bins_plot)
 		n_return.append(temp_y)
-	if plabel[0] is not None:
+	if any(plabel):
 		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -398,7 +398,7 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 	for i in range(L):
 		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
 		plt.hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
-	if plabel[0] is not None:
+	if any(plabel):
 		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -484,7 +484,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 
 	for i in range(L):
 		plt.plot(x[i],y[i],label=plabel[i],**plot_par[i])
-	if plabel[0] is not None:
+	if any(plabel):
 		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
