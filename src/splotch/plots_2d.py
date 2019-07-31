@@ -84,7 +84,7 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 
 	for i in range(L):
 		plt.errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
-	if plabel[0] is not None:
+	if any(plabel):
 		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -391,7 +391,7 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
-	if plabel[0] is not None:
+	if any(plabel):
 		plt.legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
