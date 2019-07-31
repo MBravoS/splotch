@@ -15,6 +15,8 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 			* 's'|'suptitle' : Sup. title
 			* 'l'|'legend'	 : Legend text
 			* 'c'|'colorbar' : Color bar
+			* 'T'|'text' 	 : Text objects
+			* 'a'|'all'		 : All instances of all the above
 	ax : pyplot.Axes or list, optional
 		Use the given axes to adjust text, defaults to the current axis.
 		If a list of Axis instances given, the text properties is applied to each.
@@ -31,15 +33,22 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	None
 	"""
 
-	import matplotlib.text.Text as Text
+	from matplotlib.text import Text
+	from matplotlib.pyplot import gca
+	from numpy import shape, min, max, argmin, argmax
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
-	if (ax == None):
-		ax = plt.gca()
+	try:
+		_ = (it for it in ax)
+	except TypeError:
+		if (ax == None):
+			ax = gca()
+
+		ax = [ax]
 
 	# Validate `which` value(s)
-	whichRef = ['x','y','t','s','l','c',
-				'xlabel','ylabel','title','suptitle','legend','colorbar']
+	whichRef = ['x','y','t','s','l','c','T','a',
+				'xlabel','ylabel','title','suptitle','legend','colorbar','text','all']
 
 	for w in which:
 		try:
@@ -49,7 +58,8 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 				raise TypeError("adjust_text() received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[wInd],whichRef[wComp]))
 
 		except (ValueError):
-			raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w,', '.join(whichRef)))
+			if (type(which) != Text):
+				raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w,', '.join(whichRef)))
 		
 
 	L = len(which)
@@ -62,33 +72,41 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	textpar = dict_splicer(textpar,L,[1]*L)
 
-	if type(ax) is not list or len(np.shape(ax))==1:
-		ax=[ax]
-
 	for a in ax:
 		for ii, lab in enumerate(which):
 			if (lab in ['x','xlabel']):
-				text = a.xaxis.label
+				texts = [a.xaxis.label]
 			elif (lab in ['y','ylabel']):
-				text = a.yaxis.label
+				texts = [a.yaxis.label]
 			elif (lab in ['t','title']):
-				text = a.title
+				texts = [a.title]
 			elif (lab in ['s','suptitle']): # Not implemented
-				text = a.title
+				texts = [a.title]
 			elif (lab in ['l','legend']):
-				text = a.legend().get_texts() # Get list of text objects in legend
+				texts = a.legend().get_texts() # Get list of text objects in legend
 			elif (lab in ['c','colorbar']):
 				# Get the axis with the largest ratio between width or height
-				caxInd = np.argmax([np.max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in axes.figure.get_axes()])
-				if (axes.figure.get_axes()[caxInd].get_position().height > axes.figure.get_axes()[caxInd].get_position().width)
-					text = ax.figure.get_axes()[caxInd].yaxis.label
+				caxInd = argmax([max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
+				if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
+					texts = [a.figure.get_axes()[caxInd].yaxis.label]
 				else:
-					text = ax.figure.get_axes()[caxInd].xaxis.label
+					texts = [a.figure.get_axes()[caxInd].xaxis.label]
+			elif (lab in ['T','text']):
+				texts = [child for child in a.get_children()[:-4] if type(child) == Text] # -4 to avoid grabbing Title, Subtitle. etc. Text instances
+			elif (type(lab) == Text):
+				texts = [lab]
+			elif (lab in ['a','all']):
+				texts = [a.xaxis.label,a.yaxis.label,a.title,a.legend().get_texts()]
 
-		if (type(text) == Text):
-			text.set(**textpar[ii])
-		else:
-			for t in text:
+				caxInd = argmax([max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
+				if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
+					texts.append(a.figure.get_axes()[caxInd].yaxis.label)
+				else:
+					texts.append(a.figure.get_axes()[caxInd].xaxis.label)
+
+				texts = texts + [child for child in a.get_children()[:-4] if type(child) == Text]
+
+			for t in texts:
 				t.set(**textpar[ii])
 	
 	return(None)
