@@ -128,7 +128,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 #Histogram
 def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
 			xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
-			ax=None,grid=None,plot_par={},output=None):
+			ax=None,grid=None,plot_kw={},output=None):
 	
 	"""1D histogram function.
 	
@@ -242,7 +242,7 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 	if type(smooth) is not list:
 		smooth=[smooth]*L
 	plot_smooth={True:plt.plot,False:plt.step}
-	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
+	plot_par=dict_splicer(plot_kw,L,[len(x) for x in data])
 	bin_edges=[]
 	n_return=[]
 	for i in range(L):
@@ -327,7 +327,7 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 
 #Step histogram
 def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_par={}):
+			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={}):
 	
 	"""'Clasic' 1D histogram function.
 	
@@ -394,7 +394,7 @@ def histstep(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinve
 		bin_num=[bin_num+1]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	plot_par=dict_splicer(plot_par,L,[len(x) for x in data])
+	plot_par=dict_splicer(plot_kw,L,[len(x) for x in data])
 	for i in range(L):
 		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
 		plt.hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
