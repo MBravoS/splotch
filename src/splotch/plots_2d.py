@@ -475,7 +475,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	import numpy as np
 	import matplotlib.cm as cm
 	import matplotlib.pyplot as plt
-	from .base_func import axes_handler,base_hist2D,percent_finder,plot_finalizer
+	from .base_func import axes_handler,base_hist2D,percent_finder,plot_finalizer,dict_splicer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -510,22 +510,25 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 			c=[c]*len(percent)
 		else:
 			c=cmap(c)
-			s=['solid']*len(p)
+			s=['solid']*len(percent)
 	if type(clabel) is not list:
 		if clabel is None:
 			clabel=[str(np.round(p,1))+'%' for p in percent]
 		else:
-			clabel=[clabel]*len(x)
+			clabel= [clabel] + [None]*(len(percent)-1)
 
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
 
+	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
+	plot_par=dict_splicer(plot_par,len(percent),[1]*len(percent))
+	print(plot_par)
 
 	for i in range(len(percent)):
 		level=[percent_finder(Z,percent[i]/100)]
-		CS.append(plt.contour(X,Y,Z.T,levels=level,colors=[c[i],],linestyles=s[i],**plot_par))
+		CS.append(plt.contour(X,Y,Z.T,levels=level,colors=[c[i],],linestyles=s[i],**plot_par[i]))
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
