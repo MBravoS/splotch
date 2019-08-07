@@ -110,3 +110,67 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 				t.set(**textpar[ii])
 	
 	return(None)
+
+
+def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,figsize=None,axes_kw={},**kwargs):
+	
+	from .base_func import dict_splicer
+	
+	from matplotlib import rcParams
+	from matplotlib.gridspec import GridSpec
+	from matplotlib.pyplot import figure, subplot
+	
+	from numpy import ceil
+	
+	gridRef = [[0,0], [1,1], [1,2], [1,3], [2,2], [2,3], [2,3], [2,4], [2,4], [3,3], [2,5], [3,4], [3,4], 
+			   [4,4], [3,5], [3,5], [4,4], [3,6], [3,6], [4,5], [4,5], [3,7], [5,5], [5,5], [4,6], [5,5]]
+
+	if (naxes == None): # No number of axes specified
+		if (nrows==None): nrows=1
+		if (ncols==None): ncols=1
+		
+		naxes = nrows*ncols
+	else:
+		if (ncols == None and nrows == None):
+			if (naxes <= 25):
+				nrows, ncols = gridRef[naxes] # Get best combination of rows x cols for number of axes
+			else:
+				raise ValueError(f"The naxes parameter is currently not implemented for naxes > 25.")
+		elif (ncols != None and nrows != None):
+			if (ncols*nrows != naxes):
+				raise ValueError(f"Invalid number of axes ({naxes}) given for number of rows ({nrows}) and columns ({ncols}).") 
+		else:
+			if (nrows != None):
+				ncols = int(ceil(naxes/nrows))
+			else:
+				nrows = int(ceil(naxes/ncols))
+				
+	
+	# How many axes away from filling the gridspec evenly and completely
+	delta = (nrows*ncols) - naxes
+	
+	if (figsize==None): # Auto scale default figure size to num cols/rows.
+		figsize = (rcParams["figure.figsize"][0]*ncols, rcParams["figure.figsize"][1]*nrows)
+	
+	fig = figure(figsize=figsize,**kwargs)
+	gs = GridSpec(ncols=ncols*2, nrows=nrows*2, hspace=hspace, wspace=wspace)
+	
+	axes_kw = dict_splicer(axes_kw,naxes,[1]*naxes)
+	
+	axes = []
+	for ii in range(naxes):
+		if (False):
+			row = 2*(ncols-(ii%ncols)-1) if ha=='right' else 2*(ii%ncols)
+			col = 2*(nrows-(ii//ncols)-1) if va=='bottom' else 2*(ii//ncols)
+		else:
+			row = 2*(nrows-(ii//ncols)-1) if va=='bottom' else 2*(ii//ncols)
+			col = 2*(ncols-(ii%ncols)-1) if ha=='right' else 2*(ii%ncols)
+			
+		if (row == (0 if va=='bottom' else (nrows-1)*2) and ha=='centre'):
+			axes.append(subplot(gs[row:row+2,col+delta:col+delta+2],**axes_kw[ii]))
+		elif (col == (0 if ha=='right' else (ncols-1)*2) and va=='centre'):
+			axes.append(subplot(gs[row+delta:row+delta+2,col:col+2],**axes_kw[ii]))
+		else:
+			axes.append(subplot(gs[row:row+2,col:col+2],**axes_kw[ii]))
+
+	return(fig, axes)
