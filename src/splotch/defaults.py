@@ -12,3 +12,15 @@ class Params:
 	hist2D_output=False
 	#Images
 	img_caxis_log=False
+
+
+class Params0():
+	def __init__(self):
+		self._params = {}
+	def __setitem__(self, key, val):
+		self._params[key] = val
+	def __getitem__(self, key):
+		return self._params[key]
+
+#params = Params0()
+#params['test'] = 'yay!'
