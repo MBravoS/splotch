@@ -1,2 +1,6 @@
+0.3.1.1 (07/08/2019):
+-Fixed issue with passing kwargs in plots_2d.sigma_cont().
+-Added first working version of new subplot function.
+
 0.3.1.0 (01/08/2019):
 -Addition of axis control function axis_func.adjust_text(), for easier handling of text elements (axis labels, legends, titles and text) in figures.
