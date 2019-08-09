@@ -1,3 +1,7 @@
+0.3.1.2 (09/08/2019):
+-Fixed issue when parsing a Text instance or the full word handles in adjust_text().
+-Modified imports plots_1d.py and plots_2d.py to only load functions necessary to the code.
+
 0.3.1.1 (07/08/2019):
 -Fixed issue with passing kwargs in plots_2d.sigma_cont().
 -Added first working version of new subplot function.
