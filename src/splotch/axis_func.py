@@ -50,6 +50,14 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	whichRef = ['x','y','t','s','l','c','T','a',
 				'xlabel','ylabel','title','suptitle','legend','colorbar','text','all']
 
+	try: # check if iterable
+		_ = (i for i in which)
+		if (type(which) == str):
+			which = [which]
+
+	except (TypeError):
+		which = [which]
+
 	for w in which:
 		try:
 			wInd = whichRef.index(w)
@@ -58,9 +66,9 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 				raise TypeError("adjust_text() received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[wInd],whichRef[wComp]))
 
 		except (ValueError):
-			if (type(which) != Text):
+			if (type(w) != Text):
 				raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w,', '.join(whichRef)))
-		
+			
 
 	L = len(which)
 	
