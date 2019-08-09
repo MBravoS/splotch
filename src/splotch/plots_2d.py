@@ -3,9 +3,6 @@
 #Errorbars
 def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
 			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-	import numpy as np
-	import matplotlib.pyplot as plt
-	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	"""Errorbar plotting function.
 	
@@ -60,6 +57,9 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 	None
 	"""
 	
+	from matplotlib.pyplot import errorbar, legend
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if type(x) is not list:
@@ -83,9 +83,9 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 
 	for i in range(L):
-		plt.errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
+		errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
 	if any(plabel):
-		plt.legend(loc=lab_loc)
+		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
@@ -171,9 +171,9 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		The bin edges for the y axis. Only provided if output is True.
 	"""
 	
-	import numpy as np
-	import matplotlib.colors as clr
-	import matplotlib.pyplot as plt
+	from numpy import nan
+	from matplotlib.colors import LogNorm
+	from matplotlib.pyplot import pcolormesh, colorbar
 	from .base_func import axes_handler,base_hist2D,plot_finalizer
 	
 	if ax is not None:
@@ -198,13 +198,13 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		if output is None:
 			output=Params.hist2D_output
 	if clog:
-		plt.pcolormesh(X,Y,Z.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
+		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
 		if cstat is None:
-			Z[Z==0]=np.nan
-		plt.pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
+			Z[Z==0]=nan
+		pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
 	if clabel is not None:
-		cbar=plt.colorbar()
+		cbar=colorbar()
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
@@ -270,22 +270,22 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinv
 	None
 	"""
 	
-	import numpy as np
-	import matplotlib.colors as clr
-	import matplotlib.pyplot as plt
+	from numpy import arange, meshgrid
+	from matplotlib.colors import LogNorm
+	from matplotlib.pyplot import pcolormesh, colorbar
 	from .base_func import axes_handler,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if x is None:
-		x=np.arange(len(im[:,0])+1)
+		x=arange(len(im[:,0])+1)
 	if y is None:
-		y=np.arange(len(im[0,:])+1)
+		y=arange(len(im[0,:])+1)
 	if clog is None:
 		from .defaults import Params
 		clog=Params.img_caxis_log
 
-	X, Y = np.meshgrid(x, y)
+	X, Y = meshgrid(x, y)
 
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
@@ -293,11 +293,11 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinv
 	plot_par.update(kwargs) 
 
 	if clog:
-		plt.pcolormesh(X,Y,im.T,norm=clr.LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
+		pcolormesh(X,Y,im.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
-		plt.pcolormesh(X,Y,im.T,vmin=clim[0],vmax=clim[1],**plot_par)
+		pcolormesh(X,Y,im.T,vmin=clim[0],vmax=clim[1],**plot_par)
 	if clabel is not None:
-		cbar=plt.colorbar()
+		cbar=colorbar()
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
@@ -359,18 +359,18 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	-------
 	None
 	"""
-	
-	import numpy as np
-	import matplotlib.pyplot as plt
+
+	from numpy import shape
+	from matplotlib.pyplot import scatter, colorbar, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(x) is not list or len(np.shape(x))==1:
+	if type(x) is not list or len(shape(x))==1:
 		x=[x]
-	if type(y) is not list or len(np.shape(y))==1:
+	if type(y) is not list or len(shape(y))==1:
 		y=[y]
-	if type(c) is not list or len(np.shape(c))==1:
+	if type(c) is not list or len(shape(c))==1:
 		c=[c]
 	L=len(x)
 	if type(plabel) is not list:
@@ -385,14 +385,14 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
 
 	for i in range(L):
-		plt.scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
+		scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
 	if clabel is not None:
-		cbar=plt.colorbar()
+		cbar = colorbar()
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
 	if any(plabel):
-		plt.legend(loc=lab_loc)
+		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
@@ -472,9 +472,9 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		The values of the underlying histogram.
 	"""
 	
-	import numpy as np
-	import matplotlib.cm as cm
-	import matplotlib.pyplot as plt
+	from numpy import linspace, round
+	from matplotlib.cm import get_cmap
+	from matplotlib.pyplot import gca, contour, legend
 	from .base_func import axes_handler,base_hist2D,percent_finder,plot_finalizer,dict_splicer
 	
 	if ax is not None:
@@ -490,21 +490,21 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	if output is None:
 		from .defaults import Params
 		output=Params.hist2D_output
-	cmap=cm.get_cmap(cmap)
+	cmap=get_cmap(cmap)
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	CS=[]
 	if c is None:
 		if len(percent)<4:
-			col_ax=plt.gca()
+			col_ax=gca()
 			l=col_ax.plot([1,2,3])
 			c=[l[0].get_color()]*len(percent)
 			l.pop(0).remove()
 		else:
 			if len(s)<4:
 				s=['solid']*len(percent)
-			c=cmap(np.linspace(clim[0],clim[1],len(percent)))
+			c=cmap(linspace(clim[0],clim[1],len(percent)))
 	else:
 		if type(c) is str:
 			c=[c]*len(percent)
@@ -513,7 +513,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 			s=['solid']*len(percent)
 	if type(clabel) is not list:
 		if clabel is None:
-			clabel=[str(np.round(p,1))+'%' for p in percent]
+			clabel=[str(round(p,1))+'%' for p in percent]
 		else:
 			clabel= [clabel] + [None]*(len(percent)-1)
 
@@ -524,15 +524,14 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,len(percent),[1]*len(percent))
-	print(plot_par)
 
 	for i in range(len(percent)):
 		level=[percent_finder(Z,percent[i]/100)]
-		CS.append(plt.contour(X,Y,Z.T,levels=level,colors=[c[i],],linestyles=s[i],**plot_par[i]))
+		CS.append(contour(X,Y,Z.T,levels=level,colors=[c[i],],linestyles=s[i],**plot_par[i]))
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
-		plt.legend(loc=lab_loc)
+		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
