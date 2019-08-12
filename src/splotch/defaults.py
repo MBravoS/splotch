@@ -6,7 +6,7 @@ class Params:
 	grid_axis='both'
 	#Histograms
 	hist1D_output=False
-	hist1D_smooth=False
+	hist1D_histtype='step'
 	hist1D_yaxis_log=False
 	hist2D_caxis_log=False
 	hist2D_output=False

@@ -35,7 +35,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	-------
 	None
 	"""
-	   
+	
 	from matplotlib.pyplot import plot, legend, gca
 	from .base_func import axes_handler,plot_finalizer,dict_splicer
 	
@@ -43,11 +43,11 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		old_axes=axes_handler(ax)
 	else:
 		ax=gca()
-		old_axes=ax        
+		old_axes=ax
 	
 	if (not any([x,y,m,c])): # If nothing has been specified
 		raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'm' or 'c'")
-	    
+	
 	for i, val in enumerate([x,y,m,c]):
 		if (val is not None):
 			try: # Test whether the parameter is iterable
@@ -65,7 +65,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		if (any([m,c])): # Should not specify m or c, if x given.
 			raise ValueError("'{0}' cannot be specified if x specified".format('m' if m else 'c'))
 		L = len(x)
-	    
+	
 	if (y is not None): # Check conditions if y specified
 		if (any([m,c])): # Should not specify m or c, if y given.
 			raise ValueError("'{0}' cannot be specified if y specified".format('m' if m else 'c'))
@@ -97,10 +97,10 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
-
+	
 	if (x is not None):
 		for ii, xx in enumerate(x):
 			ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
@@ -125,9 +125,9 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		old_axes=axes_handler(old_axes)
 
 #Histogram
-def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vstat=None,count_style={},xlim=None,ylim=None,
+def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None,vstat=None,xlim=None,ylim=None,#count_style={},
 			xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
-			ax=None,grid=None,plot_kw={},output=None):
+			ax=None,grid=None,plot_kw={},output=None,**kwargs):
 	
 	"""1D histogram function.
 	
@@ -158,11 +158,6 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
 		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer
 		 or float.
-	count_style : dict, optional
-		Defines a change of line style if number of counts in bins get under and/or over a given range. The key
-		'low'/'high' is for setting the upper/lower limit of for the change of style. The key 'low_style'/'high_style'
-		is used for setting the line style. If the style key is not given defaults to 'dotted' for 'low_style' and
-		'dashed' for 'high_style', setting the intermidiate values to a 'solid' line style.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -202,10 +197,10 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 		List containing the arrays with the bin edges for each of the histograms drawn. Only provided if output is True.
 	"""
 	
-	from numpy import where, nan, inf, array, ones, sum, histogram
+	from numpy import sum as np_sum
 	from scipy.stats import binned_statistic
-	from matplotlib.pyplot import plot, step, legend
-
+	from numpy import where, nan, inf, array, ones, histogram, diff
+	from matplotlib.pyplot import plot, step, bar, legend, rcParams, gca
 	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer
 	
 	if ax is not None:
@@ -230,22 +225,37 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 		vstat=[vstat]*L
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	if None in [ylog,smooth,output]:
+	if None in [ylog,hist_type,output]:
 		from .defaults import Params
 		if ylog is None:
 			ylog=Params.hist1D_yaxis_log
-		if smooth is None:
-			smooth=Params.hist1D_smooth
+		if hist_type is None:
+			hist_type=Params.hist1D_histtype
 		if output is None:
 			output=Params.hist1D_output
-	if type(smooth) is not list:
-		smooth=[smooth]*L
-	plot_smooth={True:plot,False:step}
-	plot_par=dict_splicer(plot_kw,L,[len(x) for x in data])
+	if type(hist_type) is not list:
+		hist_type=[hist_type]*L
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+	# Check if width is given as a kwarg
+	if 'width' in plot_par.keys():
+		import warnings
+		warnings.warn('Received kwarg width, this will be ignored in the histogram',UserWarning)
+		if hist_type!='bar':
+			temp=plot_par.pop('width')
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par = dict_splicer(plot_par,L,[1]*L)
+	
+	plot_type={'smooth':plot,'step':step,'bar':bar,'barfilled':bar}
+	hist_centre={'smooth':True,'step':False,'bar':False,'barfilled':False}
 	bin_edges=[]
 	n_return=[]
+	
 	for i in range(L):
-		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=smooth[i])
+		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
 		if vstat[i]:
 			temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
@@ -256,64 +266,78 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,smooth=None,v=None,vs
 		if ylog:
 			temp_y=where(temp_y==0,nan,temp_y)
 		y=temp_y
-		if not smooth[i]:
+		if hist_type[i]=='step':
 			y=array([y[0]]+[j for j in y])
-		if count_style:
-			if dens[i]:
-				raw_counts=histogram(temp_data,bins=bins_hist,density=False)[0]
-				raw_counts=array([raw_counts[0]]+[j for j in raw_counts])
-			else:
-				raw_counts=y
-			if 'low' not in count_style.keys():
-				count_style['low']=-inf
-			if 'high' not in count_style.keys():
-				count_style['high']=inf
-			sel_low=raw_counts<count_style['low']
-			sel_high=raw_counts>count_style['high']
-			sel_mid=ones(len(raw_counts)).astype('bool')&~sel_low&~sel_high
-			for j in range(len(raw_counts)-1):
-				if not sel_low[j] and sel_low[j+1]:
-					sel_low[j]=True
-				if not sel_high[j] and sel_high[j+1]:
-					sel_high[j]=True
-			for j in range(1,len(raw_counts))[::-1]:
-				if not sel_low[j] and sel_low[j-1]:
-					sel_low[j]=True
-				if not sel_high[j] and sel_high[j-1]:
-					sel_high[j]=True
-			if 'low_style' not in count_style.keys() and 'high_style' not in count_style.keys():
-				plot_par[i]['linestyle']='solid'
-			if 'low_style' not in count_style.keys():
-				count_style['low_style']='dotted'
-			if 'high_style' not in count_style.keys():
-				count_style['high_style']='dashed'
-			low_plot_par={k:plot_par[i][k] for k in plot_par[i].keys()}
-			low_plot_par['linestyle']=count_style['low_style']
-			high_plot_par={k:plot_par[i][k] for k in plot_par[i].keys()}
-			high_plot_par['linestyle']=count_style['high_style']
-			col=None
-			if sum(sel_low)>0:
-				low_plabel='n<'+str(count_style['low'])
-				if plabel[i] is not None:
-					low_plabel=plabel[i]+', '+low_plabel
-				p=plot_smooth[smooth[i]](bins_plot,where(sel_low,y,nan),label=low_plabel,**low_plot_par)
-				col=p[0].get_color()
-			if sum(sel_high)>0:
-				high_plabel='n>'+str(count_style['high'])
-				if plabel[i] is not None:
-					high_plabel=plabel[i]+', '+high_plabel
-				if col is None:
-					p=plot_smooth[smooth[i]](bins_plot,where(sel_high,y,nan),label=high_plabel,**high_plot_par)
-					col=p[0].get_color()
-				else:
-					high_plot_par['color']=col
-					plot_smooth[smooth[i]](bins_plot,where(sel_high,y,nan),label=high_plabel,**high_plot_par)
-			if sum(sel_mid)>0:
-				if col is not None:
-					plot_par[i]['color']=col
-				plot_smooth[smooth[i]](bins_plot,where(sel_mid,y,nan),label=plabel[i],**plot_par[i])
-		else:
-			plot_smooth[smooth[i]](bins_plot,y,label=plabel[i],**plot_par[i])
+		if 'bar' in hist_type[i]:
+			#prop_cycle=rcParams['axes.prop_cycle']
+			#barcolor=prop_cycle.by_key()['color']
+			plot_par[i]['width']=diff(bins_plot)
+			bins_plot=(bins_plot[0:-1]+bins_plot[1:])/2
+			if hist_type[i]=='bar':
+				if 'edgecolor' not in plot_par[i].keys():
+					p=plot(bins_plot[0],0)
+					plot_par[i]['edgecolor']=p[0].get_color()
+					p.pop()
+					temp_ax=gca()
+					temp_ax.relim()
+					temp_ax.autoscale()
+				plot_par[i]['fill']=False
+		#if count_style:
+		#	if dens[i]:
+		#		raw_counts=histogram(temp_data,bins=bins_hist,density=False)[0]
+		#		raw_counts=array([raw_counts[0]]+[j for j in raw_counts])
+		#	else:
+		#		raw_counts=y
+		#	if 'low' not in count_style.keys():
+		#		count_style['low']=-inf
+		#	if 'high' not in count_style.keys():
+		#		count_style['high']=inf
+		#	sel_low=raw_counts<count_style['low']
+		#	sel_high=raw_counts>count_style['high']
+		#	sel_mid=ones(len(raw_counts)).astype('bool')&~sel_low&~sel_high
+		#	for j in range(len(raw_counts)-1):
+		#		if not sel_low[j] and sel_low[j+1]:
+		#			sel_low[j]=True
+		#		if not sel_high[j] and sel_high[j+1]:
+		#			sel_high[j]=True
+		#	for j in range(1,len(raw_counts))[::-1]:
+		#		if not sel_low[j] and sel_low[j-1]:
+		#			sel_low[j]=True
+		#		if not sel_high[j] and sel_high[j-1]:
+		#			sel_high[j]=True
+		#	if 'low_style' not in count_style.keys() and 'high_style' not in count_style.keys():
+		#		plot_par[i]['linestyle']='solid'
+		#	if 'low_style' not in count_style.keys():
+		#		count_style['low_style']='dotted'
+		#	if 'high_style' not in count_style.keys():
+		#		count_style['high_style']='dashed'
+		#	low_plot_par={k:plot_par[i][k] for k in plot_par[i].keys()}
+		#	low_plot_par['linestyle']=count_style['low_style']
+		#	high_plot_par={k:plot_par[i][k] for k in plot_par[i].keys()}
+		#	high_plot_par['linestyle']=count_style['high_style']
+		#	col=None
+		#	if np_sum(sel_low)>0:
+		#		low_plabel='n<'+str(count_style['low'])
+		#		if plabel[i] is not None:
+		#			low_plabel=plabel[i]+', '+low_plabel
+		#		p=plot_type[hist_type[i]](bins_plot,where(sel_low,y,nan),label=low_plabel,**low_plot_par)
+		#		col=p[0].get_color()
+		#	if np_sum(sel_high)>0:
+		#		high_plabel='n>'+str(count_style['high'])
+		#		if plabel[i] is not None:
+		#			high_plabel=plabel[i]+', '+high_plabel
+		#		if col is None:
+		#			p=plot_type[hist_type[i]](bins_plot,where(sel_high,y,nan),label=high_plabel,**high_plot_par)
+		#			col=p[0].get_color()
+		#		else:
+		#			high_plot_par['color']=col
+		#			plot_type[hist_type[i]](bins_plot,where(sel_high,y,nan),label=high_plabel,**high_plot_par)
+		#	if np_sum(sel_mid)>0:
+		#		if col is not None:
+		#			plot_par[i]['color']=col
+		#		plot_type[hist_type[i]](bins_plot,where(sel_mid,y,nan),label=plabel[i],**plot_par[i])
+		#else:
+		plot_type[hist_type[i]](bins_plot,y,label=plabel[i],**plot_par[i])
 		bin_edges.append(bins_plot)
 		n_return.append(temp_y)
 	if any(plabel):

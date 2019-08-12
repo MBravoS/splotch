@@ -265,11 +265,7 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	"""
 	from .defaults import Params
 	from matplotlib.pyplot import gca,grid,xscale,yscale
-	from matplotlib.pyplot import title as plt_title
-	from matplotlib.pyplot import xlabel as plt_xlabel
-	from matplotlib.pyplot import xlim as plt_xlim
-	from matplotlib.pyplot import ylabel as plt_ylabel
-	from matplotlib.pyplot import ylim as plt_ylim
+	from matplotlib.pyplot import title as plt_title, xlabel as plt_xlabel, xlim as plt_xlim, ylabel as plt_ylabel, ylim as plt_ylim
 	
 	if xlog:
 		xscale('log')
