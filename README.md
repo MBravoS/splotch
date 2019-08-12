@@ -3,14 +3,13 @@
 
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
-*Current version*: 0.3.2.0
+*Current version*: 0.3.3.0
 
 *Planned releases*:
-* Addition of error raising for unclear errors when breaking plots (0.3.3.0).
-* Addition of error/dispersion band plots (0.3.4.0).
-* Addition of level contour plots (0.3.5.0).
-* Addition of the option of filled contours for both sigma and level contour plots (0.3.6.0).
-* Addition of broken axis function (0.3.7.0).
-* Addition of "pizza slices" plots (0.3.8.0).
-* Addition of legend customisation functions(ary) function (0.3.9.0).
-* Addition of generalised subplot function (0.4.0.0).
+* Addition of error raising for unclear errors when breaking plots (0.3.4.0).
+* Addition of error/dispersion band plots (0.3.5.0).
+* Addition of level contour plots (0.3.6.0).
+* Addition of the option of filled contours for both sigma and level contour plots (0.3.7.0).
+* Addition of broken axis function (0.3.8.0).
+* Addition of "pizza slices" plots (0.3.9.0).
+* Addition of legend customisation function (0.3.10.0).
