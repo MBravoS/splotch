@@ -513,3 +513,141 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
+
+def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
+				rlabel="",thetalabel="",rticks='auto',thetaticks='auto',
+				fig=None,plot_kw={},**kwargs):
+	
+	""" Sector Plot function
+
+	Plots a sector plot (a.k.a "pizza plot") based on data with one radial axis and an angular axis
+
+	Parameters
+	----------
+	r : array-like or list
+		Radial axis data.
+	theta : array-like or list
+		Angular axis data (degrees).
+	rlim : tuple-like, optional
+		The lower and upper limits for the radial axis (degrees).
+	thetalim : tuple-like, optional
+		The lower and upper limits for the angular axis (degrees).
+	rotate : float, optional
+		By how many degrees to rotate the entire plot (valid values in [-180, 180]).
+	rlabel : str, optional
+		Sets the label of the r-axis.
+	thetalabel : str, optional
+		Sets the label of the theta-axis.
+	rticks : 'auto', or ticker
+		* Not implement *
+	thetaticks : 'auto', or ticker
+		* Not implement *
+	fig : pyplot.Figure, optional
+		Use the given figure to make the plot, defaults to the current figure.
+	plot_kw : dict, optional
+		Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
+		Parameters will be overwritten if also given implicitly in **kwargs.
+	**kwargs : Collection properties, optional
+		kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
+		A list of available `Collection` properties can be found here:
+		https://matplotlib.org/3.1.0/api/collections_api.html#matplotlib.collections.Collection
+
+	Returns
+	-------
+	ax : The pyplot.Axes object created for the sector plot.
+
+	"""
+	
+	from matplotlib.transforms import Affine2D
+	from matplotlib.projections.polar import PolarAxes
+	from matplotlib.pyplot import gcf 
+	
+	from mpl_toolkits.axisartist import floating_axes
+	from mpl_toolkits.axisartist.grid_finder import (FixedLocator, MaxNLocator, DictFormatter)
+	import mpl_toolkits.axisartist.angle_helper as angle_helper
+	
+
+	from numpy import array, linspace, arange, shape, round, degrees, radians, pi
+
+	if (fig == None):
+		fig = gcf()
+	
+	# rotate a bit for better orientation
+	trans_rotate = Affine2D().translate(0.0, 0)
+
+	# scale degree to radians
+	trans_scale = Affine2D().scale(pi/180.0, 1.)
+	trans = trans_rotate + trans_scale + PolarAxes.PolarTransform()
+	
+	# Get theta ticks
+	#if (thetaticks == 'auto'):
+	thetaticks = arange(*radians(array(thetalim)+rotate),step=15)
+	theta_gridloc = FixedLocator(thetaticks[thetaticks/(2*pi) < 1])
+	theta_tickfmtr = DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)-rotate)):g}" for tck in thetaticks])))
+	
+	#tick_fmtr = DictFormatter(dict(angle_ticks))
+	#tick_fmtr = angle_helper.Formatter()
+
+	r_gridloc = FixedLocator(linspace(rlim[0],rlim[1],num=int(0.75*fig.get_size_inches()[0]))) 
+	
+	grid = floating_axes.GridHelperCurveLinear(
+		PolarAxes.PolarTransform(),
+		extremes=(*radians(array(thetalim)+rotate), *rlim),
+		grid_locator1=theta_gridloc,
+		grid_locator2=r_gridloc,
+		tick_formatter1=theta_tickfmtr,
+		tick_formatter2=None,
+	)
+	
+	ax = floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
+	fig.add_subplot(ax)
+	
+	# tick
+	thetadir_ref = ['top','left','bottom','right']
+	rdir_ref = ['bottom','right','top','left']
+	
+	# adjust axis
+	ax.axis["left"].set_axis_direction("bottom")
+	ax.axis["right"].set_axis_direction("top")
+	ax.axis["bottom"].set_axis_direction("top")
+	ax.axis["top"].set_axis_direction("bottom")
+	
+	ax.axis["bottom"].set_visible(False if rlim[0] == 0.0 else True)
+	ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90 + 2)%4])
+	
+	ax.axis["top"].toggle(ticklabels=True, label=True)
+	ax.axis["top"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
+	ax.axis["top"].label.set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
+	
+	#ax.get_yaxis().set_major_locator(ticker.MaxNLocator())
+	
+	#ax.axis["left"].set_major_formatter(ticker.MaxNLocator())
+	ax.axis["left"].major_ticklabels.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
+	ax.axis["left"].label.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
+	
+	ax.axis["left"].label.set_text(rlabel)
+	ax.axis["top"].label.set_text(thetalabel)
+	
+	# create a parasite axes whose transData in RA, cz
+	sector_ax = ax.get_aux_axes(trans)
+	
+	# This has a side effect that the patch is drawn twice, and possibly over some other
+	# artists. So, we decrease the zorder a bit to prevent this. 
+	sector_ax.patch = ax.patch  
+	sector_ax.patch.zorder = 0.9
+	
+	
+	L = shape(theta)[0] if len(shape(theta)) > 1 else 1
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+	
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	#plot_par = dict_splicer(plot_par,L,[1]*L)
+	
+	if (L == 1):
+		sector_ax.scatter(theta+rotate, r, **plot_par)
+	else:
+		for ii in range(L):
+			sector_ax.scatter(theta[ii]+rotate, r[ii],**plot_par[ii])
+
+	return sector_ax
