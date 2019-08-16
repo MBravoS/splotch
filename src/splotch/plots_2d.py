@@ -91,7 +91,7 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 		old_axes=axes_handler(old_axes)
 
 # Histogram and 2D binned statistics
-def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],
+def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
 			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
 			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
 	
@@ -126,6 +126,8 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	clim : list, optional
 		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
+	nmin : int, optional (default: 0)
+		The minimum number of points required in a bin in order to be plotted.
 	xinvert : bool, optional
 		If true inverts the x-axis.
 	yinvert : bool, optional
@@ -180,16 +182,19 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		old_axes=axes_handler(ax)
 	if type(bin_type) is not list:
 		bin_type=[bin_type]*2
-	if type(bins) is not list:
+	if type(bins) not in [list,tuple]:
 		if bins is None:
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
+	_,_,counts = base_hist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
 
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
+
+	Z.T[counts<nmin] = nan
 
 	if None in (clog,output):
 		from .defaults import Params
@@ -215,7 +220,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		return(Z.T,X,Y)
 
 # Image
-def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],xinvert=False,yinvert=False,cbar_invert=False,clog=None,
+def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=False,yinvert=False,cbar_invert=False,clog=None,
 		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""2D pixel-based image plotting function.
