@@ -187,17 +187,16 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
-	_,_,counts = base_hist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
+	_,_,counts = base_hist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog) # Also get counts for number threshold cut
 
+	# Cut bins which do not meet the number count threshold
+	Z[counts<nmin] = nan
+	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
 
-	print(counts)
-	Z[counts<nmin] = nan
-
-	print(Z)
 	if None in (clog,output):
 		from .defaults import Params
 		if clog is None:
