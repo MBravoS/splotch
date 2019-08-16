@@ -194,8 +194,10 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
 
-	Z.T[counts<nmin] = nan
+	print(counts)
+	Z[counts<nmin] = nan
 
+	print(Z)
 	if None in (clog,output):
 		from .defaults import Params
 		if clog is None:

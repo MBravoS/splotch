@@ -1,3 +1,6 @@
+0.3.4.1 (16/08/2019):
+-Fixed bug in nmin argument in hist2d()
+
 0.3.4.0 (16/08/2019):
 -Added nmin to hist2D()
 
