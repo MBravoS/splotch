@@ -338,7 +338,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
-	_,_,counts = base_hist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog) # Also get counts for number threshold cut
+	temp_x,temp_y,counts = base_hist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog) # Also get counts for number threshold cut
 
 	# Cut bins which do not meet the number count threshold
 	Z[counts<nmin] = nan
@@ -346,6 +346,9 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
+	if clim:
+		plot_par['vmin']=clim[0]
+		plot_par['vmax']=clim[1]
 	plot_par.update(kwargs)
 
 	if None in (clog,output):
@@ -355,11 +358,11 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		if output is None:
 			output=Params.hist2D_output
 	if clog:
-		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
+		pcolormesh(X,Y,Z.T,norm=LogNorm(clip=True),**plot_par)
 	else:
 		if cstat is None:
 			Z[Z==0]=nan
-		pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
+		pcolormesh(X,Y,Z.T,**plot_par)
 	if clabel is not None:
 		cbar=colorbar()
 		cbar.set_label(clabel)
