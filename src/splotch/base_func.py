@@ -273,8 +273,12 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		yscale('log')
 	if xlim is not None:
 		plt_xlim(xlim)
+	else:
+		plt_xlim(auto=True)
 	if ylim is not None:
 		plt_ylim(ylim)
+	else:
+		plt_ylim(auto=True)
 	if title is not None:
 		plt_title(title)
 	if xlabel is not None:

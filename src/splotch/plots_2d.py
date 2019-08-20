@@ -1,8 +1,8 @@
 #### Definition of all wrappers for 2D plotting
 
 #Errorbars
-def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
-			xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
+	title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""Errorbar plotting function.
 	
@@ -89,6 +89,157 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+
+
+#Errorboxes
+def errbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
+	title=None,xlabel=None,ylabel=None,plabel=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
+	
+	"""Errorbox plotting function.
+	
+	This is a wrapper around matplotlib PatchCollections with a matplotlib errorbar functionality.
+	
+	Parameters
+	----------
+	x : array-like or list
+		If list it is assumed that each elemement is array-like.
+	y : array-like or list
+		If list it is assumed that each elemement is array-like.
+	xerr : array-like or list, optional
+		Defines the length of the errobars in the x-axis. If list it is assumed that each elemement is array-like.
+	yerr : array-like or list, optional
+		Defines the length of the errobars in the y-axis. If list it is assumed that each elemement is array-like.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	boxtype : str
+		The type of box to plot, patch types include: ellipse | rectangle (Default: ellipse).
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	plabel : str, optional
+		Sets the legend for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Patches properties.
+	**kwargs: Patch properties, optional
+		kwargs are used to specify matplotlib specific properties such as facecolor, linestyle, alpha, etc.
+		A list of available `Patch` properties can be found here: 
+		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.patches.Rectangle.html
+
+	
+	Returns
+	-------
+	None
+	"""
+	
+	from matplotlib.pyplot import errorbar, legend
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
+
+	from numpy import shape, full, array
+
+	from matplotlib.collections import PatchCollection
+	from matplotlib.patches import Ellipse, Rectangle
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	if type(x) is not list:
+		x=[x]
+	if type(y) is not list:
+		y=[y]
+	if type(xerr) is not list:
+		xerr=[xerr]
+	if type(yerr) is not list:
+		yerr=[yerr]
+
+	L=len(x)
+	if type(plabel) is not list:
+		plabel=[plabel]*L
+
+	# Validate formate of xerr and yerr
+	for i in range(L):
+		# x-axis errors
+		if (shape(xerr[i]) == ()): # single error for all points
+			xerr[i] = full((2,len(x[i])), xerr[i])
+		else:
+			if (len(shape(xerr[i])) == 1):
+				if (shape(xerr[i])[0] == len(x[i])): # single error for each point
+					xerr[i] = array([xerr[i], xerr[i]])
+				elif (shape(xerr[i])[0] == 2): # separate upper and lower errors for all points
+					xerr[i] = full((len(x[i]), 2), xerr[i]).T
+				else:
+					print('ding') # Raise exception for invalid length of points
+			elif (len(shape(xerr[i])) == 2): # separate upper and lower errors for each point
+				xerr[i] = array(xerr[i])
+				if (shape(xerr[i])[0] != 2 or shape(xerr[i])[1] != len(x[i])):
+					print('dong') # Raise exception for invalid length of points
+
+		# y-axis errors
+		if (shape(yerr[i]) == ()): # single error for all points
+			yerr[i] = full((2,len(y[i])), yerr[i])
+		else:
+			if (len(shape(yerr[i])) == 1):
+				if (shape(yerr[i])[0] == len(y[i])): # single error for each point
+					yerr[i] = array([yerr[i], yerr[i]])
+				elif (shape(yerr[i])[0] == 2): # separate upper and lower errors for all points
+					yerr[i] = full((len(y[i]), 2), yerr[i]).T
+				else:
+					print('ding') # Raise exception for invalid length of points
+			elif (len(shape(yerr[i])) == 2): # separate upper and lower errors for each point
+				yerr[i] = array(yerr[i])
+				if (shape(yerr[i])[0] != 2 or shape(yerr[i])[1] != len(y[i])):
+					print('dong') # Raise exception for invalid length of points
+
+
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par = dict_splicer(plot_par,L,[1]*L)
+ 
+	PathColls = []
+	# Loop over data points; create box/ellipse from errors at each point
+	for i in range(L):
+		errorboxes = []
+		for xx, yy, xe, ye in zip(x[i], y[i], xerr[i].T, yerr[i].T):
+			if (boxtype.lower().startswith('rect')):
+				errorboxes.append( Rectangle((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
+			elif (boxtype.lower().startswith('ell')):
+				errorboxes.append( Ellipse((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
+			else:
+				print('dang')
+
+		# Create and add patch collection with specified colour/alpha
+		pc = PatchCollection(errorboxes, **plot_par[i])
+		ax.add_collection(pc)
+
+	# for i in range(L):
+	# 	errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
+	if any(plabel):
+		legend(loc=lab_loc)
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+
 
 # Histogram and 2D binned statistics
 def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
