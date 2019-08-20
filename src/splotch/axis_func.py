@@ -1,6 +1,8 @@
 def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 
-	"""Function which allows the user to adjust texts of one or many of either x/y-axis labels,
+	""" Adjusts text instances.
+
+	Function which allows the user to adjust texts of one or many of either x/y-axis labels,
 	title, legend, colorbars, etc.
 	
 	Parameters
@@ -17,12 +19,15 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 			* 'c'|'colorbar' : Color bar
 			* 'T'|'text' 	 : Text objects
 			* 'a'|'all'		 : All instances of all the above
+
 	ax : pyplot.Axes or list, optional
 		Use the given axes to adjust text, defaults to the current axis.
 		If a list of Axis instances given, the text properties is applied to each.
+
 	text_kw : dict, optional
 		Explicit dictionary of kwargs to be parsed to matplotlib `Text` instance.
 		It is recommended that text keyword arguments be given as **kwargs.
+
 	**kwargs : Text instance properties
 		kwargs are used to specify properties of `Text` instances
 		A list of valid `Text` kwargs can be found here:
@@ -120,16 +125,114 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	return(None)
 
 
-def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,figsize=None,axes_kw={},**kwargs):
+def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,squeeze=True,figsize=None,axes_kw={},**kwargs):
+	""" Adds a set of subplots to figure
+
+	This is a more-generalised wrapper around matplotlib.pyplot.subplot function to allow for irregularly divided grids.
 	
+	Parameters
+	----------
+	naxes : int, optional, default: 1
+		The number of axes objects to create.
+		The resulting grid formed from specifying naxes is decided by ncols and nrows. The options are:
+
+			- ncols and/or nrows not None:
+				Makes sure that naxes can be correctly mapped into the specified grid.
+				If one of nrows or ncols not given, the smallest possible grid will be made.
+			- both ncols and nrows are None:
+				Decides the best possible grid for this number of axes. Currently, this decision is hard-coded
+				with plans for it to become an automatic decision later.
+	
+	nrows, ncols : int, optional
+		Number of rows/columns of the subplot grid.
+	
+	va, ha : str, optional, default: 'top', 'left'
+		The vertical alignment (va) and horizontal alignment (ha) sets the alignment of grids in the vertical and
+		horizontal directions. 
+
+		ha: 'left'		ha: 'centre'	ha: 'right'
+		va: 'top'		va: 'top'		va: 'top'
+
+		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
+		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
+		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
+		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
+
+		ha: 'left'		ha: 'centre'	ha: 'right'
+		va: 'centre'	va: 'centre'	va: 'centre'
+
+		 ▯ ▯ ▯							   ▯ ▯ ▯
+		 ▯ ▯ ▯ ▯		   Not			 ▯ ▯ ▯ ▯
+		 ▯ ▯ ▯ ▯		  Valid			 ▯ ▯ ▯ ▯
+		 ▯ ▯ ▯							   ▯ ▯ ▯
+
+		ha: 'left'		ha: 'centre'	ha: 'right'
+		va: 'bottom'	va: 'bottom'	va: 'bottom'
+
+		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
+		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
+		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
+		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
+
+	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
+		Not implemented.
+
+	wspace : float, optional
+		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
+
+	hspace : float, optional
+		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
+
+	squeeze : bool, optional, default: True
+		As per matplotlib's usage of this parameter, the following applies:
+			- If True, extra dimensions are squeezed out from the returned
+			  array of Axes:
+
+				- if only one subplot is constructed (nrows=ncols=1), the
+				  resulting single Axes object is returned as a scalar.
+				- for Nx1 or 1xM subplots, the returned object is a 1D numpy
+				  object array of Axes objects.
+				- for NxM, subplots with N>1 and M>1 are returned
+				  as a 2D array.
+
+			- If False, no squeezing at all is done: the returned Axes object
+			  is always a 2D array containing Axes instances, even if it ends
+			  up being 1x1.
+
+		If naxes < ncols*nrows, the only sensible option is to return a 1D numpy array
+	
+	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (ncols, nrows)
+		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
+		the default rcParams figure.figsize by the number of rows or columns.
+
+	axes_kw : dict, optional
+		Explicit dictionary of kwargs to be parsed to matplotlib `subplot` function.
+
+	**kwargs : Text instance properties
+		kwargs are used to specify properties of `subplots` instances
+		A list of valid `axis` kwargs can be found here:
+		[https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")
+	
+	Returns
+	-------
+	fig : pyplot.Figure
+	
+	axes : pyplot.axes.Axes object or array of Axes objects
+		axes may either be a single Axes object or a numpy array if naxes > 1.
+		The dimensions of this array are controlled by the squeeze keyword above.
+
+	"""
+
 	from .base_func import dict_splicer
 	
+	import warnings
 	from matplotlib import rcParams
 	from matplotlib.gridspec import GridSpec
 	from matplotlib.pyplot import figure, subplot
 	
-	from numpy import ceil
-	
+	from numpy import ceil, array, reshape
+
+
 	gridRef = [[0,0], [1,1], [1,2], [1,3], [2,2], [2,3], [2,3], [2,4], [2,4], [3,3], [2,5], [3,4], [3,4], 
 			   [4,4], [3,5], [3,5], [4,4], [3,6], [3,6], [4,5], [4,5], [3,7], [5,5], [5,5], [4,6], [5,5]]
 
@@ -143,7 +246,7 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 			if (naxes <= 25):
 				nrows, ncols = gridRef[naxes] # Get best combination of rows x cols for number of axes
 			else:
-				raise ValueError(f"The naxes parameter is currently not implemented for naxes > 25.")
+				raise NotImplementedError(f"The naxes parameter is currently not implemented for naxes > 25.")
 		elif (ncols != None and nrows != None):
 			if (ncols*nrows != naxes):
 				raise ValueError(f"Invalid number of axes ({naxes}) given for number of rows ({nrows}) and columns ({ncols}).") 
@@ -181,4 +284,18 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 		else:
 			axes.append(subplot(gs[row:row+2,col:col+2],**axes_kw[ii]))
 
-	return(fig, axes)
+	# Convert to np.array
+	axesout = array(axes)
+
+	### Squeeze axes object
+	if (squeeze == True):
+		# Discarding unneeded dimensions that equal 1.  If we only have one
+		# subplot, just return it instead of a 1-element array.
+		return (fig, axesout.item()) if axesout.size == 1 else (fig, axesout.squeeze())
+	else:
+		# Returned axis array will be always 2-d, even if nrows=ncols=1.
+		if (naxes != ncols*nrows):
+			warnings.warn("squeeze = False not possible when naxes < nrows*ncols.")
+			return (fig, axesout.squeeze())
+		else:
+			return (fig, reshape(axesout, (nrows, ncols)))
