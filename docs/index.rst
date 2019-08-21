@@ -12,17 +12,17 @@ Welcome to splotch's documentation!
 
 splotch base functions
 ===================
-.. automodule:: src.base_func
+.. automodule:: src.splotch.base_func
     :members:
 
 splotch 1D plotting functions
 =====================
-.. automodule:: src.plots_1d
+.. automodule:: src.splotch.plots_1d
     :members:
 
 splotch 2D plotting functions
 =================
-.. automodule:: src.plots_2d
+.. automodule:: src.splotch.plots_2d
     :members:
 
 Indices and tables
