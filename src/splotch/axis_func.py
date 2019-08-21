@@ -125,7 +125,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	return(None)
 
 
-def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,squeeze=True,figsize=None,axes_kw={},**kwargs):
+def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
 
 	This is a more-generalised wrapper around matplotlib.pyplot.subplot function to allow for irregularly divided grids.
@@ -183,8 +183,23 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	hspace : float, optional
 		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
 
+	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
+		As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`)
+		axes:
+
+			- True or 'all': x-/y-axis will be shared among all subplots.
+			- False or 'none': each subplot x-/y-axis will be independent (default).
+			- 'row': each subplot row will share an x-/y-axis
+			- 'col': each subplot column will share an x-/y-axis
+
+		When subplots have a shared x-axis along a column, only the x tick
+		labels of the last complete row of the subplot are created. Similarly, 
+		when subplots have a shared y-axis along a row, only the y tick labels of the
+		first complete column subplot are created. To later turn other subplots'
+		ticklabels on, use `~matplotlib.axes.Axes.tick_params`.
+
 	squeeze : bool, optional, default: True
-		As per matplotlib's usage of this parameter, the following applies:
+		As per matplotlib's usage, the following applies:
 			- If True, extra dimensions are squeezed out from the returned
 			  array of Axes:
 
@@ -268,24 +283,29 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	
 	axes_kw = dict_splicer(axes_kw,naxes,[1]*naxes)
 	
-	axes = []
+	# Specify the row/col origin
+	row0 = (nrows-1)*2 if va=='bottom' else 0
+	col0 = (ncols-1)*2 if ha=='right' else 0
+
+	axes = np.empty(naxes, dtype=object) # Create the empty array to hold each axis
 	for ii in range(naxes):
-		if (False):
-			row = 2*(ncols-(ii%ncols)-1) if ha=='right' else 2*(ii%ncols)
-			col = 2*(nrows-(ii//ncols)-1) if va=='bottom' else 2*(ii//ncols)
-		else:
-			row = 2*(nrows-(ii//ncols)-1) if va=='bottom' else 2*(ii//ncols)
-			col = 2*(ncols-(ii%ncols)-1) if ha=='right' else 2*(ii%ncols)
+		row = 2*(nrows-(ii//ncols)-1) if va=='bottom' else 2*(ii//ncols) # current row
+		col = 2*(ncols-(ii%ncols)-1) if ha=='right' else 2*(ii%ncols) # current column
+
+		# Select which axes this axis needs to be shared with
+		sharewith = {"none": None, "all": axes[0],
+					 "row": axes[(ii//ncols)*ncols], "col": axes[row0, col]}
+		
+		axes_kw["sharex"] = sharewith[sharex]
+		axes_kw["sharey"] = sharewith[sharey]
 			
 		if (row == (0 if va=='bottom' else (nrows-1)*2) and ha=='centre'):
-			axes.append(subplot(gs[row:row+2,col+delta:col+delta+2],**axes_kw[ii]))
+			axes[ii] = subplot(gs[row:row+2,col+delta:col+delta+2],**axes_kw[ii])
 		elif (col == (0 if ha=='right' else (ncols-1)*2) and va=='centre'):
-			axes.append(subplot(gs[row+delta:row+delta+2,col:col+2],**axes_kw[ii]))
+			axes[ii] = subplot(gs[row+delta:row+delta+2,col:col+2],**axes_kw[ii])
 		else:
-			axes.append(subplot(gs[row:row+2,col:col+2],**axes_kw[ii]))
+			axes[ii] = subplot(gs[row:row+2,col:col+2],**axes_kw[ii])
 
-	# Convert to np.array
-	axesout = array(axes)
 
 	### Squeeze axes object
 	if (squeeze == True):
