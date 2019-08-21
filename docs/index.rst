@@ -10,11 +10,6 @@ Welcome to splotch's documentation!
     :maxdepth: 2
     :caption: Contents:
 
-splotch base functions
-===================
-.. automodule:: src.splotch.base_func
-    :members:
-
 splotch 1D plotting functions
 =====================
 .. automodule:: src.splotch.plots_1d
@@ -23,6 +18,21 @@ splotch 1D plotting functions
 splotch 2D plotting functions
 =================
 .. automodule:: src.splotch.plots_2d
+    :members:
+
+splotch axis functions
+===================
+.. automodule:: src.splotch.axis_func
+    :members:
+
+splotch defaults
+===================
+.. automodule:: src.splotch.defaults
+    :members:
+
+splotch base functions
+===================
+.. automodule:: src.splotch.base_func
     :members:
 
 Indices and tables
