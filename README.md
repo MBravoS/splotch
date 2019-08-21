@@ -4,7 +4,7 @@
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
 
-*Current version*: 0.3.6.1
+*Current version*: 0.3.6.2
 
 *Planned releases*:
 * Addition of error raising for unclear errors when breaking plots (0.3.6.0).

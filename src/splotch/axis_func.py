@@ -245,7 +245,7 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	from matplotlib.gridspec import GridSpec
 	from matplotlib.pyplot import figure, subplot
 	
-	from numpy import ceil, array, reshape
+	from numpy import ceil, array, reshape, empty
 
 
 	gridRef = [[0,0], [1,1], [1,2], [1,3], [2,2], [2,3], [2,3], [2,4], [2,4], [3,3], [2,5], [3,4], [3,4], 
@@ -287,17 +287,17 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	row0 = (nrows-1)*2 if va=='bottom' else 0
 	col0 = (ncols-1)*2 if ha=='right' else 0
 
-	axes = np.empty(naxes, dtype=object) # Create the empty array to hold each axis
+	axes = empty(naxes, dtype=object) # Create the empty array to hold each axis
 	for ii in range(naxes):
 		row = 2*(nrows-(ii//ncols)-1) if va=='bottom' else 2*(ii//ncols) # current row
 		col = 2*(ncols-(ii%ncols)-1) if ha=='right' else 2*(ii%ncols) # current column
 
 		# Select which axes this axis needs to be shared with
 		sharewith = {"none": None, "all": axes[0],
-					 "row": axes[(ii//ncols)*ncols], "col": axes[row0, col]}
+					 "row": axes[(ii//ncols)*ncols], "col": axes[ii%ncols]}
 		
-		axes_kw["sharex"] = sharewith[sharex]
-		axes_kw["sharey"] = sharewith[sharey]
+		axes_kw[ii]["sharex"] = sharewith[sharex]
+		axes_kw[ii]["sharey"] = sharewith[sharey]
 			
 		if (row == (0 if va=='bottom' else (nrows-1)*2) and ha=='centre'):
 			axes[ii] = subplot(gs[row:row+2,col+delta:col+delta+2],**axes_kw[ii])
@@ -311,11 +311,11 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	if (squeeze == True):
 		# Discarding unneeded dimensions that equal 1.  If we only have one
 		# subplot, just return it instead of a 1-element array.
-		return (fig, axesout.item()) if axesout.size == 1 else (fig, axesout.squeeze())
+		return (fig, axes.item()) if axes.size == 1 else (fig, axes.squeeze())
 	else:
 		# Returned axis array will be always 2-d, even if nrows=ncols=1.
 		if (naxes != ncols*nrows):
 			warnings.warn("squeeze = False not possible when naxes < nrows*ncols.")
-			return (fig, axesout.squeeze())
+			return (fig, axes.squeeze())
 		else:
-			return (fig, reshape(axesout, (nrows, ncols)))
+			return (fig, reshape(axes, (nrows, ncols)))
