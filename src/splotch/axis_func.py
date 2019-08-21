@@ -247,9 +247,14 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	
 	from numpy import ceil, array, reshape, empty
 
-
 	gridRef = [[0,0], [1,1], [1,2], [1,3], [2,2], [2,3], [2,3], [2,4], [2,4], [3,3], [2,5], [3,4], [3,4], 
 			   [4,4], [3,5], [3,5], [4,4], [3,6], [3,6], [4,5], [4,5], [3,7], [5,5], [5,5], [4,6], [5,5]]
+
+
+	if (isinstance(sharex, bool)):
+		sharex = "all" if sharex else "none"
+	if (isinstance(sharey, bool)):
+		sharey = "all" if sharey else "none"
 
 	if (naxes == None): # No number of axes specified
 		if (nrows==None): nrows=1
@@ -305,6 +310,35 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 			axes[ii] = subplot(gs[row+delta:row+delta+2,col:col+2],**axes_kw[ii])
 		else:
 			axes[ii] = subplot(gs[row:row+2,col:col+2],**axes_kw[ii])
+
+
+	# turn off redundant tick labeling
+	if sharex in ["col", "all"]:
+		if (ha=='centre'):
+			warnings.warn("Removing redundant shared xtick labels not possible when ha='centre'")
+		else:
+			# turn off all but the bottom row
+			for ax in axes[ncols:] if va=='bottom' else axes[:naxes-ncols]:
+				ax.xaxis.set_tick_params(which='both',
+										 labelbottom=False, labeltop=False)
+				ax.xaxis.offsetText.set_visible(False)
+
+	if sharey in ["row", "all"]:
+		if (va=='centre'):
+			warnings.warn("Removing redundant shared ytick labels not possible when va='centre'")
+		else:
+			# turn off all but the leftmost column
+			for ii, ax in enumerate(axes):
+				if (ha=='left'):
+					if (ii%ncols!=0):
+						ax.yaxis.set_tick_params(which='both',
+												 labelbottom=False, labeltop=False)
+						ax.yaxis.offsetText.set_visible(False)
+				elif (ha=='right'):
+					if (ii%ncols+1!=ncols and ii!=naxes-1):
+						ax.yaxis.set_tick_params(which='both',
+												 labelbottom=False, labeltop=False)
+						ax.yaxis.offsetText.set_visible(False)
 
 
 	### Squeeze axes object
