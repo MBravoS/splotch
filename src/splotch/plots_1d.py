@@ -514,6 +514,155 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		old_axes=axes_handler(old_axes)
 
 
+### Broken axis plot
+def brokenplot(x,y=None,xbreak=None,ybreak=None,sep=0.05,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
+			   ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+
+	""" Broken Axis Plot Function
+	
+	Creates a standard plot call with an axis break at `xbreak` or `ybreak` for vertical or horizontal breaks.
+	
+	Parameters
+	----------
+	x : array-like or list
+		If list it is assumed that each elemement is array-like. If y is not given, the given values pass to y and a
+		numpy array is generated with numpy.arange() for the x values.
+	y : array-like or list, optional
+		If list it is assumed that each elemement is array-like.
+	xbreak/ybreak : float, required
+		The location of the break for vertical or horizontal breaks is controlled by xbreak or ybreak, respectively.
+		Only one coordinate can be broken in a given plot.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	plabel : str, optional
+		Sets the legend for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+		A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
+	
+	Returns
+	-------
+	None
+
+	"""
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
+	from numpy import shape, arange
+	from matplotlib.pyplot import plot, legend, show
+	from matplotlib.transforms import Bbox
+	
+
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	if type(x) is not list or len(shape(x))==1:
+		x=[x]
+	L=len(x)
+	if y is None:
+		y=x
+		x=[arange(len(x[i])) for i in range(L)]
+	else:
+		if type(y) is not list or len(shape(y))==1:
+			y=[y]
+	if type(plabel) is not list:
+		plabel=[plabel]*L
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par = dict_splicer(plot_par,L,[1]*L)
+
+	# Get the original axis position
+	pos0 = ax.get_position(original=True)
+	width0, height0 = pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
+
+	for i in range(L):
+		ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
+	    
+	    # Get the axis limits if not already specified
+		xlims = ax.get_xlim() if xlim == None else xlim
+		ylims = ax.get_ylim() if ylim == None else ylim
+
+
+		# Define the positions of the two separated axes
+		if (i == 0):
+			pos1 = Bbox(list(pos0.get_points()))
+			pos1.x1 = pos1.x0 + (pos1.x1-pos1.x0)*(xbreak-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
+
+			pos2 = Bbox(list(pos0.get_points()))
+			pos2.x0 = pos2.x0 + (pos2.x1-pos2.x0)*(xbreak-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
+
+			ax.set_position(pos1) # Resize the first axis
+			ax2 = ax.figure.add_axes(pos2) # Add and duplicate the plotting in the second axis
+
+			# Set the new axis limits at the break point
+			ax.set_xlim(xlims[0],xbreak)
+			ax2.set_xlim(xbreak,xlims[1])
+
+		ax2.plot(x[i],y[i],label=None,**plot_par[i])
+
+
+		width1, height1 = pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
+		width2, height2 = pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
+
+		dx1, dy1 = 0.01 * width0/(width0-width1-sep/2), height1*0.025
+		
+		dash_kw = dict(transform=ax2.transAxes, color='black', linestyle='-', marker='', clip_on=False)
+		ax2.plot((0 - dx1, 0 + dx1), (0 - dy1, 0 + dy1), **dash_kw)  # bottom-right diagonal
+		ax2.plot((0 - dx1, 0 + dx1), (1 - dy1, 1 + dy1), **dash_kw)  # top-right diagonal
+
+		dx2, dy2 = 0.01 * width0/(width0-width2-sep/2), height2*0.025
+		dash_kw.update(transform=ax.transAxes)  # switch to the left axes
+		ax.plot((1 - dx2, 1 + dx2), (0 - dy2, 0 + dy2), **dash_kw)  # bottom-left sep/5iagonal
+		ax.plot((1 - dx2, 1 + dx2), (1 - dy2, 1 + dy2), **dash_kw)  # top-left sep/5iagonal
+
+		ax.spines['right'].set_visible(False)
+		ax.tick_params(labelright=False,which='both')  # don't put tick labels at the top
+		ax.yaxis.tick_left()
+
+		ax2.spines['left'].set_visible(False)
+		ax2.tick_params(labelleft=False,which='both')  # don't put tick labels at the top
+		ax2.yaxis.tick_right()
+
+
+
+	if any(plabel):
+		ax.legend(loc=lab_loc)
+	
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+
+
+
 def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
 				rlabel="",thetalabel="",rticks='auto',thetaticks='auto',
 				fig=None,plot_kw={},**kwargs):
