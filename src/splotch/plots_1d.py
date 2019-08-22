@@ -515,7 +515,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 
 
 ### Broken axis plot
-def brokenplot(x,y=None,xbreak=None,ybreak=None,sep=0.05,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
+def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
 			   ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 
 	""" Broken Axis Plot Function
@@ -532,10 +532,16 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,sep=0.05,xlim=None,ylim=None,xin
 	xbreak/ybreak : float, required
 		The location of the break for vertical or horizontal breaks is controlled by xbreak or ybreak, respectively.
 		Only one coordinate can be broken in a given plot.
-	xlim : tuple-like, optional
-		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
-	ylim : tuple-like, optional
-		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xlims : tuple-like, optional
+		Defines the limits of each part of the x-axis either side of the axis break.
+		Must be either a single tuple-like list (lower and higher limits) or
+		two tuple-like lists for either side of the broken axis.
+	ylims : tuple-like, optional (not implemented)
+		Defines the limits of each part of the y-axis either side of the axis break.
+		Must be either a single tuple-like list (lower and higher limits) or
+		two tuple-like lists for either side of the broken axis.
+	sep : float, optional, default: 0.05
+		The separation size of the axis break, given as a fraction of the axis dimensions.
 	xinvert : bool or list, optional
 		If true inverts the x-axis.
 	yinvert : bool or list, optional
@@ -590,7 +596,8 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,sep=0.05,xlim=None,ylim=None,xin
 			y=[y]
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-	
+
+
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
@@ -605,10 +612,15 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,sep=0.05,xlim=None,ylim=None,xin
 
 	for i in range(L):
 		ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
-	    
-	    # Get the axis limits if not already specified
+		
+		# Get the axis limits if not already specified
 		xlims = ax.get_xlim() if xlim == None else xlim
 		ylims = ax.get_ylim() if ylim == None else ylim
+		# if (xlims == None):
+		# 	xbounds = [ax.get_xlim(),ax.get_xlim()]
+		# if (shape(xlims) == (2,)):
+		# 	xbounds = []
+		# ybounds = ax.get_ylim() if ylims == None else ylims
 
 
 		# Define the positions of the two separated axes
