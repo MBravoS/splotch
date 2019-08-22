@@ -7,9 +7,8 @@ The package is available in for installation using `>pip install splotch`, thoug
 *Current version*: 0.3.7.0
 
 *Planned releases*:
-* Addition of error raising for unclear errors when breaking plots (0.3.7.0).
-* Addition of error/dispersion band plots (0.3.8.0).
-* Addition of level contour plots (0.3.8.0).
-* Addition of the option of filled contours for both sigma and level contour plots (0.3.10.0).
-* Addition of broken axis function (0.3.11.0).
+* Addition of error raising for unclear errors when breaking plots (0.3.8.0).
+* Addition of error/dispersion band plots (0.3.9.0).
+* Addition of level contour plots (0.3.10.0).
+* Addition of the option of filled contours for both sigma and level contour plots (0.3.11.0).
 * Addition of legend customisation function (0.3.12.0).
