@@ -1,3 +1,7 @@
+0.3.7.2 (23/08/2019):
+-brokenplot() now accepts a list for xbreak to define a start and stop for the break.
+-Added NotImplementedError() exception when trying to use ybreak.
+
 0.3.7.1 (22/08/2019):
 -Added some documentation to brokenplot()
 

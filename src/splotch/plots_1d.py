@@ -529,17 +529,14 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 		numpy array is generated with numpy.arange() for the x values.
 	y : array-like or list, optional
 		If list it is assumed that each elemement is array-like.
-	xbreak/ybreak : float, required
-		The location of the break for vertical or horizontal breaks is controlled by xbreak or ybreak, respectively.
-		Only one coordinate can be broken in a given plot.
-	xlims : tuple-like, optional
-		Defines the limits of each part of the x-axis either side of the axis break.
-		Must be either a single tuple-like list (lower and higher limits) or
-		two tuple-like lists for either side of the broken axis.
-	ylims : tuple-like, optional (not implemented)
-		Defines the limits of each part of the y-axis either side of the axis break.
-		Must be either a single tuple-like list (lower and higher limits) or
-		two tuple-like lists for either side of the broken axis.
+	xbreak/ybreak : float or tuple-like, required
+		The location(s) of the vertical or horizontal breaks is controlled by xbreak or ybreak, respectively.
+		The value can be a single location or a tuple defining the (start, stop) points of the break. Only one 
+		coordinate can be broken in a given plot.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	sep : float, optional, default: 0.05
 		The separation size of the axis break, given as a fraction of the axis dimensions.
 	xinvert : bool or list, optional
@@ -578,7 +575,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 	"""
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
-	from numpy import shape, arange
+	from numpy import shape, arange, ndarray
 	from matplotlib.pyplot import plot, legend, show
 	from matplotlib.transforms import Bbox
 	
@@ -597,6 +594,14 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 	if type(plabel) is not list:
 		plabel=[plabel]*L
 
+	if type(xbreak) not in [list,tuple,ndarray]:
+		xbreak = (xbreak, xbreak)
+	else:
+		if (len(xbreak) != 2):
+			raise ValueError("xbreak must be a single value of a tuple-like list of two elements.")
+
+	if (ybreak != None):
+		raise NotImplementedError("ybreak not yet implemented.")
 
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
@@ -616,27 +621,21 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 		# Get the axis limits if not already specified
 		xlims = ax.get_xlim() if xlim == None else xlim
 		ylims = ax.get_ylim() if ylim == None else ylim
-		# if (xlims == None):
-		# 	xbounds = [ax.get_xlim(),ax.get_xlim()]
-		# if (shape(xlims) == (2,)):
-		# 	xbounds = []
-		# ybounds = ax.get_ylim() if ylims == None else ylims
-
 
 		# Define the positions of the two separated axes
 		if (i == 0):
 			pos1 = Bbox(list(pos0.get_points()))
-			pos1.x1 = pos1.x0 + (pos1.x1-pos1.x0)*(xbreak-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
+			pos1.x1 = pos1.x0 + (pos1.x1-pos1.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
 
 			pos2 = Bbox(list(pos0.get_points()))
-			pos2.x0 = pos2.x0 + (pos2.x1-pos2.x0)*(xbreak-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
+			pos2.x0 = pos2.x0 + (pos2.x1-pos2.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
 
 			ax.set_position(pos1) # Resize the first axis
 			ax2 = ax.figure.add_axes(pos2) # Add and duplicate the plotting in the second axis
 
 			# Set the new axis limits at the break point
-			ax.set_xlim(xlims[0],xbreak)
-			ax2.set_xlim(xbreak,xlims[1])
+			ax.set_xlim(xlims[0],xbreak[0])
+			ax2.set_xlim(xbreak[1],xlims[1])
 
 		ax2.plot(x[i],y[i],label=None,**plot_par[i])
 
