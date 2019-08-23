@@ -576,7 +576,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	from numpy import shape, arange, ndarray
-	from matplotlib.pyplot import plot, legend, show
+	from matplotlib.pyplot import plot, legend, show, sca
 	from matplotlib.transforms import Bbox
 	
 
@@ -663,10 +663,11 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 		ax2.yaxis.tick_right()
 
 
+	sca(ax)
 
 	if any(plabel):
 		ax.legend(loc=lab_loc)
-	
+
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	
 	if ax is not None:
@@ -675,7 +676,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 
 
 def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
-				rlabel="",thetalabel="",rticks='auto',thetaticks='auto',
+				rlabel="",thetalabel="",rstep=None,thetastep=15.0,rticks='auto',thetaticks='auto',
 				fig=None,plot_kw={},**kwargs):
 	
 	""" Sector Plot function
@@ -698,6 +699,10 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
 		Sets the label of the r-axis.
 	thetalabel : str, optional
 		Sets the label of the theta-axis.
+	rstep : float, optional
+		Sets the step size of r ticks.
+	thetastep : float, optional, default: 15.0
+		Sets the step size of theta ticks (degrees).
 	rticks : 'auto', or ticker
 		* Not implement *
 	thetaticks : 'auto', or ticker
@@ -727,7 +732,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
 	import mpl_toolkits.axisartist.angle_helper as angle_helper
 	
 
-	from numpy import array, linspace, arange, shape, round, degrees, radians, pi
+	from numpy import array, linspace, arange, shape, sqrt, floor, round, degrees, radians, pi
 
 	if (fig == None):
 		fig = gcf()
@@ -741,14 +746,17 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
 	
 	# Get theta ticks
 	#if (thetaticks == 'auto'):
-	thetaticks = arange(*radians(array(thetalim)+rotate),step=15)
+	thetaticks = arange(*radians(array(thetalim)+rotate),step=radians(thetastep))
 	theta_gridloc = FixedLocator(thetaticks[thetaticks/(2*pi) < 1])
 	theta_tickfmtr = DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)-rotate)):g}" for tck in thetaticks])))
-	
+
 	#tick_fmtr = DictFormatter(dict(angle_ticks))
 	#tick_fmtr = angle_helper.Formatter()
 
-	r_gridloc = FixedLocator(linspace(rlim[0],rlim[1],num=int(0.75*fig.get_size_inches()[0]))) 
+	if (rstep == None):
+		rstep = 0.5
+	
+	r_gridloc = FixedLocator(arange(rlim[0],rlim[1],step=rstep))
 	
 	grid = floating_axes.GridHelperCurveLinear(
 		PolarAxes.PolarTransform(),
@@ -767,12 +775,12 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
 	rdir_ref = ['bottom','right','top','left']
 	
 	# adjust axis
-	ax.axis["left"].set_axis_direction("bottom")
-	ax.axis["right"].set_axis_direction("top")
-	ax.axis["bottom"].set_axis_direction("top")
-	ax.axis["top"].set_axis_direction("bottom")
+	ax.axis["left"].set_axis_direction(rdir_ref[(int(rotate)//90)%4])
+	ax.axis["right"].set_axis_direction(rdir_ref[(int(rotate)//90+2)%4])
+	ax.axis["bottom"].set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
+	ax.axis["top"].set_axis_direction(thetadir_ref[(int(rotate)//90+2)%4])
 	
-	ax.axis["bottom"].set_visible(False if rlim[0] == 0.0 else True)
+	ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1]-rlim[0])/3 else True)
 	ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90 + 2)%4])
 	
 	ax.axis["top"].toggle(ticklabels=True, label=True)
