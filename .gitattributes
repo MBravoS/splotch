@@ -1,2 +1,2 @@
 special-vendored-path/* linguist-vendored
-*.ipynb linguist-vendored=false
+Examples.ipynb linguist-vendored=false
