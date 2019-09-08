@@ -1,5 +1,12 @@
 #Object containing the default values for SPLOTCH functions
 class Params:
+	#Contours
+	cont_filled=False
+	sigcont_percent=[68.27,95.45]
+	sigcont_cmap='viridis'
+	sigcont_clim=[0.33,0.67]
+	sigcont_linestyle=['solid','dashed','dotted']
+	sigcont_output=False
 	#Grid
 	grid=False
 	grid_which='major'
@@ -12,7 +19,6 @@ class Params:
 	hist2D_output=False
 	#Images
 	img_caxis_log=False
-
 
 class Params0():
 	def __init__(self):

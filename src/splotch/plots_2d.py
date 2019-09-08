@@ -1,5 +1,96 @@
 #### Definition of all wrappers for 2D plotting
 
+#Level contours
+def cont(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
+			ylabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+	
+	"""Level contour plotting function.
+	
+	This is a wrapper for pyplot.contour() and pyplot.contourf().
+	
+	Parameters
+	----------
+	z : array-like
+		The height values to draw the contours.
+	x : array-like, optional
+		Position of data points in the x axis.
+	y : array-like, optional
+		Position of data points in the y axis.
+	filled: boolean, optional
+		If True draws filled contours. If not given defaults to the value defined in splotch.Params.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool, optional
+		If true inverts the x-axis.
+	yinvert : bool, optional
+		If true inverts the y-axis.
+	xlog : bool, optional
+		If True the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.
+	ylog : bool, optional
+		If True the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	output : boolean, optional
+		If True, returns the edges and values of the underlying histogram plus the levels of the contours.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
+	**kwargs: QuadContourSet properties, optional
+		kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
+		The list of available properties can be found here: 
+		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html
+	
+	Returns
+	-------
+	bin_edges_x : array
+		The bin edges for the x axis.
+	bin_edges_y : array
+		The bin edges for the y axis.
+	n : array
+		The values of the underlying histogram.
+	l : array
+		The levels for the contours.
+	"""
+	
+	from numpy import shape, linspace
+	from matplotlib.pyplot import contour,contourf, legend
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	if filled is None:
+		from .defaults import Params
+		filled=Params.cont_filled
+	if x is None:
+		x=linspace(0,1,z.shape[0])
+	if y is None:
+		y=linspace(0,1,z.shape[1])
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+	
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	
+	plotf={False:contour,True:contourf}
+	plotf[filled](x,y,z,**plot_par)
+	
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+
 #Errorbars
 def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
 	title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
@@ -50,7 +141,6 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
 		A list of available `Line2D` properties can be found here: 
 		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-
 	
 	Returns
 	-------
@@ -347,7 +437,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	if None in (clog,output):
 		from .defaults import Params
 		if clog is None:
@@ -554,10 +644,10 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-# Contours encircling the densest part down to a certain percetange 
-def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='viridis',xlim=None,ylim=None,
-				clim=[0.33,0.67],xinvert=False,yinvert=False,cbar_invert=False,s=['solid','dashed','dotted'],xlog=False,
-				ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
+# Contours encircling the densest region down to a certain percentage 
+def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
+				cbar_invert=False,s=None,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
+				grid=None,output=None,plot_kw={},**kwargs):
 	
 	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
 	
@@ -614,10 +704,13 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	grid : boolean, optional
 		If not given defaults to the value defined in splotch.Params.
 	output : boolean, optional
-		If True, returns the edges and values of the histogram.
+		If True, returns the edges and values of the underlying histogram plus the levels of the contours.
 	plot_kw : dict, optional
-		Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
-		Parameters will be overwritten if also given implicitly as a **kwarg.
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
+	**kwargs: QuadContourSet properties, optional
+		kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
+		The list of available properties can be found here: 
+		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html
 	
 	Returns
 	-------
@@ -627,13 +720,27 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 		The bin edges for the y axis.
 	n : array
 		The values of the underlying histogram.
+	l : array
+		The levels for the contours.
 	"""
 	
-	from numpy import linspace, round
 	from matplotlib.cm import get_cmap
+	from numpy import array,linspace, round
 	from matplotlib.pyplot import gca, contour, legend
 	from .base_func import axes_handler,base_hist2D,percent_finder,plot_finalizer,dict_splicer
 	
+	if None in (percent,cmap,clim,s,output):
+		from .defaults import Params
+		if percent is None:
+			percent=Params.sigcont_percent
+		if cmap is None:
+			cmap=Params.sigcont_cmap
+		if clim is None:
+			clim=Params.sigcont_clim
+		if s is None:
+			s=Params.sigcont_linestyle
+		if output is None:
+			output=Params.sigcont_output
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if type(percent) is not list:
@@ -647,6 +754,7 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	if output is None:
 		from .defaults import Params
 		output=Params.hist2D_output
+	
 	cmap=get_cmap(cmap)
 	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
@@ -673,18 +781,19 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 			clabel=[str(round(p,1))+'%' for p in percent]
 		else:
 			clabel= [clabel] + [None]*(len(percent)-1)
-
+	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,len(percent),[1]*len(percent))
-
+	
+	level=[]
 	for i in range(len(percent)):
-		level=[percent_finder(Z,percent[i]/100)]
-		CS.append(contour(X,Y,Z.T,levels=level,colors=[c[i],],linestyles=s[i],**plot_par[i]))
+		level.append(percent_finder(Z,percent[i]/100))
+		CS.append(contour(X,Y,Z.T,levels=[level[i]],colors=[c[i],],linestyles=s[i],**plot_par[i]))
 		if clabel[0] is not None:
 			CS[i].collections[0].set_label(clabel[i])
 	if clabel[0] is not None:
@@ -693,4 +802,4 @@ def sigma_cont(x,y,percent=[68.27,95.45],bin_type=None,bins=None,c=None,cmap='vi
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 	if output:
-		return(Z.T,X,Y)
+		return(X,Y,Z.T,array(level))

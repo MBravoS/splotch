@@ -295,3 +295,29 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		grid_control=Params.grid
 	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
 
+def val_check(val):
+	"""Type check of variable to pass to style functions.
+	
+	Parameters
+	----------
+	val : str
+		String containing the value to evaluate
+	Returns
+	-------
+	val : Recasted value
+	"""
+	
+	from distutils.util import strtobool
+	
+	if "'" not in val and '"' not in val:
+		try: 
+			val=float(val) if '.' in val else int(val)
+		except ValueError:
+			try:
+				val=bool(strtobool(val))
+			except ValueError:
+				val=val
+				#if val=='None':
+				#	val=None
+	
+	return(val)
