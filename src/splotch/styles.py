@@ -69,10 +69,8 @@ def use_style(path):
 				else:
 					val = val_check(val.rstrip())
 				
-				print(par,val,type(val))
 				pltDict[par]=val
-				style.use(pltDict)
-	#style.use(pltDict)
+	style.use(pltDict)
 	
 	return(None)
 

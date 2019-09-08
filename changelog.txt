@@ -1,6 +1,9 @@
+0.3.9.1 (08/09/2019):
+-Removed debug print in styles.use_style()
+
 0.3.9.0 (08/09/2019):
 -Added new level contour, plots_2d.cont().
--Updated styles.use() to pass a dictionary from the given file to matplotlib.
+-Updated styles.use_style() to pass a dictionary from the given file to matplotlib.
 -Added outputs to plots_2d.sigma_cont().
 
 0.3.8.0 (04/09/2019):
