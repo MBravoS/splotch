@@ -295,6 +295,31 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		grid_control=Params.grid
 	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
 
+def step_hist_filled(x,y,**kwargs):
+	"""Wrapper for a specific fill_between plot.
+	
+	Parameters
+	----------
+	x : array-like
+		The x-axis values.
+	y : array-like
+		The y-axis values.
+	Other arguments : **kwargs
+		Optional kwargs supported by fill_between. Note that it will conflict if 'step' is given.
+	Returns
+	-------
+	val : Recasted value
+	"""
+	
+	from matplotlib.pyplot import fill_between
+	
+	p=fill_between(x[:-1],y,step='post',**kwargs)
+	ec=p.get_edgecolor()
+	fc=p.get_facecolor()
+	fill_between(x[-2:],y[-2:],edgecolor=ec,facecolor=fc,step='pre',**kwargs)
+	
+	return(None)
+
 def val_check(val):
 	"""Type check of variable to pass to style functions.
 	

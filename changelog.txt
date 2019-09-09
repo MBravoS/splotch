@@ -1,3 +1,6 @@
+0.3.10.0 (09/09/2019):
+-Added filled options to plots_1d.hist().
+
 0.3.9.1 (08/09/2019):
 -Removed debug print in styles.use_style()
 

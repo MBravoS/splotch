@@ -149,9 +149,11 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None
 		If false the histogram returns raw counts.
 	scale : float or list, optional
 		Scaling the counts.
-	smooth : boolean, optional.
-		If True the histogram is plotted with a line that connects between the value of each bin, positioned at the
-		centre of the bins. Defaults to False, plotting with a stepped line, each step spanning the bin width.
+	hist_type : str, optional.
+		Defines the type of histogram to be drawn. 'smooth' and 'step' produce lines, with the former drawing lines conecting
+		the values of each bin positioned on their centre, and the latter drawing a stepwise line, with the edges of each step
+		coinciding with the bin edges. 'bar' produces a bar plot. All have filled version (i.e., 'smoothfilled'), which fills
+		the space between the edges of the histogram and 0.
 	v : array-like or list, optional
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	vstat : str, function  or list, optional
@@ -199,9 +201,9 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None
 	
 	from numpy import sum as np_sum
 	from scipy.stats import binned_statistic
-	from numpy import where, nan, inf, array, ones, histogram, diff
-	from matplotlib.pyplot import plot, step, bar, legend, rcParams, gca
-	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer
+	from numpy import array, diff, histogram, inf, nan, ones, where
+	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
+	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer,step_hist_filled
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -249,8 +251,8 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 	
-	plot_type={'smooth':plot,'step':step,'bar':bar,'barfilled':bar}
-	hist_centre={'smooth':True,'step':False,'bar':False,'barfilled':False}
+	plot_type={'smooth':plot,'smoothfilled':fill_between,'step':step,'stepfilled':step_hist_filled,'bar':bar,'barfilled':bar}
+	hist_centre={'smooth':True,'smoothfilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
 	bin_edges=[]
 	n_return=[]
 	
