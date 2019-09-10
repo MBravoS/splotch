@@ -295,3 +295,55 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		grid_control=Params.grid
 	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
 
+def step_hist_filled(x,y,**kwargs):
+	"""Wrapper for a specific fill_between plot.
+	
+	Parameters
+	----------
+	x : array-like
+		The x-axis values.
+	y : array-like
+		The y-axis values.
+	Other arguments : **kwargs
+		Optional kwargs supported by fill_between. Note that it will conflict if 'step' is given.
+	Returns
+	-------
+	val : Recasted value
+	"""
+	
+	from numpy import empty
+	from matplotlib.pyplot import fill_between
+	
+	temp_y=empty(len(y)+1)
+	temp_y[1:]=y
+	temp_y[0]=y[0]
+	fill_between(x,temp_y,step='pre',**kwargs)
+	
+	return(None)
+
+def val_check(val):
+	"""Type check of variable to pass to style functions.
+	
+	Parameters
+	----------
+	val : str
+		String containing the value to evaluate
+	Returns
+	-------
+	val : Recasted value
+	"""
+	
+	from distutils.util import strtobool
+	
+	if "'" not in val and '"' not in val:
+		try: 
+			val=float(val) if '.' in val else int(val)
+		except ValueError:
+			try:
+				val=bool(strtobool(val))
+			except ValueError:
+				val=val
+				#if val=='None':
+				#	val=None
+	
+	return(val)

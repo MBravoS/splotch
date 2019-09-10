@@ -425,7 +425,7 @@ legend.loc           : best
 legend.frameon       : True     ## if True, draw the legend on a background patch
 legend.framealpha    : 0.8      ## legend patch transparency
 legend.facecolor     : inherit  ## inherit from axes.facecolor; or color spec
-legend.edgecolor     : 0.8      ## background patch boundary color
+#legend.edgecolor     : 0.8      ## background patch boundary color
 legend.fancybox      : True     ## if True, use a rounded box for the
                                  ## legend background, else a rectangle
 legend.shadow        : False    ## if True, give background a shadow effect
@@ -634,20 +634,27 @@ animation.convert_args:           ## Additional arguments to pass to convert
 animation.embed_limit : 20.0      ## Limit, in MB, of size of base64 encoded
                                    ## animation in HTML (i.e. IPython notebook)
 
-
 ##### SPLOTCH CONFIGURATION
 
+#### CONTOURS
+cont_filled       : False
+sigcont_percent   : 68.27,95.45
+sigcont_cmap      : viridis
+sigcont_clim      : 0.33,0.67
+sigcont_linestyle : solid,dashed,dotted
+sigcont_output    : False
+
 #### GRID
-#grid             : False
-#grid_which       : major
-#grid_axis        : both
+grid              : False
+grid_which        : major
+grid_axis         : both
 
 #### HISTOGRAMS
-#hist1D_output    : False
-#hist1D_smooth    : False
-#hist1D_yaxis_log : False
-#hist2D_caxis_log : False
-#hist2D_output    : False
+hist1D_output     : False
+hist1D_histtype   : step
+hist1D_yaxis_log  : False
+hist2D_caxis_log  : False
+hist2D_output     : False
 
 #### IMAGES
-#img_caxis_log    : False
+img_caxis_log     : False

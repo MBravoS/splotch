@@ -149,9 +149,11 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None
 		If false the histogram returns raw counts.
 	scale : float or list, optional
 		Scaling the counts.
-	smooth : boolean, optional.
-		If True the histogram is plotted with a line that connects between the value of each bin, positioned at the
-		centre of the bins. Defaults to False, plotting with a stepped line, each step spanning the bin width.
+	hist_type : str, optional.
+		Defines the type of histogram to be drawn. 'smooth' and 'step' produce lines, with the former drawing lines conecting
+		the values of each bin positioned on their centre, and the latter drawing a stepwise line, with the edges of each step
+		coinciding with the bin edges. 'bar' produces a bar plot. All have filled version (i.e., 'smoothfilled'), which fills
+		the space between the edges of the histogram and 0.
 	v : array-like or list, optional
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	vstat : str, function  or list, optional
@@ -199,9 +201,9 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None
 	
 	from numpy import sum as np_sum
 	from scipy.stats import binned_statistic
-	from numpy import where, nan, inf, array, ones, histogram, diff
-	from matplotlib.pyplot import plot, step, bar, legend, rcParams, gca
-	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer
+	from numpy import array, diff, histogram, inf, nan, ones, where
+	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
+	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer,step_hist_filled
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -249,8 +251,8 @@ def hist(data,bin_type=None,bins=None,dens=True,scale=None,hist_type=None,v=None
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 	
-	plot_type={'smooth':plot,'step':step,'bar':bar,'barfilled':bar}
-	hist_centre={'smooth':True,'step':False,'bar':False,'barfilled':False}
+	plot_type={'smooth':plot,'smoothfilled':fill_between,'step':step,'stepfilled':step_hist_filled,'bar':bar,'barfilled':bar}
+	hist_centre={'smooth':True,'smoothfilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
 	bin_edges=[]
 	n_return=[]
 	
@@ -673,6 +675,105 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,xin
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
+
+def curve(expr, var=None, subs=None, lims=None, num=101, log=False, ax=None, plot_kw={}, **kwargs):
+    """ Function Plotting
+    
+    Plot the curve corresponding to a defined function over the range of [from, to].
+    
+    Parameters
+    ----------
+    expr : str or sympy expression
+        An expression parsed either as a string or as a sympy expression which will be
+        evaluated by the function in the range of `lims`.
+    var : str or sympy symbol, default: 'x'
+        The independent variable on which to evaluate the expression (i.e. the variable
+        on the x-axis). This defaults to the first non-numeric element of the expression
+        or otherwise simply assumes this to be 'x'.
+    subs : dict, optional
+        If `expr` contains more symbols than the independent variable `var`, this dictionary
+        will substitute numerical values for all additonal symbols given. `subs` is required
+        if additional symbols are specified.
+    lims : float, optional
+        The range over which the function will be plotted. If not given, these default to
+        the current bounds of the plot.
+    num : int, optional (default: 101)
+        The number of values along the independent variable on which to evaulate `expr`.
+    ax : pyplot.Axes, optional
+        Use the given axes to make the plot, defaults to the current axes.
+    plot_kw : dict, optional
+        Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are
+        Line2D properties. It is recommended that kwargs be parsed implicitly through **kwargs
+        for readability.
+    **kwargs: Line2D properties, optional
+        kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
+        antialiasing, etc. A list of available `Line2D` properties can be found here: 
+        https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
+
+    """
+    
+    from sympy import symbols, sympify, Expr
+    from numpy import linspace, logspace, log10
+    
+    from matplotlib.pyplot import plot, legend, gca
+    from .base_func import axes_handler,dict_splicer,plot_finalizer
+    
+    if ax is not None:
+        old_axes=axes_handler(ax)
+    else:
+        ax=gca()
+        old_axes=ax
+    
+    if (type(expr) == str):
+        expr = sympify(expr)
+    elif (isinstance(expr, Expr)):
+        pass
+    else:
+        raise TypeError(f"`expr` must be of type `str` or sympy.Expr, instead got {type(expr)}.")
+    
+    symbs = expr.free_symbols # Get the symbols in the expression
+    symbkeys = [str(sym) for sym in symbs]
+    
+    if (var != None): # Validate the independent variable
+        if (var not in symbkeys):
+            raise ValueError(f"Independent variable '{var}' was not found in 'expr'.")
+    else: # Assume independent variable is 'x', otherwise, assume the first symbol.
+        var = 'x' if 'x' in symbkeys or len(symbkeys)==0 else symbkeys[0]
+    
+    
+    if (subs != None):
+        if (var in list(subs)):
+            raise ValueError(f"Independent variable '{var}' should not be in subs.")
+        for key in list(subs):
+            if (key not in symbkeys):
+                raise KeyError(f"Substitution variable '{key}' does not exist in 'expr'.")
+    
+    
+    # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+    #plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
+    plot_par.update(kwargs)
+    
+    
+    if (lims == None):
+        if ('xlim' in list(plot_par)):
+            lims = plot_par['xlim']
+        else:
+            lims = ax.get_xlim()
+            
+    vararr = logspace(*log10(lims),num=num) if log else linspace(*lims,num=num)
+    
+    curvearr = np.empty(shape=num)
+    for ii, val in enumerate(vararr):
+        subs[var] = val
+        curvearr[ii] = expr.evalf(subs=subs)
+
+    plot(vararr,curvearr,**kwargs)
+    
+    if ax is not None:
+        old_axes=axes_handler(old_axes)
+    
+    return (expr)
 
 
 def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,
