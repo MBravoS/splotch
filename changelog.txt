@@ -1,3 +1,6 @@
+0.3.10.1 (10/09/2019):
+-Improved 'stepfilled' implementation in plots_1d.hist().
+
 0.3.10.0 (09/09/2019):
 -Added filled options to plots_1d.hist().
 

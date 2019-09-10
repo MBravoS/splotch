@@ -311,12 +311,13 @@ def step_hist_filled(x,y,**kwargs):
 	val : Recasted value
 	"""
 	
+	from numpy import empty
 	from matplotlib.pyplot import fill_between
 	
-	p=fill_between(x[:-1],y,step='post',**kwargs)
-	ec=p.get_edgecolor()
-	fc=p.get_facecolor()
-	fill_between(x[-2:],y[-2:],edgecolor=ec,facecolor=fc,step='pre',**kwargs)
+	temp_y=empty(len(y)+1)
+	temp_y[1:]=y
+	temp_y[0]=y[0]
+	fill_between(x,temp_y,step='pre',**kwargs)
 	
 	return(None)
 
