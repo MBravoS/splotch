@@ -63,6 +63,7 @@ def base_hist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	Z : ndarray
 		The value of each bin.
 	"""
+	
 	from numpy import histogram2d
 	from scipy.stats import binned_statistic_2d
 	
@@ -182,8 +183,8 @@ def dict_splicer(plot_dict,Ld,Lx):
 	"""
 	dict_list=[]
 	dict_keys=plot_dict.keys()
-	if 'rasterized' not in dict_keys:
-		plot_dict['rasterized']=True
+	#if 'rasterized' not in dict_keys:
+	#	plot_dict['rasterized']=True
 	for i in range(Ld):
 		temp_dict={}
 		for k in dict_keys:

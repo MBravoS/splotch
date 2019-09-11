@@ -1,3 +1,9 @@
+0.3.10.2 (11/09/2019):
+-Made adjustments to label handling in curve()
+-The 'label' parameter accepts arguments of type: bool, str, or list-like iterables and will automatically generate the most appropriate legend for each.
+-Added permute parameter which gives every combination of subs
+-Removed automatic setting of 'rasterized' parameter in dict_splicer()
+
 0.3.10.1 (10/09/2019):
 -Improved 'stepfilled' implementation in plots_1d.hist().
 
