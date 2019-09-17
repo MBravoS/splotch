@@ -1,3 +1,6 @@
+0.3.10.3 (17/09/2019):
+-Fixed issue when passing only one linestyle to plots_2d.sigma_cont().
+
 0.3.10.2 (11/09/2019):
 -Made adjustments to label handling in curve()
 -The 'label' parameter accepts arguments of type: bool, str, or list-like iterables and will automatically generate the most appropriate legend for each.

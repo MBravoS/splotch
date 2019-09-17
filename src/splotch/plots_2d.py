@@ -781,6 +781,8 @@ def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=No
 			clabel=[str(round(p,1))+'%' for p in percent]
 		else:
 			clabel= [clabel] + [None]*(len(percent)-1)
+	if type(s) is not list:
+		s=[s]*len(percent)
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
