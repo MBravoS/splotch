@@ -1,3 +1,7 @@
+0.4.0.0 (11/10/2019):
+-Updated function names for improved clarity and consistency with matplotlib.
+-Added cumulative distributions to plots_1d.hist().
+
 0.3.10.3 (17/09/2019):
 -Fixed issue when passing only one linestyle to plots_2d.sigma_cont().
 

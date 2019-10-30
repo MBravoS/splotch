@@ -1,6 +1,4 @@
 """
-
-
 Author: Robin Cook, Matias Bravo
 Date: 09/08/19
 """
@@ -22,13 +20,11 @@ from datetime import date
 import numpy as np
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-
 def prepend(filename, line):
 	with open(filename, 'r+') as f: 
 		content = f.read() 
 		f.seek(0, 0) 
 		f.write(line.rstrip('\r') + '\n' + content)
-
 
 def get_version():
 
@@ -161,7 +157,14 @@ elif (nArgs == 0):
 else:
 	print("\nERROR: Too many arguments given. Use one of [+v.+M.+m.+b] | -f.\n  -- ABORTING --\n"); exit()
 
-if ( int("".join(map(str, newVersion))) < int("".join(map(str, currVersion))) ):
+#if ( int("".join(map(str, newVersion))) < int("".join(map(str, currVersion))) ):
+invalid_version=True
+for i in range(len(newVersion)):
+	if int(newVersion[i])>int(currVersion[i]):
+		invalid_version=False
+	elif int(newVersion[i])<int(currVersion[i]):
+		break
+if invalid_version:
 	print(f"\nERROR: the new version ({'.'.join(map(str, newVersion))}) specified is older than the current version ({'.'.join(map(str, currVersion))})\n  -- ABORTING --\n"); exit()
 
 
