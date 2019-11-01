@@ -8,7 +8,8 @@ Welcome to splotch's documentation!
 
 .. toctree::
     :maxdepth: 2
-    :caption: Contents:
+    
+    plots_1d
 
 splotch 1D plotting functions
 =====================
