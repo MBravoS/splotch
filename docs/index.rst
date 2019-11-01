@@ -10,7 +10,7 @@ Welcome to splotch's documentation!
    :maxdepth: 2
    :hidden:
 
-   Examples.examples
+   Examples.Examples
    plots_1d
    plots_2d
    axis_func
