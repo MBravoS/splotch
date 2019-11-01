@@ -562,7 +562,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 	from scipy.stats import binned_statistic
 	from numpy import array, diff, histogram, inf, nan, ones, where
 	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
-	from .base_func import axes_handler,binned_axis,dict_splicer,plot_finalizer,step_hist_filled
+	from .base_func import axes_handler,bin_axis,dict_splicer,plot_finalizer,step_filler
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -612,13 +612,13 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 	
-	plot_type={'smooth':plot,'smoothfilled':fill_between,'step':step,'stepfilled':step_hist_filled,'bar':bar,'barfilled':bar}
+	plot_type={'smooth':plot,'smoothfilled':fill_between,'step':step,'stepfilled':step_filler,'bar':bar,'barfilled':bar}
 	hist_centre={'smooth':True,'smoothfilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
 	bin_edges=[]
 	n_return=[]
 	
 	for i in range(L):
-		temp_data,bins_hist,bins_plot=binned_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
+		temp_data,bins_hist,bins_plot=bin_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
 		if vstat[i]:
 			temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
@@ -731,7 +731,7 @@ def hist_legacy(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yi
 		plabel=[plabel]*L
 	plot_par=dict_splicer(plot_kw,L,[len(x) for x in data])
 	for i in range(L):
-		temp_data,bins,temp=binned_axis(data[i],bin_num[i],log=xlog)
+		temp_data,bins,temp=bin_axis(data[i],bin_num[i],log=xlog)
 		hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
 	if any(plabel):
 		legend(loc=lab_loc)

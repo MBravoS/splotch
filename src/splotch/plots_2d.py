@@ -7,12 +7,12 @@ def cont(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	"""Level contour plotting function (legacy name).
 	
 	This provides legacy compatibily for old code using the original name of the function.
-	This function will eventually be removed, so consider switching to plots_1d.contour().
+	This function will eventually be removed, so consider switching to plots_2d.contour().
 	"""
 	
 	import warnings
 	
-	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_1d.contour() instead.',FutureWarning)
+	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.contour() instead.',FutureWarning)
 	
 	contour(z,x,y,filled,xlim,ylim,xinvert,yinvert,xlog,ylog,title,xlabel,ylabel,lab_loc,ax,grid,plot_kw={},**kwargs)
 
@@ -110,6 +110,21 @@ def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinver
 def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
 	title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
+	"""Errorbar plotting function (legacy name).
+	
+	This provides legacy compatibily for old code using the original name of the function.
+	This function will eventually be removed, so consider switching to plots_2d.errorbar().
+	"""
+	
+	import warnings
+	
+	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.errorbar() instead.',FutureWarning)
+	
+	errorbar(x,y,xerr,yerr,xlim,ylim,xinvert,yinvert,xlog,ylog,title,xlabel,ylabel,plabel,lab_loc,ax,grid,plot_kw,**kwargs)
+
+def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
+				title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+	
 	"""Errorbar plotting function.
 	
 	This is a wrapper for pyplot.errorbar().
@@ -198,6 +213,21 @@ def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=Fal
 #Errorboxes
 def errbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
 	title=None,xlabel=None,ylabel=None,plabel=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
+	
+	"""Errorbox plotting function (legacy name).
+	
+	This provides legacy compatibily for old code using the original name of the function.
+	This function will eventually be removed, so consider switching to plots_2d.errorbox().
+	"""
+	
+	import warnings
+	
+	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.errorbox() instead.',FutureWarning)
+	
+	errorbox(x,y,xerr,yerr,xlim,ylim,xinvert,yinvert,xlog,ylog,boxtype,title,xlabel,ylabel,plabel,grid,lab_loc,ax,plot_kw,**kwargs)
+
+def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
+			title=None,xlabel=None,ylabel=None,plabel=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Errorbox plotting function.
 	
@@ -431,7 +461,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	from numpy import nan
 	from matplotlib.colors import LogNorm
 	from matplotlib.pyplot import pcolormesh, colorbar
-	from .base_func import axes_handler,base_hist2D,plot_finalizer
+	from .base_func import axes_handler,basehist2D,plot_finalizer
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -441,8 +471,8 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		if bins is None:
 			bins=int((len(x))**0.4)
 		bins=[bins]*2
-	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
-	_,_,counts = base_hist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog) # Also get counts for number threshold cut
+	X,Y,Z=basehist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
+	_,_,counts = basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog) # Also get counts for number threshold cut
 
 	# Cut bins which do not meet the number count threshold
 	Z[counts<nmin] = nan
@@ -800,9 +830,25 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,rlabel="",thet
 	
 	return sector_ax
 
-
 # Contours encircling the densest region down to a certain percentage 
 def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
+				cbar_invert=False,s=None,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
+				grid=None,output=None,plot_kw={},**kwargs):
+	
+	"""Contour function, encircling the highest density regions that contain the given percentages of the sample (legacy name).
+	
+	This provides legacy compatibily for old code using the original name of the function.
+	This function will eventually be removed, so consider switching to plots_2d.contourp().
+	"""
+	
+	import warnings
+	
+	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.contourp() instead.',FutureWarning)
+	
+	contourp(x,y,percent,bin_type,bins,c,cmap,xlim,ylim,clim,xinvert,yinvert,cbar_invert,s,xlog,ylog,title,xlabel,ylabel,
+				clabel,lab_loc,ax,grid,output,plot_kw,**kwargs)
+
+def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
 				cbar_invert=False,s=None,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
 				grid=None,output=None,plot_kw={},**kwargs):
 	
@@ -884,7 +930,7 @@ def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=No
 	from matplotlib.cm import get_cmap
 	from numpy import array,linspace, round
 	from matplotlib.pyplot import gca, contour, legend
-	from .base_func import axes_handler,base_hist2D,percent_finder,plot_finalizer,dict_splicer
+	from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer
 	
 	if None in (percent,cmap,clim,s,output):
 		from .defaults import Params
@@ -913,7 +959,7 @@ def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=No
 		output=Params.hist2D_output
 	
 	cmap=get_cmap(cmap)
-	X,Y,Z=base_hist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
+	X,Y,Z=basehist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	CS=[]

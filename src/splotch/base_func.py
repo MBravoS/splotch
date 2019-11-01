@@ -20,7 +20,7 @@ def axes_handler(new_axis):
 	sca(new_axis)
 	return(curr_axis)
 
-def base_hist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
+def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	"""2D histogram base calculation
 	
 	This function is a base-level function used by plots_2d.hist2D() and plots_2d.sigma_cont() to calculate the
@@ -67,8 +67,8 @@ def base_hist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	from numpy import histogram2d
 	from scipy.stats import binned_statistic_2d
 	
-	x_temp,x_bins_hist,x_bins_plot=binned_axis(x,bin_type[0],bin_num[0],log=xlog)
-	y_temp,y_bins_hist,y_bins_plot=binned_axis(y,bin_type[1],bin_num[1],log=ylog)
+	x_temp,x_bins_hist,x_bins_plot=bin_axis(x,bin_type[0],bin_num[0],log=xlog)
+	y_temp,y_bins_hist,y_bins_plot=bin_axis(y,bin_type[1],bin_num[1],log=ylog)
 	if cstat:
 		Z=binned_statistic_2d(x_temp,y_temp,c,statistic=cstat,bins=[x_bins_hist,y_bins_hist])[0]
 	else:
@@ -77,7 +77,7 @@ def base_hist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 			Z*=1.0*len(x)/norm
 	return(x_bins_plot,y_bins_plot,Z)
 
-def binned_axis(data,btype,bins,log=False,plot_centre=False):
+def bin_axis(data,btype,bins,log=False,plot_centre=False):
 	"""Bin construction for histograms
 	
 	This function is a base-level function used by all histogram-related functions to construct the bins.
@@ -296,7 +296,7 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		grid_control=Params.grid
 	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
 
-def step_hist_filled(x,y,**kwargs):
+def step_filler(x,y,**kwargs):
 	"""Wrapper for a specific fill_between plot.
 	
 	Parameters
@@ -322,7 +322,7 @@ def step_hist_filled(x,y,**kwargs):
 	
 	return(None)
 
-def val_check(val):
+def val_checker(val):
 	"""Type check of variable to pass to style functions.
 	
 	Parameters

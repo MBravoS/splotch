@@ -15,7 +15,7 @@ def use_style(path):
 	"""
 	
 	from .defaults import Params
-	from .base_func import val_check
+	from .base_func import val_checker
 	from matplotlib.pyplot import style
 	
 	(path)
@@ -48,9 +48,9 @@ def use_style(path):
 				
 				# Adjust parameter value for booleans and numbers (i.e. floats/integer)
 				if ',' in val:
-					val = [val_check(v) for v in val.split(',')]
+					val = [val_checker(v) for v in val.split(',')]
 				else:
-					val = val_check(val)
+					val = val_checker(val)
 				
 				if (par in validParams): # only edit parameters that exist within Params Class
 					setattr(Params,par,val)
@@ -65,9 +65,9 @@ def use_style(path):
 				
 				# Adjust parameter value for booleans and numbers (i.e. floats/integer)
 				if ',' in val and "'" not in val:
-					val = [val_check(v.rstrip()) for v in val.split(',')]
+					val = [val_checker(v.rstrip()) for v in val.split(',')]
 				else:
-					val = val_check(val.rstrip())
+					val = val_checker(val.rstrip())
 				
 				pltDict[par]=val
 	style.use(pltDict)
