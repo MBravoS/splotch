@@ -9,7 +9,7 @@ Welcome to splotch's documentation!
 .. toctree::
     :maxdepth: 2
     
-    splotch.plots_1d
+    plots_1d <plots_1d>
 
 splotch 1D plotting functions
 =====================
