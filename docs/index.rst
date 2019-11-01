@@ -8,6 +8,7 @@ Welcome to splotch's documentation!
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    plots_1d
    plots_2d
