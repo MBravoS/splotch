@@ -10,33 +10,16 @@ Welcome to splotch's documentation!
    :maxdepth: 2
 
    plots_1d <plots_1d>
-
+   plots_2d <plots_2d>
+   axis_func <axis_func>
+   defaults <defaults>
+   base_func <base_func>
 ..
 
-splotch 1D plotting functions
-=====================
-.. automodule:: src.splotch.plots_1d
-    :members:
+# splotch
+**Simple PLOTs, Contours and Histograms** is a small package with wrapper functions designed to simplify plotting calls from matplotlib.
 
-splotch 2D plotting functions
-=================
-.. automodule:: src.splotch.plots_2d
-    :members:
-
-splotch axis functions
-===================
-.. automodule:: src.splotch.axis_func
-    :members:
-
-splotch defaults
-===================
-.. automodule:: src.splotch.defaults
-    :members:
-
-splotch base functions
-===================
-.. automodule:: src.splotch.base_func
-    :members:
+The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
 Indices and tables
 ==================

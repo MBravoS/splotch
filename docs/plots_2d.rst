@@ -1,4 +1,4 @@
-2-D plotting functions in for splotch.
-
-automodule:: plots_2d
-:members:
+splotch 2D plotting functions
+=================
+.. automodule:: src.splotch.plots_2d
+    :members:
