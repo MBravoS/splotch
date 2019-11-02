@@ -1,0 +1,10 @@
+ipykernel
+nbconvert
+nbsphinx
+sphinxcontrib-bibtex
+sphinxcontrib-svg2pdfconverter
+ipywidgets
+numpy
+scipy
+matplotlib
+splotch
