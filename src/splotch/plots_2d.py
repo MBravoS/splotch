@@ -597,7 +597,7 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 		old_axes=axes_handler(old_axes)
 
 # Scatter
-def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
+def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
 			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""2D pixel-based image plotting function.
@@ -605,15 +605,19 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	Parameters
 	----------
 	x : array-like or list
-		Position of data points in the x axis.
+		Position of data points in the x-axis.
 	y : array-like or list
-		Position of data points in the y axis.
+		Position of data points in the y-axis.
 	c : array-like or list, optional
-		Value of data points in the z axis (colour axis).
+		Value of data points in the z-axis (colour-axis).
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	clim : tuple-like, optional
+		Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
+		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
+		clim` takes priority.
 	xinvert : bool, optional
 		If true inverts the x-axis.
 	yinvert : bool, optional
@@ -671,6 +675,18 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
+
+	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
+	if (clim != None):
+		try:
+			_ = (e for e in clim)
+			if (len(clim) == 2):
+				plot_par['vmin'] = clim[0]
+				plot_par['vmax'] = clim[1]
+			else:
+				raise TypeError("`clim` must be of iterable type and have two values only.")
+		except (TypeError):
+			raise TypeError("`clim` must be of iterable type and have two values only.")
 
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])

@@ -714,6 +714,7 @@ def hist_legacy(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yi
 	-------
 	None
 	"""
+<<<<<<< Updated upstream
 	
 	from matplotlib.pyplot import hist, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -736,6 +737,155 @@ def hist_legacy(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yi
 	if any(plabel):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+=======
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
+	from numpy import shape, arange, ndarray
+	from matplotlib.pyplot import plot, legend, show, sca
+	from matplotlib.transforms import Bbox
+	
+
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	if type(x) is not list or len(shape(x))==1:
+		x=[x]
+	
+	L=len(x)
+	if y is None:
+		y=x
+		x=[arange(len(x[i])) for i in range(L)]
+	else:
+		if type(y) is not list or len(shape(y))==1:
+			y=[y]
+
+	if type(plabel) is not list:
+		plabel=[plabel]*L
+
+	# Validate xbreak/ybreak inputs
+	if (xbreak != None and ybreak != None): # Both given, raise exception.
+		raise ValueError("Cannot specify both 'xbreak' and 'ybreak' simultaneously.")
+	elif (xbreak != None and ybreak == None): # xbreak only
+		if type(xbreak) not in [list,tuple,ndarray]:
+			xbreak = (xbreak, xbreak)
+		else:
+			if (len(xbreak) != 2):
+				raise ValueError("xbreak must be a single value or a tuple-like list of two elements.")
+	elif (ybreak != None and xbreak == None): # ybreak only
+		if type(ybreak) not in [list,tuple,ndarray]:
+			ybreak = (ybreak, ybreak)
+		else:
+			if (len(ybreak) != 2):
+				raise ValueError("ybreak must be a single value or a tuple-like list of two elements.")
+	else: # Neither xbreak nor ybreak specified
+		raise ValueError("Either 'xbreak' or 'ybreak' must be specified.")
+
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par = dict_splicer(plot_par,L,[1]*L)
+
+	# Get the original axis position
+	pos0 = ax.get_position(original=True)
+	width0, height0 = pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
+
+	for i in range(L):
+		ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
+		
+		# Get the axis limits if not already specified
+		xlims = ax.get_xlim() if xlim == None else xlim
+		ylims = ax.get_ylim() if ylim == None else ylim
+
+		# Define the positions of the two separated axes
+		if (i == 0): # only do this on the first plotting instance
+			pos1 = Bbox(list(pos0.get_points()))
+			pos2 = Bbox(list(pos0.get_points()))
+			
+			if (xbreak):
+				pos1.x1 = pos1.x0 + (pos1.x1-pos1.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
+				pos2.x0 = pos2.x0 + (pos2.x1-pos2.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
+			else:
+				pos1.y1 = pos1.y0 + (pos1.y1-pos1.y0)*(sum(ybreak)/2-ylims[0])/(ylims[1]-ylims[0]) - sep*(pos1.y1-pos1.y0)/2
+				pos2.y0 = pos2.y0 + (pos2.y1-pos2.y0)*(sum(ybreak)/2-ylims[0])/(ylims[1]-ylims[0]) + sep*(pos2.y1-pos2.y0)/2
+
+			ax.set_position(pos1) # Resize the first axis
+			ax2 = ax.figure.add_axes(pos2) # Add and duplicate the plotting in the second axis
+
+
+		ax2.plot(x[i],y[i],label=None,**plot_par[i])
+
+		dash_kw = dict(transform=ax2.transAxes, color='black', linestyle='-', marker='', clip_on=False)
+		
+		width1, height1 = pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
+		width2, height2 = pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
+
+		if (xbreak):
+			dx1, dy1 = 0.01 * width0/(width0-width1-sep/2), height1*0.025
+			dx2, dy2 = 0.01 * width0/(width0-width2-sep/2), height2*0.025
+		
+			# plot the dashes on the new axis
+			ax2.plot((0 - dx1, 0 + dx1), (0 - dy1, 0 + dy1), **dash_kw)  # bottom-right diagonal
+			ax2.plot((0 - dx1, 0 + dx1), (1 - dy1, 1 + dy1), **dash_kw)  # top-right diagonal
+
+			# plot the dashes on the original axis
+			dash_kw.update(transform=ax.transAxes)  # switch to the left axes
+			ax.plot((1 - dx2, 1 + dx2), (0 - dy2, 0 + dy2), **dash_kw)  # bottom-left diagonal
+			ax.plot((1 - dx2, 1 + dx2), (1 - dy2, 1 + dy2), **dash_kw)  # top-left iagonal
+
+			ax.spines['right'].set_visible(False)
+			ax.tick_params(labelright=False,which='both')  # don't put tick labels at the top
+			ax.yaxis.tick_left()
+
+			ax2.spines['left'].set_visible(False)
+			ax2.tick_params(labelleft=False,which='both')  # don't put tick labels at the top
+			ax2.yaxis.tick_right()
+
+		else:
+			dx1, dy1 = width1*0.025, 0.01 * height0/(height0-height1-sep/2)
+			dx2, dy2 = width2*0.025, 0.01 * height0/(height0-height2-sep/2)
+		
+			# plot the dashes on the new axis
+			ax2.plot((0 - dx1, 0 + dx1), (0 - dy1, 0 + dy1), **dash_kw)  # bottom-left diagonal
+			ax2.plot((1 - dx2, 1 + dx2), (0 - dy2, 0 + dy2), **dash_kw)  # bottom-right diagonal
+
+			# plot the dashes on the original axis
+			dash_kw.update(transform=ax.transAxes)  # switch to the left axes
+			ax.plot((0 - dx1, 0 + dx1), (1 - dy1, 1 + dy1), **dash_kw)  # top-right diagonal
+			ax.plot((1 - dx2, 1 + dx2), (1 - dy2, 1 + dy2), **dash_kw)  # top-left diagonal
+
+			ax.spines['top'].set_visible(False)
+			ax.tick_params(labeltop=False,which='both')  # don't put tick labels at the top
+			ax.xaxis.tick_bottom()
+
+			ax2.spines['bottom'].set_visible(False)
+			ax2.tick_params(labelbottom=False,which='both')  # don't put tick labels at the top
+			ax2.xaxis.tick_top()
+
+
+	if any(plabel):
+		ax.legend(loc=lab_loc)
+
+	# Set the new axis limits at the break point
+	if (xbreak):
+		plot_finalizer(xlog,ylog,(xbreak[1],xlims[1]),ylim,"","","",xinvert,yinvert,grid)
+		sca(ax)
+		plot_finalizer(xlog,ylog,(xlims[0],xbreak[0]),ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	else:
+		plot_finalizer(xlog,ylog,xlim,(ybreak[1],ylims[1]),"","","",xinvert,yinvert,grid)
+		sca(ax)
+		plot_finalizer(xlog,ylog,xlim,(ylims[0],ybreak[0]),title,xlabel,ylabel,xinvert,yinvert,grid)
+
+
+	figsize = ax.figure.get_size_inches()
+	if (xbreak):
+		ax.xaxis.set_label_coords(0.5*(width0/width1), -0.29/(figsize[1]*height0))
+	else:
+		ax.yaxis.set_label_coords(-0.375/(figsize[0]*width0), 0.5*(height0/height1))
+
+
+>>>>>>> Stashed changes
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 

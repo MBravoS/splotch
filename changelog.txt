@@ -1,3 +1,6 @@
+0.4.0.1 (05/11/2019):
+-Modified splotch.scatter() to now take clim as an argument, in line with other functions (e.g. hist2d).\n-clim functions as a two-value list-like object which parses a minimum and maximum value to colors.Normalize's vmin and vmax, respectively.\n-If both clim and vmin/vmax are given, clim takes priority.
+
 0.4.0.0 (11/10/2019):
 -Updated function names for improved clarity and consistency with matplotlib.
 -Added cumulative distributions to plots_1d.hist().
