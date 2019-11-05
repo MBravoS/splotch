@@ -1,3 +1,6 @@
+0.4.0.2 (05/11/2019):
+-Added clim, clabel, and cbar_invert to the splotch.sector() function.
+
 0.4.0.1 (05/11/2019):
 -Modified splotch.scatter() to now take clim as an argument, in line with other functions (e.g. hist2d).\n-clim functions as a two-value list-like object which parses a minimum and maximum value to colors.Normalize's vmin and vmax, respectively.\n-If both clim and vmin/vmax are given, clim takes priority.
 
