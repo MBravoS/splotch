@@ -626,12 +626,12 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 		if cumul[i]:
 			temp_y=np_cumsum(temp_y)
 			if dens[i]:
-				temp_y/=np_max(temp_y)
+				temp_y=temp_y.astype('float')/np_max(temp_y)
 		if scale[i]:
 			if dens[i]:
 				temp_y*=len(data[i])/scale[i]
 			else:
-				temp_y/=scale[i]
+				temp_y=temp_y.astype('float')/scale[i]
 		if ylog:
 			temp_y=where(temp_y==0,nan,temp_y)
 		y=temp_y
