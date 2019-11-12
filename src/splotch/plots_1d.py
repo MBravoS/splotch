@@ -736,6 +736,7 @@ def hist_legacy(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yi
 	if any(plabel):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 

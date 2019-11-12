@@ -597,7 +597,7 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 		old_axes=axes_handler(old_axes)
 
 # Scatter
-def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
+def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
 			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""2D pixel-based image plotting function.
@@ -605,15 +605,19 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	Parameters
 	----------
 	x : array-like or list
-		Position of data points in the x axis.
+		Position of data points in the x-axis.
 	y : array-like or list
-		Position of data points in the y axis.
+		Position of data points in the y-axis.
 	c : array-like or list, optional
-		Value of data points in the z axis (colour axis).
+		Value of data points in the z-axis (colour-axis).
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	clim : tuple-like, optional
+		Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
+		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
+		clim` takes priority.
 	xinvert : bool, optional
 		If true inverts the x-axis.
 	yinvert : bool, optional
@@ -672,6 +676,18 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
 
+	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
+	if (clim != None):
+		try:
+			_ = (e for e in clim)
+			if (len(clim) == 2):
+				plot_par['vmin'] = clim[0]
+				plot_par['vmax'] = clim[1]
+			else:
+				raise TypeError("`clim` must be of iterable type and have two values only.")
+		except (TypeError):
+			raise TypeError("`clim` must be of iterable type and have two values only.")
+
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
 
@@ -688,8 +704,8 @@ def scatter(x,y,c=None,xlim=None,ylim=None,xinvert=False,yinvert=False,cbar_inve
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,rlabel="",thetalabel="",rstep=None,
-			thetastep=15.0,rticks='auto',thetaticks='auto',fig=None,plot_kw={},**kwargs):
+def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlabel="",thetalabel="",clabel=None,rstep=None,
+			thetastep=15.0,rticks='auto',thetaticks='auto',cbar_invert=False,fig=None,plot_kw={},**kwargs):
 	
 	""" Sector Plot function
 	
@@ -705,12 +721,18 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,rlabel="",thet
 		The lower and upper limits for the radial axis (degrees).
 	thetalim : tuple-like, optional
 		The lower and upper limits for the angular axis (degrees).
+	clim : tuple-like, optional
+		Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
+		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
+		clim` takes priority.
 	rotate : float, optional
 		By how many degrees to rotate the entire plot (valid values in [-180, 180]).
 	rlabel : str, optional
 		Sets the label of the r-axis.
 	thetalabel : str, optional
 		Sets the label of the theta-axis.
+	clabel : str, optional
+		Sets the legend for the colour axis.
 	rstep : float, optional
 		Sets the step size of r ticks.
 	thetastep : float, optional, default: 15.0
@@ -719,6 +741,8 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,rlabel="",thet
 		* Not implement *
 	thetaticks : 'auto', or ticker
 		* Not implement *
+	cbar_invert : bool, optional
+		If True inverts the direction of the colour bar (not the colour map).
 	fig : pyplot.Figure, optional
 		Use the given figure to make the plot, defaults to the current figure.
 	plot_kw : dict, optional
@@ -736,7 +760,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,rlabel="",thet
 	
 	from matplotlib.transforms import Affine2D
 	from matplotlib.projections.polar import PolarAxes
-	from matplotlib.pyplot import gcf 
+	from matplotlib.pyplot import gcf, colorbar, legend 
 	
 	from mpl_toolkits.axisartist import floating_axes
 	from mpl_toolkits.axisartist.grid_finder import (FixedLocator, MaxNLocator, DictFormatter)
@@ -818,16 +842,34 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),rotate=0.0,rlabel="",thet
 	L = shape(theta)[0] if len(shape(theta)) > 1 else 1
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
+
+	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
+	if (clim != None):
+		try:
+			_ = (e for e in clim)
+			if (len(clim) == 2):
+				plot_par['vmin'] = clim[0]
+				plot_par['vmax'] = clim[1]
+			else:
+				raise TypeError("`clim` must be of iterable type and have two values only.")
+		except (TypeError):
+			raise TypeError("`clim` must be of iterable type and have two values only.")
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	#plot_par = dict_splicer(plot_par,L,[1]*L)
 	
 	if (L == 1):
-		sector_ax.scatter(theta+rotate, r, **plot_par)
+		sctr = sector_ax.scatter(theta+rotate, r, **plot_par)
 	else:
 		for ii in range(L):
-			sector_ax.scatter(theta[ii]+rotate, r[ii],**plot_par[ii])
+			sctr = sector_ax.scatter(theta[ii]+rotate, r[ii],**plot_par[ii])
 	
+	if clabel is not None:
+		cbar = colorbar(sctr)
+		cbar.set_label(clabel)
+		if cbar_invert:
+			cbar.ax.invert_yaxis()
+
 	return sector_ax
 
 # Contours encircling the densest region down to a certain percentage 

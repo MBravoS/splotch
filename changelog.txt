@@ -1,5 +1,11 @@
-0.4.0.1 (12/11/2019):
+0.4.0.3 (12/11/2019):
 -Fix for type conflict in division in plots_1D.hist() when dens=False and scale is a float.
+
+0.4.0.2 (05/11/2019):
+-Added clim, clabel, and cbar_invert to the splotch.sector() function.
+
+0.4.0.1 (05/11/2019):
+-Modified splotch.scatter() to now take clim as an argument, in line with other functions (e.g. hist2d).\n-clim functions as a two-value list-like object which parses a minimum and maximum value to colors.Normalize's vmin and vmax, respectively.\n-If both clim and vmin/vmax are given, clim takes priority.
 
 0.4.0.0 (11/10/2019):
 -Updated function names for improved clarity and consistency with matplotlib.
