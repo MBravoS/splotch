@@ -195,6 +195,8 @@ def dict_splicer(plot_dict,Ld,Lx):
 			else:
 				if type(plot_dict[k]) is str or len(plot_dict[k])==Lx[i]:
 					temp_dict[k]=plot_dict[k]
+				elif k in 'color' and (len(plot_dict[k])==3 or len(plot_dict[k])==4):
+					temp_dict[k]=plot_dict[k]
 				else:
 					temp_dict[k]=plot_dict[k][i]
 		dict_list.append(temp_dict)
