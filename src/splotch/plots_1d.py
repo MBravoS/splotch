@@ -33,7 +33,9 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 
 	Returns
 	-------
-	None
+	lines
+		A list of Line2D objects representing the plotted data.
+
 	"""
 	
 	from matplotlib.pyplot import plot, legend, gca
@@ -42,7 +44,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
-		ax=gca()
+		ax = gca()
 		old_axes=ax
 	
 	if (not any([x,y,m,c])): # If nothing has been specified
@@ -101,12 +103,15 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 	
+	lines = [] # Initialising list which contains each line
 	if (x is not None):
 		for ii, xx in enumerate(x):
-			ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
+			l = ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
+			lines.append(l)
 	if (y is not None):
 		for ii, yy in enumerate(y):
-			ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
+			l = ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
+			lines.append(l)
 	if (m is not None):
 		for ii, pars in enumerate(zip(m,c)):
 			mm = pars[0]; cc = pars[1]
@@ -114,8 +119,8 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 			xLims = ax.get_xlim()
 			yLims = ax.get_ylim()
 			
-			plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],label=plabel[ii],**plot_par[ii])
-			
+			lines += plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],label=plabel[ii],**plot_par[ii])
+
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
 			
@@ -123,6 +128,8 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		legend(loc=lab_loc)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+
+	return lines[0] if len(lines) == 1 else lines
 
 ### Broken axis plot
 def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
@@ -181,18 +188,24 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	
 	Returns
 	-------
-	None
+	lines
+		A list of Line2D objects (paired as tuples) representing the plotted data.
+		The lines are given as pairs to correspond to the separate lines either side of the x/ybreak.
 	
 	"""
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	from numpy import shape, arange, ndarray
-	from matplotlib.pyplot import plot, legend, show, sca
+	from matplotlib.pyplot import plot, legend, show, sca, gca
 	from matplotlib.transforms import Bbox
 	
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
+	else:
+		ax = gca()
+		old_axes=ax
+
 	if type(x) is not list or len(shape(x))==1:
 		x=[x]
 	L=len(x)
@@ -205,14 +218,20 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	if type(plabel) is not list:
 		plabel=[plabel]*L
 	
+	# Validate x/ybreak
+	if (xbreak == None):
+		raise ValueError("Require either xbreak/ybreak to be specified.")
+
+	if (ybreak != None):
+		raise NotImplementedError("ybreak not yet implemented.")
+
+
 	if type(xbreak) not in [list,tuple,ndarray]:
 		xbreak = (xbreak, xbreak)
 	else:
 		if (len(xbreak) != 2):
 			raise ValueError("xbreak must be a single value of a tuple-like list of two elements.")
 	
-	if (ybreak != None):
-		raise NotImplementedError("ybreak not yet implemented.")
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
@@ -226,8 +245,10 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	pos0 = ax.get_position(original=True)
 	width0, height0 = pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
 	
+	lines = [] # Initialising list which contains each line
 	for i in range(L):
-		ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
+		# First side plot call
+		l1 = ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 		
 		# Get the axis limits if not already specified
 		xlims = ax.get_xlim() if xlim == None else xlim
@@ -248,8 +269,10 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 			ax.set_xlim(xlims[0],xbreak[0])
 			ax2.set_xlim(xbreak[1],xlims[1])
 		
-		ax2.plot(x[i],y[i],label=None,**plot_par[i])
-		
+		# Second side plot call
+		l2 = ax2.plot(x[i],y[i],label=None,**plot_par[i])
+
+		lines.append((*l1,*l2)) # Add line as tuple of both axes.
 		
 		width1, height1 = pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
 		width2, height2 = pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
@@ -272,6 +295,14 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 		ax2.spines['left'].set_visible(False)
 		ax2.tick_params(labelleft=False,which='both')  # don't put tick labels at the top
 		ax2.yaxis.tick_right()
+
+		# Check that there is no duplicate ticks over both axes	
+	if (xbreak):
+			if (ax.get_xticks()[-1] == ax2.get_xticks()[0]):
+				if (xbreak[0] >= (xlims[0] + xlims[1])*0.5):
+					ax.set_xticks(ax.get_xticks()[:-1]) # Remove duplicate tick on left side
+				else:
+					ax2.set_xticks(ax2.get_xticks()[1:]) # Remove duplicate tick on right side
 	sca(ax)
 	
 	if any(plabel):
@@ -281,6 +312,8 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+
+	return (lines[0] if len(lines) == 1 else lines)
 
 def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=None, ylim=None, xinvert=False, yinvert=False,
 		  xlog=False, ylog=False, title=None, xlabel=None, ylabel=None, label=True, lab_loc=0,
@@ -790,7 +823,9 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	
 	Returns
 	-------
-	None
+	lines
+		A list of Line2D objects representing the plotted data.
+
 	"""
 
 	from numpy import shape, arange
@@ -820,11 +855,13 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 	
+	lines = [] # Initialising list which contains each line
 	for i in range(L):
-		plot(x[i],y[i],label=plabel[i],**plot_par[i])
+		lines += plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if any(plabel):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
+	return (lines[0] if len(lines) == 1 else lines)

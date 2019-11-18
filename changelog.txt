@@ -1,3 +1,9 @@
+0.4.0.5 (18/11/2019):
+-Updated axline(), brokenplot(), curve() and plot() to return their corresponding Line2D objects.
+-If multiple lines produced in these functions, instead return a list of Line2D objects.
+-brokenplot() will always return a list of tuple pairs corresponding to the lines on either side of the axis break.
+-Updated brokenplot() to now remove any duplicate ticks if they appear.
+
 0.4.0.4 (14/11/2019):
 -Fixed issue when specifying colours as RGB/RBGA tuples in base_funct.dict_splicer().
 
