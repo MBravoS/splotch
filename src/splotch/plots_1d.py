@@ -443,6 +443,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	# The lengths of each substitute value list, len=1 if just a single value
 	lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
+	print(lens)
 	
 	if (permute == True):
 		L = prod(lens)
@@ -452,7 +453,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 			permsubs[key] = perms[ii]
 		subsarr = dict_splicer(permsubs,L,[1]*L)
 	else:
-		L = max(lens)
+		L = max(lens) if len(lens) > 0 else 1
 		subsarr = dict_splicer(subs,L,[1]*L)
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
