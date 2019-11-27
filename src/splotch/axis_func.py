@@ -125,6 +125,154 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	return(None)
 
 
+def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transform=None,
+			  inset=False,aspect=0.05,width=None,height=None,pad=0.05,ticks=None,bar_kw={},**kwargs):
+	"""Colorbar function
+	
+	This function will produce a colorbar for any currently plotted mappable on a given axis.
+	
+	Parameters
+	----------
+	mappable : ScalarMappable, optional
+		The matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described by this colorbar.
+		This argument is optional and will seek out any mappables currently present in the axis if
+		nothing is specified.	
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	label : str, optional
+		The label to be given to the colorbar
+	orientation : optional
+		The orientation of the colorbar specified either as 'vertical' | 'horizontal'.
+		Orientation is necessary to decide which axis of the colorbar to place labels. Default: 'vertical'.
+	loc : int or tuple-like, optional
+		Specifies the location of the colorbar. Can be a two element tuple-like object in the format
+		of (x0, y0).
+	transform : matplotlib.transforms.Transform instance, optional
+		The transformation instance to be used for colorbar location if loc is tuple-like. For example, using ax.transAxes()
+		will specify the colorbar location in the coordinates of the axis; (0,0) is bottom-left and (1,1)
+		is top-right. Default: ax.transAxes.
+	inset : boolean, optional
+		Whether to inset the colorbar within the inside of the axis. If loc not tuple-like, this will add
+		padding to both sides of the colorbar to avoid colliding with the axis spine. Default: False.
+	aspect : float, optional
+		The aspect ratio of the colorbar always taken as the ratio of the long-side to the short-side.
+		Default: 0.05
+	width, height : float, optional
+		The width and height of the colorbar in the coordinate system of specified `transform`, which by
+		default is in the coordinates of the axis.
+	pad : float, optional
+		The padding given to the colorbar axis offset from the margin of the axis. If loc is specified to an edge
+		which has an axis label/ticks, padding will be added from the edge of the label.
+	ticks : None, list-like or Locator() object, optional
+		Specifies the locations of ticks on th colorbar axis. If None, ticks are determined automatically from the input.
+	bar_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are colorbar properties.
+	**kwargs : Colorbar properties, optional
+		Keyword arguments are used to specify matplotlib.pyplot.colorbar specific properties such as
+		extend, spacing, format, drawedges, etc. The list of available properties can be found here: 
+		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.colorbar.html#matplotlib.pyplot.colorbar
+	
+	Returns
+	-------
+	cbar : 
+		The colorbar object.
+	"""
+	
+	from .base_func import axes_handler
+
+	from matplotlib.pyplot import gca
+	from mpl_toolkits.axes_grid1.inset_locator import inset_axes, zoomed_inset_axes
+	from mpl_toolkits.axes_grid1.colorbar import colorbar
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	else:
+		ax = gca()
+		old_axes=ax
+		
+	if mappable == None:
+		mappables = []
+		for child in ax.get_children():
+			if hasattr(child, 'autoscale_None') == True: # Is mappable
+				mappables.append(child)
+		if len(mappables) == 1:
+			mappable = mappables[0]
+	
+	labpad = 0.125 # The padding added for labels
+	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
+	
+	# Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
+	#bar_par = {**bar_kw, **kwargs} # For Python > 3.5
+	bar_par = bar_kw.copy()
+	bar_par.update(kwargs)
+	
+	# Validate aspect value
+	if (aspect <= 0 or aspect > 1):
+		raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
+	
+	if (width == None and height == None):
+		width, height = (aspect, 1.0-ins*2*pad) if orientation is 'vertical' else (1.0-ins*2*pad, aspect)
+	else:
+		if height == None:
+			height = width/aspect if orientation is 'vertical' else aspect*width
+		elif width == None:
+			width = aspect*height if orientation is 'vertical' else height/aspect
+
+	if type(loc) != int:
+		raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
+
+	vertPositions = {1:(1+pad-ins*(2*pad+width), 1-height-ins*pad, width, height),
+					 2:(0-width-labpad-pad+ins*(labpad+2*pad+width), 1-height-ins*pad, width, height),
+					 3:(0-width-labpad-pad+ins*(labpad+2*pad+width), 0+ins*pad, width, height),
+					 4:(1+pad-ins*(2*pad+width), 0+ins*pad, width, height),
+					 5:(1+pad-ins*(2*pad+width), 0.5*(1-height), width, height),
+					 6:(0.5*(1-width), 1+pad-ins*(2*pad+height), width, height),
+					 7:(0-width-labpad-pad+ins*(labpad+2*pad+width), 0.5*(1-height), width, height),
+					 8:(0.5*(1-width),0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
+					 9:(0.5*(1-width), 0.5*(1-height), width, height)}
+	
+	horPositions  = {1:(1-width-ins*pad, 1+pad-ins*(2*pad+height), width, height),
+					 2:(0+ins*pad, 1+pad-ins*(2*pad+height), width, height),
+					 3:(0+ins*pad, 0-height-labpad-pad+ins*(height+labpad+2*pad), width, height),
+					 4:(1-width-ins*pad, 0-height-labpad-pad+ins*(height+labpad+2*pad), width, height),
+					 5:(1+pad-ins*(2*pad+width), 0.5*(1-height), width, height),
+					 6:(0.5*(1-width), 1+pad-ins*(2*pad+height), width, height),
+					 7:(0-width-labpad-pad+ins*(width+labpad+2*pad), 0.5*(1-height), width, height),
+					 8:(0.5*(1-width), 0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
+					 9:(0.5*(1-width), 0.5*(1-height), width, height)}
+	
+	cax = inset_axes(ax, width='100%', height='100%',
+					 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
+					 bbox_transform=transform if transform != None else ax.transAxes,
+					 borderpad=0)
+	
+	cbar = colorbar(mappable, cax=cax, orientation=orientation,ticks=ticks,**bar_par)
+	
+	# Orient tick axes correctly
+	if (orientation is 'horizontal'):
+		cbar.ax.set_xlabel(label)
+		
+		flip = True if loc in [3,4,8] else False # Flip the labels if colorbar on bottom edge
+		if (inset==True) and loc not in [5,7,9]: flip = not flip # Reverse flipping in the case of a inset colorbar	
+		
+		if (flip == True):
+			cbar.ax.xaxis.set_label_position('bottom')
+			cbar.ax.xaxis.tick_bottom()
+		else:
+			cbar.ax.xaxis.set_label_position('top')
+			cbar.ax.xaxis.tick_top()
+	else:
+		cbar.ax.set_ylabel(label)
+		
+		flip = True if loc in [2,3,7] else False  # Flip the labels if colorbar on left edge
+		if (inset==True) and loc not in [6,8,9]: flip = not flip # Reverse flipping in the case of a inset colorbar
+		
+		if (flip == True):
+			cbar.ax.yaxis.set_label_position('left')
+			cbar.ax.yaxis.tick_left()
+
+	return (cbar)
+
 def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
 
