@@ -8,6 +8,6 @@ The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io
 *Current version*: 0.4.1.1
 
 *Planned releases*:
-* Addition of error raising for unclear errors when breaking plots (0.4.1.0).
-* Addition of error/dispersion band plots (0.4.2.0).
-* Addition of legend customisation function (0.4.3.0).
+* Addition of error raising for unclear errors when breaking plots (0.4.2.0).
+* Addition of error/dispersion band plots (0.4.3.0).
+* Addition of legend customisation function (0.4.4.0).
