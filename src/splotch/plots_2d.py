@@ -652,7 +652,8 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 	
 	Returns
 	-------
-	None
+	paths
+		A list of PathCollection objects representing the plotted data.
 	"""
 
 	from numpy import shape
@@ -691,8 +692,10 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
 
+	paths = []
 	for i in range(L):
-		scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
+		p = scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
+		paths.append(p)
 	if clabel is not None:
 		cbar = colorbar()
 		cbar.set_label(clabel)
@@ -703,6 +706,8 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+
+	return paths[0] if len(paths) == 1 else paths
 
 def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlabel="",thetalabel="",clabel=None,rstep=None,
 			thetastep=15.0,rticks='auto',thetaticks='auto',cbar_invert=False,fig=None,plot_kw={},**kwargs):
@@ -726,7 +731,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
 		clim` takes priority.
 	rotate : float, optional
-		By how many degrees to rotate the entire plot (valid values in [-180, 180]).
+		By how many degrees (clockwise) to rotate the entire plot (valid values in [-180, 180]).
 	rlabel : str, optional
 		Sets the label of the r-axis.
 	thetalabel : str, optional
@@ -780,9 +785,9 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	
 	# Get theta ticks
 	#if (thetaticks == 'auto'):
-	thetaticks = arange(*radians(array(thetalim)+rotate),step=radians(thetastep))
+	thetaticks = arange(*radians(array(thetalim)-rotate),step=radians(thetastep))
 	theta_gridloc = FixedLocator(thetaticks[thetaticks/(2*pi) < 1])
-	theta_tickfmtr = DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)-rotate)):g}" for tck in thetaticks])))
+	theta_tickfmtr = DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)+rotate)):g}" for tck in thetaticks])))
 	
 	#tick_fmtr = DictFormatter(dict(angle_ticks))
 	#tick_fmtr = angle_helper.Formatter()
@@ -794,7 +799,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	
 	grid = floating_axes.GridHelperCurveLinear(
 		PolarAxes.PolarTransform(),
-		extremes=(*radians(array(thetalim)+rotate), *rlim),
+		extremes=(*radians(array(thetalim)-rotate), *rlim),
 		grid_locator1=theta_gridloc,
 		grid_locator2=r_gridloc,
 		tick_formatter1=theta_tickfmtr,
@@ -804,29 +809,30 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	ax = floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
 	fig.add_subplot(ax)
 	
-	# tick
-	thetadir_ref = ['top','left','bottom','right']
-	rdir_ref = ['bottom','right','top','left']
+	# tick references
+	thetadir_ref = ['top','right','bottom','left']
+	rdir_ref = ['bottom','left','top','right']
 	
-	# adjust axis
-	ax.axis["left"].set_axis_direction(rdir_ref[(int(rotate)//90)%4])
-	ax.axis["right"].set_axis_direction(rdir_ref[(int(rotate)//90+2)%4])
-	ax.axis["bottom"].set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
-	ax.axis["top"].set_axis_direction(thetadir_ref[(int(rotate)//90+2)%4])
+	# adjust axes directions
+	ax.axis["left"].set_axis_direction('bottom') # Radius axis (displayed)
+	ax.axis["right"].set_axis_direction('top') # Radius axis (hidden)
+	ax.axis["top"].set_axis_direction('bottom') # Theta axis (outer)
+	ax.axis["bottom"].set_axis_direction('top') # Theta axis (inner)
 	
-	ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1]-rlim[0])/3 else True)
-	ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90 + 2)%4])
-	
+	# Top theta axis
 	ax.axis["top"].toggle(ticklabels=True, label=True)
 	ax.axis["top"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
 	ax.axis["top"].label.set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
 	
-	#ax.get_yaxis().set_major_locator(ticker.MaxNLocator())
-	
-	#ax.axis["left"].set_major_formatter(ticker.MaxNLocator())
+	# Bottom theta axis
+	ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1]-rlim[0])/3 else True)
+	ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90+2)%4])
+    
+	# Visible radius axis    
 	ax.axis["left"].major_ticklabels.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
 	ax.axis["left"].label.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
-	
+    
+	# Labels
 	ax.axis["left"].label.set_text(rlabel)
 	ax.axis["top"].label.set_text(thetalabel)
 	
@@ -859,10 +865,10 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	#plot_par = dict_splicer(plot_par,L,[1]*L)
 	
 	if (L == 1):
-		sctr = sector_ax.scatter(theta+rotate, r, **plot_par)
+		sctr = sector_ax.scatter(theta-rotate, r, **plot_par)
 	else:
 		for ii in range(L):
-			sctr = sector_ax.scatter(theta[ii]+rotate, r[ii],**plot_par[ii])
+			sctr = sector_ax.scatter(theta[ii]-rotate, r[ii],**plot_par[ii])
 	
 	if clabel is not None:
 		cbar = colorbar(sctr)
