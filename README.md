@@ -10,5 +10,5 @@ The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io
 *Planned releases*:
 * Addition of error raising for unclear errors when breaking plots (0.4.2.0).
 * Addition of error/dispersion band plots (0.4.3.0).
-* Addition of ridgeline plots, a.k.a joyplots (0.4.4.0)
+* Addition of ridgeline plots, a.k.a joyplots (0.4.4.0).
 * Addition of legend customisation function (0.4.5.0).
