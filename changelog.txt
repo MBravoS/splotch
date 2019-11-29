@@ -1,3 +1,7 @@
+0.4.1.2 (29/11/2019):
+-Fixed issue with tuple-defined linestyles.
+-Fixed confusion when using RGB/RGBA tuples when drawing multiple lines. 
+
 0.4.1.1 (27/11/2019):
 -Changed sector() to cause rotate to act in a clockwise direction.
 -scatter() now returns a list of PathCollections.
