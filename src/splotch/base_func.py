@@ -181,6 +181,8 @@ def dict_splicer(plot_dict,Ld,Lx):
 	dict_list : list
 		List of dictionaries, one for each plot to be made.
 	"""
+	from numbers import Number
+	
 	dict_list=[]
 	dict_keys=plot_dict.keys()
 	#if 'rasterized' not in dict_keys:
@@ -195,7 +197,7 @@ def dict_splicer(plot_dict,Ld,Lx):
 			else:
 				if type(plot_dict[k]) is str or len(plot_dict[k])==Lx[i]:
 					temp_dict[k]=plot_dict[k]
-				elif k in 'color' and (len(plot_dict[k])==3 or len(plot_dict[k])==4):
+				elif (k in 'color' or 'color' in k) and (type(plot_dict[k]) is str or isinstance(plot_dict[k][0],Number)):
 					temp_dict[k]=plot_dict[k]
 				else:
 					temp_dict[k]=plot_dict[k][i]

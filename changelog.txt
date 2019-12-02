@@ -1,8 +1,12 @@
-0.4.1.2 (02/12/2019):
+0.4.1.3 (02/12/2019):
 -Colorbar() now accepts multiple arguments for ax which will produce a colorbar for each element of the list.
  * If no mappables are given, colorbar() finds an appropriate mappable for each individual axis.
  * If one mappable is given, it will be applied to all colorbars.
  * If multiple mappables are given, they must match the number of axes also specified.
+
+0.4.1.2 (29/11/2019):
+-Fixed issue with tuple-defined linestyles.
+-Fixed confusion when using RGB/RGBA tuples when drawing multiple lines. 
 
 0.4.1.1 (27/11/2019):
 -Changed sector() to cause rotate to act in a clockwise direction.
