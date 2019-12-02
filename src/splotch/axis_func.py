@@ -134,11 +134,13 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	Parameters
 	----------
 	mappable : ScalarMappable, optional
-		The matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described by this colorbar.
-		This argument is optional and will seek out any mappables currently present in the axis if
+		A list or individual matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described by this colorbar(s).
+		This argument is optional and will seek out any mappables currently present in each axis given if
 		nothing is specified.	
 	ax : pyplot.Axes, optional
-		Use the given axes to make the plot, defaults to the current axes.
+		Use the given axes to produce the colorbars onto. If multiple axes are given, number of mappable objects given must be 
+		either one or equal to the number of axis objects. If no mappables are provided, a mappable will be searched for
+		independently for each axis. Defaults to the current axis.
 	label : str, optional
 		The label to be given to the colorbar
 	orientation : optional
@@ -178,38 +180,35 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 		The colorbar object.
 	"""
 	
-	from .base_func import axes_handler
+	from .base_func import axes_handler, dict_splicer
 
 	from matplotlib.pyplot import gca
 	from mpl_toolkits.axes_grid1.inset_locator import inset_axes, zoomed_inset_axes
 	from mpl_toolkits.axes_grid1.colorbar import colorbar
 	
+
+	# Validate axis input
 	if ax is not None:
-		old_axes=axes_handler(ax)
+		try: # check if iterable
+			_ = (i for i in ax)
+			old_axes = axes_handler(ax[0])
+			axes = ax
+		except (TypeError):
+			old_axes = axes_handler(ax)
+			axes = [ax]
+			
 	else:
-		ax = gca()
-		old_axes=ax
-		
-	if mappable == None:
-		mappables = []
-		for child in ax.get_children():
-			if hasattr(child, 'autoscale_None') == True: # Is mappable
-				mappables.append(child)
-		if len(mappables) == 1:
-			mappable = mappables[0]
-	
-	labpad = 0.125 # The padding added for labels
-	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
-	
-	# Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
-	#bar_par = {**bar_kw, **kwargs} # For Python > 3.5
-	bar_par = bar_kw.copy()
-	bar_par.update(kwargs)
-	
+		axes = [gca()]
+		old_axes = axes[0]
+
+	if type(loc) != int:
+		raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
+
 	# Validate aspect value
 	if (aspect <= 0 or aspect > 1):
 		raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
 	
+	# Get width/height values of colorbar
 	if (width == None and height == None):
 		width, height = (aspect, 1.0-ins*2*pad) if orientation is 'vertical' else (1.0-ins*2*pad, aspect)
 	else:
@@ -218,9 +217,11 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 		elif width == None:
 			width = aspect*height if orientation is 'vertical' else height/aspect
 
-	if type(loc) != int:
-		raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
-
+	### Define the positions of preset colorbars
+	labpad = 0.125 # The padding added for labels
+	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
+	
+	# Vertically-oriented colorbars
 	vertPositions = {1:(1+pad-ins*(2*pad+width), 1-height-ins*pad, width, height),
 					 2:(0-width-labpad-pad+ins*(labpad+2*pad+width), 1-height-ins*pad, width, height),
 					 3:(0-width-labpad-pad+ins*(labpad+2*pad+width), 0+ins*pad, width, height),
@@ -231,6 +232,7 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 					 8:(0.5*(1-width),0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
 					 9:(0.5*(1-width), 0.5*(1-height), width, height)}
 	
+	# horizontally-oriented colorbars
 	horPositions  = {1:(1-width-ins*pad, 1+pad-ins*(2*pad+height), width, height),
 					 2:(0+ins*pad, 1+pad-ins*(2*pad+height), width, height),
 					 3:(0+ins*pad, 0-height-labpad-pad+ins*(height+labpad+2*pad), width, height),
@@ -240,38 +242,68 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 					 7:(0-width-labpad-pad+ins*(width+labpad+2*pad), 0.5*(1-height), width, height),
 					 8:(0.5*(1-width), 0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
 					 9:(0.5*(1-width), 0.5*(1-height), width, height)}
-	
-	cax = inset_axes(ax, width='100%', height='100%',
-					 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
-					 bbox_transform=transform if transform != None else ax.transAxes,
-					 borderpad=0)
-	
-	cbar = colorbar(mappable, cax=cax, orientation=orientation,ticks=ticks,**bar_par)
-	
-	# Orient tick axes correctly
-	if (orientation is 'horizontal'):
-		cbar.ax.set_xlabel(label)
-		
-		flip = True if loc in [3,4,8] else False # Flip the labels if colorbar on bottom edge
-		if (inset==True) and loc not in [5,7,9]: flip = not flip # Reverse flipping in the case of a inset colorbar	
-		
-		if (flip == True):
-			cbar.ax.xaxis.set_label_position('bottom')
-			cbar.ax.xaxis.tick_bottom()
-		else:
-			cbar.ax.xaxis.set_label_position('top')
-			cbar.ax.xaxis.tick_top()
-	else:
-		cbar.ax.set_ylabel(label)
-		
-		flip = True if loc in [2,3,7] else False  # Flip the labels if colorbar on left edge
-		if (inset==True) and loc not in [6,8,9]: flip = not flip # Reverse flipping in the case of a inset colorbar
-		
-		if (flip == True):
-			cbar.ax.yaxis.set_label_position('left')
-			cbar.ax.yaxis.tick_left()
 
-	return (cbar)
+
+	# Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
+	#bar_par = {**bar_kw, **kwargs} # For Python > 3.5
+	bar_par = bar_kw.copy()
+	bar_par.update(kwargs)
+
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	bar_par = dict_splicer(bar_par,len(axes),[1]*len(axes))
+
+	cbars = [] # Initiate empty list of colorbars for output
+	for ii, ax in enumerate(axes):
+		if mappable == None:
+			mappables = [child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
+			if len(mappables) == 1:
+				mapper = mappables[0]
+			else:
+				mapper = mappables[0]
+		else:
+			try: # check if iterable
+				if (len(mappable) == len(axes)):
+					mapper = mappable[ii]
+				elif (len(mappable) == 1):
+					mapper = mappable[0]
+				else:
+					raise ValueError("Number of mappables given must be either 1 or equal to the number of axes specified.")
+			except (TypeError):
+				mapper = mappable
+
+		cax = inset_axes(ax, width='100%', height='100%',
+						 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
+						 bbox_transform=transform if transform != None else ax.transAxes,
+						 borderpad=0)
+		
+		cbar = colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
+		
+		# Orient tick axes correctly
+		if (orientation is 'horizontal'):
+			cbar.ax.set_xlabel(label)
+			
+			flip = True if loc in [3,4,8] else False # Flip the labels if colorbar on bottom edge
+			if (inset==True) and loc not in [5,7,9]: flip = not flip # Reverse flipping in the case of a inset colorbar	
+			
+			if (flip == True):
+				cbar.ax.xaxis.set_label_position('bottom')
+				cbar.ax.xaxis.tick_bottom()
+			else:
+				cbar.ax.xaxis.set_label_position('top')
+				cbar.ax.xaxis.tick_top()
+		else:
+			cbar.ax.set_ylabel(label)
+			
+			flip = True if loc in [2,3,7] else False  # Flip the labels if colorbar on left edge
+			if (inset==True) and loc not in [6,8,9]: flip = not flip # Reverse flipping in the case of a inset colorbar
+			
+			if (flip == True):
+				cbar.ax.yaxis.set_label_position('left')
+				cbar.ax.yaxis.tick_left()
+
+		cbars.append(cbar)
+
+	return (cbars[0] if len(cbars) == 1 else cbars)
 
 def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
