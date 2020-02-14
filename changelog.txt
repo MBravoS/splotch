@@ -1,5 +1,8 @@
+0.4.2.1 (14/02/2020):
+-Fixed issue with 0 given as x,y,m or c in plots_1d.axline().
+
 0.4.2.0 (06/12/2019):
--Added error band plots as plots2D.errorband().
+-Added error band plots as plots_2d.errorband().
 
 0.4.1.3 (02/12/2019):
 -Colorbar() now accepts multiple arguments for ax which will produce a colorbar for each element of the list.
