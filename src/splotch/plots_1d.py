@@ -39,7 +39,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	"""
 	
 	from matplotlib.pyplot import plot, legend, gca
-	from .base_func import axes_handler,plot_finalizer,dict_splicer
+	from .base_func import axes_handler,plot_finalizer,dict_splicer,is_numeric
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -47,7 +47,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		ax = gca()
 		old_axes=ax
 	
-	if not any([x,y,m,c]): # If nothing has been specified
+	if not (any([is_numeric(var) for var in [x,y,m,c]])): # If nothing has been specified
 		raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'm' or 'c'")
 	
 	for i, val in enumerate([x,y,m,c]):
