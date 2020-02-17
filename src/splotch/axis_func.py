@@ -40,7 +40,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 
 	from matplotlib.text import Text
 	from matplotlib.pyplot import gca
-	from numpy import shape, min, max, argmin, argmax
+	from numpy import shape, min, max, argmin, argmax, append
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	try:
@@ -48,12 +48,11 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	except TypeError:
 		if (ax == None):
 			ax = gca()
-
 		ax = [ax]
 
 	# Validate `which` value(s)
-	whichRef = ['x','y','t','s','l','c','T','a',
-				'xlabel','ylabel','title','suptitle','legend','colorbar','text','all']
+	whichRef = ['x','y','t','s','k','l','c','T','a',
+				'xlabel','ylabel','title','suptitle','ticks','legend','colorbar','text','all']
 
 	try: # check if iterable
 		_ = (i for i in which)
@@ -85,7 +84,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	textpar = dict_splicer(textpar,L,[1]*L)
 
-	for a in ax:
+	for a in ax.flatten():
 		for ii, lab in enumerate(which):
 			if (lab in ['x','xlabel']):
 				texts = [a.xaxis.label]
@@ -95,6 +94,8 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 				texts = [a.title]
 			elif (lab in ['s','suptitle']): # Not implemented
 				texts = [a.title]
+			elif (lab in ['k','ticks']):
+				texts = append(a.get_yticklabels(), a.get_xticklabels())
 			elif (lab in ['l','legend']):
 				texts = a.legend().get_texts() # Get list of text objects in legend
 			elif (lab in ['c','colorbar']):
@@ -119,7 +120,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 
 				texts = texts + [child for child in a.get_children()[:-4] if type(child) == Text]
 
-			for t in texts:
+			for t in texts: # Actually apply the font changes
 				t.set(**textpar[ii])
 	
 	return(None)
@@ -305,6 +306,156 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 
 	return (cbars[0] if len(cbars) == 1 else cbars)
 
+
+def cornerplot(data,pair_type='contour',wspace=0.0,hspace=0.0,
+			   sharex='col',sharey='row',labels=None,histlabel=None,figsize=None,
+			   pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
+	""" Creates a corner plot figure and subplots
+	
+	This function accepts columns of data representing multiple parameters in which each combination will be paired
+	will each other to form the off-diagonals of a corner plot. The diagonals show a 1D histogram representation
+	of each individual parameter.
+	
+	Parameters
+	----------
+	data : array-like
+		The input data with each parameter as an individual column, the zeroth axis should 
+		be the list of samples and the next axis should be the number of dimensions.
+	pair_type : str, optional
+		The plotting type for the off-diagonal plots,
+		can be one of:'contour' | 'scatter' | 'hist' which correspond to contour plots, 
+		scatter plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw'
+		to control the styling of each.
+	wspace : float, optional
+		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
+	hspace : float, optional
+		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
+	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
+		As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`)
+		axes:
+			- True or 'all': x-/y-axis will be shared among all subplots.
+			- False or 'none': each subplot x-/y-axis will be independent.
+			- 'row': each subplot row will share an x-/y-axis (default for sharey).
+			- 'col': each subplot column will share an x-/y-axis  (default for sharex).
+
+		When subplots have a shared x-axis along a column, only the x tick
+		labels of the last complete row of the subplot are created. Similarly, 
+		when subplots have a shared y-axis along a row, only the y tick labels of the
+		first complete column subplot are created. By default, all 1D histogram do not
+		show any ticks labels or axis labels.
+	labels : array-like (str), optional
+		A list of axis labels to be assigned to each parameter. Must be of the same length or longer than
+		the number of parameters.
+	histlabel : str, optional
+		The y-axis label for each of the 1D histograms on the diagonal, if None given, then no labels or
+		ticks will be drawn. Labels and ticks will be displayed on the opposite side to the labels for the pair plots.
+		Default: None.
+	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (len(data), len(data))
+		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
+		the default rcParams figure.figsize by the number of rows or columns.
+	pair_kw : dict, optional
+		Dictionary of keyword arguments to be parsed into the pair plotting functions. The particular
+		arguments accepted are dependent on the 'pair_type' chosen.
+	hist_kw : dict, optional
+		Dictionary of keyword arguments to be parsed into the 1D histograms plots on the diagonals.
+	**kwargs : Subplot instance properties
+		kwargs are used to specify properties of `subplots` instances
+		A list of valid `axis` kwargs can be found here:
+		[https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")	
+	"""
+	
+	# Validate share variables
+	if (isinstance(sharex, bool)):
+		sharex = "all" if sharex else "none"
+	if (isinstance(sharey, bool)):
+		sharey = "all" if sharey else "none"
+	
+	# Validate input data
+	shape = np.shape(data)
+	npar = shape[1] # second axis defines the dimensions of parameters
+	
+	# Validate plot parameters
+	if (labels != None and len(labels) < shape[1]):
+		raise ValueError(f"Not enough labels given to match dimensions of data ({shape})")
+	if (pair_type not in ['contour','scatter','hist']):
+		raise ValueError(f"Pair type '{pair_type}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2d'}}.")
+	
+	if (figsize==None): # Auto scale default figure size to num cols/rows.
+		figsize = (rcParams["figure.figsize"][0]*npar, rcParams["figure.figsize"][0]*npar)
+	
+	fig = plt.figure(figsize=figsize,**kwargs)
+
+	naxes = np.sum(np.arange(1,4))
+	axes = np.full(shape=(npar,npar),fill_value=None)
+
+	gs = gridspec.GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
+	count = 0
+	for ii in range(0,npar,1):
+		for jj in range(0, ii+1):
+			# Select which axes this axis needs to be shared with
+			sharewith = {"none": None,
+						 "all": axes[0,0],
+						 "row": axes[ii,0],
+						 "col": axes[jj,jj]}
+	
+			# Create axes subplots
+			axes_kw["sharex"] = sharewith[sharex]
+			axes_kw["sharey"] = sharewith[sharey] if ii!=jj else None
+			axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
+			
+			if (ii==jj):
+				axes[ii,jj].hist(data[:,jj],**hist_kw)
+			else:
+				if (pair_type == 'scatter'):
+					splt.scatter(data[:,jj],data[:,ii],alpha=0.75,ax=axes[ii,jj],**pair_kw)
+				elif (pair_type == 'contour'):
+					splt.contourp(data[:,jj],data[:,ii],ax=axes[ii,jj],c='black',clabel=None,**pair_kw)
+				elif (pair_type == 'hist'):
+					splt.hist2D(data[:,jj],data[:,ii],ax=axes[ii,jj],**pair_kw)
+					
+			if (labels != None):
+				if (ii == npar-1):
+					print("x",ii,jj)
+					axes[ii,jj].set_xlabel(labels[jj])
+				if (jj == 0 and ii != 0):
+					axes[ii,jj].set_ylabel(labels[ii])
+			
+			if (_debug_ == True):
+				axes[ii,jj].text(0.1,0.8,f"({ii}, {jj})",transform=axes[ii,jj].transAxes)
+			
+			count += 1
+
+	
+	# turn off redundant tick labeling
+	if (sharex in ["col", "all"]):
+		# turn off all but the bottom row
+		for ii in range(0,npar-1):
+			for jj in range(0, ii+1):
+				axes[ii,jj].xaxis.set_tick_params(which='both', labelbottom=False, labeltop=False)
+				axes[ii,jj].xaxis.offsetText.set_visible(False)
+
+	if (sharey in ["row", "all"]):
+		# turn off all but the leftmost columns of each row
+		for ii in range(0,npar):
+			for jj in range(1, ii):
+				if (_debug_): print(f"{ii},{jj}")
+				axes[ii,jj].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
+				axes[ii,jj].yaxis.offsetText.set_visible(False)
+		
+
+	# turn on histogram labels
+	for ii in range(0,npar):
+		if (histlabel != None):
+			axes[ii,ii].yaxis.tick_right()
+			axes[ii,ii].yaxis.set_label_position("right")
+			axes[ii,ii].set_ylabel(histlabel)
+		else:
+			axes[ii,ii].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
+			axes[ii,ii].yaxis.offsetText.set_visible(False)
+
+	return(fig, axes)
+	
+
 def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
 
@@ -403,7 +554,7 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	axes_kw : dict, optional
 		Explicit dictionary of kwargs to be parsed to matplotlib `subplot` function.
 
-	**kwargs : Text instance properties
+	**kwargs : Subplot instance properties
 		kwargs are used to specify properties of `subplots` instances
 		A list of valid `axis` kwargs can be found here:
 		[https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")
