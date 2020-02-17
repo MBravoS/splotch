@@ -1,3 +1,10 @@
+0.4.3.1 (17/02/2020):
+-Made changes to cornerplot() to accept pandas and astropy DataFrames.
+
+0.4.3.0 (17/02/2020):
+-Added cornerplot() to axis_func.py
+-corner_plot() creates an nxn grid of subplots where the diagonals plot a 1D histogram of each parameter and the off-diagonals plot each combination of parameters.
+
 0.4.2.1 (14/02/2020):
 -Fixed issue with 0 given as x,y,m or c in plots_1d.axline().
 
