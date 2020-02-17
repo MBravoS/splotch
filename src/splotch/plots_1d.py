@@ -38,7 +38,6 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 
 	"""
 	
-	from numbers import Number
 	from matplotlib.pyplot import plot, legend, gca
 	from .base_func import axes_handler,plot_finalizer,dict_splicer
 	
@@ -48,7 +47,7 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		ax = gca()
 		old_axes=ax
 	
-	if (not any([isinstance(ii,Number) for ii in [x,y,m,c]])): # If nothing has been specified
+	if not any([x,y,m,c]): # If nothing has been specified
 		raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'm' or 'c'")
 	
 	for i, val in enumerate([x,y,m,c]):
@@ -549,7 +548,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 		coinciding with the bin edges. 'bar' produces a bar plot. All have filled version (i.e., 'smoothfilled'), which fills
 		the space between the edges of the histogram and 0.
 	v : array-like or list, optional
-		If a valid argument is given in cstat, defines the value used for the binned statistics.
+		If a valid argument is given in vstat, defines the value used for the binned statistics.
 	vstat : str, function  or list, optional
 		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
 		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer

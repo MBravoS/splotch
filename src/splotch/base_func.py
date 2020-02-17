@@ -1,3 +1,6 @@
+# Boolean, unsigned integer, signed integer, float, complex.
+_NUMERIC_KINDS = set('buifc')
+
 def axes_handler(new_axis):
 	"""New axis handler
 	
@@ -203,6 +206,31 @@ def dict_splicer(plot_dict,Ld,Lx):
 					temp_dict[k]=plot_dict[k][i]
 		dict_list.append(temp_dict)
 	return(dict_list)
+
+def is_numeric(array):
+	"""Determine whether the argument has a numeric datatype, when
+	converted to a NumPy array.
+
+	Booleans, unsigned integers, signed integers, floats and complex
+	numbers are the kinds of numeric datatype.
+
+	Parameters
+	----------
+	array : array-like
+		The array to check.
+
+	Returns
+	-------
+	is_numeric : `bool`
+		True if the array has a numeric datatype, False if not.
+
+
+	Credit for code: StackExchange users Gareth Rees and MSeifert.
+	https://codereview.stackexchange.com/questions/128032/check-if-a-numpy-array-contains-numerical-data
+	"""
+	from numpy import asarray
+
+	return asarray(array).dtype.kind in _NUMERIC_KINDS
 
 def percent_finder(data,p):
 	"""Level finder for percentage contours
