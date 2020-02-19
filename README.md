@@ -5,7 +5,7 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.4.3.2
+*Current version*: 0.4.4.1
 
 *Planned releases*:
 * Addition of ridgeline plots, a.k.a joyplots (0.4.3.0).

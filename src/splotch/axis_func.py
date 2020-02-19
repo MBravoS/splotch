@@ -310,235 +310,283 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 
 
 def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
-               sharex='col',sharey='row',labels=None,histlabel=None,figsize=None,squeeze=False,
-               pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
-    """ Creates a corner plot figure and subplots
-    
-    This function accepts columns of data representing multiple parameters in which each combination will be paired
-    will each other to form the off-diagonals of a corner plot. The diagonals show a 1D histogram representation
-    of each individual parameter.
-    
-    Parameters
-    ----------
-    data : array-like
-        The input data frame with each parameter represented by an individual column, the zeroth axis
-        should be the list of samples and the next axis should be the number of dimensions.
-        Accepted data types are: pandas.DataFrame, pandas.Series, numpy.ndarray, astropy.table.Table.
-    columns : array-like
-        Column labels (or indices) that specify which columns within data to use, otherwise every
-        column in data with a numeric datatype will be used.
-    pair_type : str, optional
-        The plotting type for the off-diagonal plots,
-        can be one of:'contour' | 'scatter' | 'hist' which correspond to contour plots, 
-        scatter plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw'
-        to control the styling of each.
-    wspace : float, optional
-        The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
-    hspace : float, optional
-        The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
-    sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
-        As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`)
-        axes:
-            - True or 'all': x-/y-axis will be shared among all subplots.
-            - False or 'none': each subplot x-/y-axis will be independent.
-            - 'row': each subplot row will share an x-/y-axis (default for sharey).
-            - 'col': each subplot column will share an x-/y-axis  (default for sharex).
+			   sharex='col',sharey='row',labels=None,histlabel=None,figsize=None,squeeze=False,
+			   pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
+	""" Creates a corner plot figure and subplots
+	
+	This function accepts columns of data representing multiple parameters in which each combination will be paired
+	will each other to form the off-diagonals of a corner plot. The diagonals show a 1D histogram representation
+	of each individual parameter.
+	
+	Parameters
+	----------
+	data : array-like
+		The input data frame with each parameter represented by an individual column, the zeroth axis
+		should be the list of samples and the next axis should be the number of dimensions.
+		Accepted data types are: pandas.DataFrame, pandas.Series, numpy.ndarray, astropy.table.Table.
+	columns : array-like
+		The column labels (or indices) that specify which columns within 'data' to use. if none specified,
+		every column in 'data' with a numeric datatype will be used. To group columns together, columns can 
+		be given as a list of lists, e.g.:
 
-        When subplots have a shared x-axis along a column, only the x tick
-        labels of the last complete row of the subplot are created. Similarly, 
-        when subplots have a shared y-axis along a row, only the y tick labels of the
-        first complete column subplot are created. By default, all 1D histogram do not
-        show any ticks labels or axis labels.
-    labels : array-like (str), optional
-        A list of axis labels to be assigned to each parameter. Must be of the same length or longer than
-        the number of parameters.
-    histlabel : str, optional
-        The y-axis label for each of the 1D histograms on the diagonal, if None given, then no labels or
-        ticks will be drawn. Labels and ticks will be displayed on the opposite side to the labels for the pair plots.
-        Default: None.
-    figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (len(data), len(data))
-        The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
-        the default rcParams figure.figsize by the number of rows or columns.
-    squeeze : bool, optional, default: True
-        As per matplotlib's usage, the following applies:
-            - If True, extra dimensions are squeezed out from the returned array of Axes:
-              For NxN, subplots with N>1 are returned as a 2D array or as a scalar otherwise.
-              2D arrays fill out subplots from top-to-bottom and left-to-right.
-            - If False (Default), no squeezing at all is done: the returned Axes object
-              is always a 2D array containing Axes instances, even if it ends
-              up being 1x1. For cornerplots with only one set of diagonals, empty axes
-              will be filled by None.
-    pair_kw : dict, optional
-        Dictionary of keyword arguments to be parsed into the pair plotting functions. The particular
-        arguments accepted are dependent on the 'pair_type' chosen.
-    hist_kw : dict, optional
-        Dictionary of keyword arguments to be parsed into the 1D histograms plots on the diagonals.
-    **kwargs : Subplot instance properties
-        kwargs are used to specify properties of `subplots` instances
-        A list of valid `axis` kwargs can be found here:
-        [https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")    
-    """
-    from splotch.base_func import is_numeric
-    from splotch.plots_2d import contourp, scatter, hist2D
-    from numpy import shape, full
-    from pandas import DataFrame
-    
-    from matplotlib.pyplot import figure
-    from matplotlib import rcParams
-    from matplotlib.gridspec import GridSpec
-    
-    import warnings
-    
-    # Try to import astropy
-    try:
-        from astropy.table import Table
-        hasAstropy = True
-    except ImportError:
-        hasAstropy = False
-    
-    # Validate share variables
-    if (isinstance(sharex, bool)):
-        sharex = "all" if sharex else "none"
-    if (isinstance(sharey, bool)):
-        sharey = "all" if sharey else "none"
-        
-    if len(shape(columns)) > 1:
-        nGroups = shape(columns)[0]
-        print(nGroups)
-        raise NotImplementedError("Grouping of columns not yet supported.")
-    
-    # Validate input data
-    if isinstance(data, DataFrame) or (hasAstropy and isinstance(data, Table)):
-        if (hasAstropy and isinstance(data, Table)): # Convert astropy.Table to pandas DataFrame if required
-            data = data.to_pandas()
-        if (columns == None): # no specific columns given
-            cols = [c for c in data.columns if is_numeric(data[c])] # only include columns that are strictly numeric
-        else:
-            cols = []; nonNumeric = []
-            for kk, c in enumerate(columns):
-                if (is_numeric(data[c])):
-                    cols.append(c)
-                else:
-                    nonNumeric.append(c)
-                    del labels[kk]
-            # Warn if any columns were not numeric
-            if (len(nonNumeric) > 0):
-                warnings.warn("Data type of column(s) '{0}' not numeric, ignoring column(s).".format(','.join(nonNumeric))) 
-        
-        # check that at least one numeric column was found
-        if (len(cols) == 0): raise ValueError("No numeric columns found in data.")
-        
-        data = data[cols]
-        if (labels == None and not isinstance(data.columns, pd.RangeIndex)): # auto-generate labels from columns if available
-            labels = cols
-    elif isinstance(data, pd.Series):
-        data = DataFrame(data)
-        cols = list(data.columns)
-    elif isinstance(data, np.ndarray):
-        if not is_numeric(data.dtype):
-            raise ValueError("data must be strictly numeric.")
-        data = DataFrame(data)
-        cols = list(data.columns)
-    else:
-        try: # Attempt to cast input data of unknown type into pandas DataFrame
-            data = DataFrame(data)
-        except (ValueError):
-            raise ValueError(f"'data' must be pandas DataFrame/Series, np.ndarray or astropy.Table object, not: {type(data)}")
-    
-    if (_debug_ == True): print(f"Columns: {cols}")
-    
-    dims = shape(data)
-    if (_debug_ == True): print(f"Dimensions: {dims}")
-    npar = 1 if len(dims) == 1 else dims[1] # first axis defines the dimensions of parameters
+			columns = [['A1', 'A2', ...], ['B1', 'B2', ...]]
 
-    # Validate plot parameters
-    if (labels != None and len(labels) < npar):
-        raise ValueError(f"Not enough labels given to match dimensions of data ({dims})")
-    if (pair_type not in ['contour','scatter','hist']):
-        raise ValueError(f"Pair type '{pair_type}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2d'}}.")
-    
-    if (figsize==None): # Auto scale default figure size to num cols/rows.
-        figsize = (rcParams["figure.figsize"][0]*npar, rcParams["figure.figsize"][0]*npar)
-    
-    fig = figure(figsize=figsize,**kwargs)
+		which will create pairs for all parameters in each sublist. Having multiple groups will result in
+		multiple histograms and paired plots per axis. As such, pair_type='hist' is not compatible when columns
+		includes multiple groups.
+	pair_type : str, optional
+		The plotting type for the off-diagonal plots,
+		can be one of:'contour' | 'scatter' | 'hist' which correspond to contour plots, 
+		scatter plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw'
+		to control the styling of each.
+	wspace : float, optional
+		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
+	hspace : float, optional
+		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
+	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
+		As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`) axes:
+			- True or 'all': x-/y-axis will be shared among all subplots.
+			- False or 'none': each subplot x-/y-axis will be independent.
+			- 'row': each subplot row will share an x-/y-axis (default for sharey).
+			- 'col': each subplot column will share an x-/y-axis  (default for sharex).
 
-    naxes = sum(np.arange(1,4))
-    axes = full(shape=(npar,npar),fill_value=None)
+		When subplots have a shared x-axis along a column, only the x tick
+		labels of the last complete row of the subplot are created. Similarly, 
+		when subplots have a shared y-axis along a row, only the y tick labels of the
+		first complete column subplot are created. By default, all 1D histogram do not
+		show any ticks labels or axis labels.
+	labels : array-like (str), optional
+		A list of axis labels to be assigned to each parameter. Must be of the same length or longer than
+		the number of parameters.
+	histlabel : str, optional
+		The y-axis label for each of the 1D histograms on the diagonal, if None given, then no labels or
+		ticks will be drawn. Labels and ticks will be displayed on the opposite side to the labels for the
+		pair plots, Default: None.
+	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (len(data), len(data))
+		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
+		the default rcParams figure.figsize by the number of rows or columns.
+	squeeze : bool, optional, default: True
+		As per matplotlib's usage, the following applies:
+			- If True, extra dimensions are squeezed out from the returned array of Axes:
+			  For NxN, subplots with N>1 are returned as a 2D array or as a scalar otherwise.
+			  2D arrays fill out subplots from top-to-bottom and left-to-right.
+			- If False (Default), no squeezing at all is done: the returned Axes object
+			  is always a 2D array containing Axes instances, even if it ends
+			  up being 1x1. For cornerplots with only one set of diagonals, empty axes
+			  will be filled by None.
 
-    gs = GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
-    for ii in range(npar-1, -1, -1):#(0, npar, 1):
-        for jj in range(ii, -1, -1):#(0, ii+1, 1):
-            
-            if (_debug_ == True): print(f" {ii},{jj} ",end='')
-            
-            # Select which axes this axis needs to be shared with
-            sharewith = {"none": None,
-                         "all": axes[0,0],
-                         "row": axes[ii,0],
-                         "col": axes[jj,jj]}
-    
-            # Create axes subplots
-            axes_kw["sharex"] = sharewith[sharex]
-            axes_kw["sharey"] = sharewith[sharey] if ii!=jj else None
-            axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
-            
-            if (ii==jj):
-                axes[ii,jj].hist(data[cols[jj]],**hist_kw)
-            else:
-                if (pair_type == 'scatter'):
-                    scatter(data[cols[jj]],data[cols[ii]],alpha=0.75,ax=axes[ii,jj],**pair_kw)
-                elif (pair_type == 'contour'):
-                    contourp(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],c='black',clabel=None,**pair_kw)
-                elif (pair_type == 'hist'):
-                    hist2D(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
-                    
-            if (labels != None):
-                if (ii == npar-1):
-                    axes[ii,jj].set_xlabel(labels[jj])
-                if (jj == 0 and ii != 0):
-                    axes[ii,jj].set_ylabel(labels[ii])
-            
-            if (_debug_ == True):
-                axes[ii,jj].text(0.1,0.8,f"({ii}, {jj})",transform=axes[ii,jj].transAxes)
-            
-        if (_debug_ == True): print("")
+	pair_kw : dict, optional
+		Dictionary of keyword arguments to be parsed into the pair plotting functions. The particular
+		arguments accepted are dependent on the 'pair_type' chosen. If 'columns' contains multiple groups,
+		listed arguments will be associated with each group. 
+	hist_kw : dict, optional
+		Dictionary of keyword arguments to be parsed into the 1D histograms plots on the diagonals.
+	**kwargs : Subplot instance properties
+		kwargs are used to specify properties of `subplots` instances
+		A list of valid `axis` kwargs can be found here:
+		[https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")	
+	"""
+	from splotch.base_func import is_numeric, dict_splicer
+	from splotch.plots_2d import contourp, scatter, hist2D
+	from numpy import shape, reshape, full, ndarray, array, arange
+	from pandas import DataFrame, Series, RangeIndex
+	
+	from matplotlib.pyplot import figure
+	from matplotlib import rcParams
+	from matplotlib.gridspec import GridSpec
+	
+	import warnings
+	
+	# Try to import astropy
+	try:
+		from astropy.table import Table
+		hasAstropy = True
+	except ImportError:
+		hasAstropy = False
+	
+	# Validate share variables
+	if (isinstance(sharex, bool)):
+		sharex = "all" if sharex else "none"
+	if (isinstance(sharey, bool)):
+		sharey = "all" if sharey else "none"
+		
+	nGroups = shape(columns)[0] if len(shape(columns)) > 1 else 1	
+	if (_debug_ == True): print(f"Groups: {nGroups}")
+			
+	# Get number of parameters and dimensions
+	dims = shape(data)
+	
+	# Validate plot parameters
+	if (pair_type not in ['contour','scatter','hist']):
+		raise ValueError(f"Pair type '{pair_type}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2d'}}.")
+	if (pair_type == 'hist' and nGroups > 1):
+		raise ValueError(f"Cannot overplot groups of 2D histograms. Choose alternative 'pair_type'.")
+	
+	# Validate input data
+	if isinstance(data, DataFrame) or (hasAstropy and isinstance(data, Table)):
+		if (hasAstropy and isinstance(data, Table)): # Convert astropy.Table to pandas DataFrame if required
+			data = data.to_pandas()
+		if (columns == None): # no specific columns given
+			cols = [c for c in data.columns if is_numeric(data[c])] # only include columns that are strictly numeric
+			columns = cols
+		else:
+			cols = []; nonNumeric = []
+			for kk, c in enumerate(array(columns).flatten()):
+				if (is_numeric(data[c])):
+					cols.append(c)
+				else:
+					nonNumeric.append(c)
+					del labels[kk]
+			
+			if (len(nonNumeric) > 0): # Warn if any columns were not numeric
+				warnings.warn("Data type of column(s) '{0}' not numeric, ignoring column(s).".format(','.join(nonNumeric))) 
+			
+		cols = reshape(cols, shape(columns)).T
+		
+		# check that at least one numeric column was found
+		if (len(cols) == 0): raise ValueError("No numeric columns found in data.")
+		
+	elif isinstance(data, Series):
+		data = DataFrame(data)
+		cols = list(data.columns)
+	elif isinstance(data, ndarray):
+		data = DataFrame(data) # recast numpy array into pandas DataFrame
+		
+		if (columns == None): # no specific columns given
+			cols = [c for c in data.columns if is_numeric(data[c])] # only include columns that are strictly numeric
+		else:
+			cols = []; nonNumeric = []
+			for kk, c in enumerate(array(columns).flatten()):
+				if (is_numeric(data[c])):
+					cols.append(c)
+				else:
+					nonNumeric.append(c)
+					del labels[kk]
+			
+			if (len(nonNumeric) > 0): # Warn if any columns were not numeric
+				warnings.warn("Data type of column(s) '{0}' not numeric, ignoring column(s).".format(','.join(nonNumeric))) 
+		
+		cols = reshape(array(data[cols].columns), shape(cols)).T
+	else:
+		try: # Attempt to cast input data of unknown type into pandas DataFrame
+			data = DataFrame(data)
+		except (ValueError):
+			raise ValueError(f"'data' must be pandas DataFrame/Series, np.ndarray or astropy.Table object, not: {type(data)}")
+	
+	
+	# Get the number of parameters to create axes for
+	npar = cols.size//nGroups if len(dims) > 1 else 1 # second axis defines the dimensions of parameters
+	if (_debug_ == True): print(f"\nDimensions: {dims}")
+	if (_debug_ == True): print(f"\nAxes: {npar}")
+
+	# Assign labels if none given
+	if (labels == None): # auto-generate labels from columns if available
+		labels = None if isinstance(data.columns, RangeIndex) else cols
+	else:
+		if (len(labels) < npar):
+			raise ValueError(f"Not enough labels given to match dimensions of data ({dims})")
+	
+	if (_debug_ == True): print(f"\nColumns:\n {cols}")
+
+	#if (figsize==None): # Auto scale default figure size to num cols/rows.
+	#	figsize = (rcParams["figure.figsize"][0]*npar, rcParams["figure.figsize"][0]*npar)
+	
+	fig = figure(figsize=figsize,**kwargs)
+
+	naxes = sum(arange(1,4))
+	axes = full(shape=(npar,npar),fill_value=None)
+
+	if (nGroups > 1):
+		hist_kw = dict_splicer(hist_kw,nGroups,[1]*nGroups)
+		pair_kw = dict_splicer(pair_kw,nGroups,[1]*nGroups)
+	
+	# Set up the GridSpec object
+	gs = GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
+	
+	if (_debug_): print("\nSubplots:")
+	for ii in range(npar-1, -1, -1):#(0, npar, 1):
+		for jj in range(ii, -1, -1):#(0, ii+1, 1):
+			
+			if (_debug_ == True): print(f" {ii},{jj} ",end='')
+			
+			# Select which axes this axis needs to be shared with
+			sharewith = {"none": None,
+						 "all": axes[0,0],
+						 "row": axes[ii,0],
+						 "col": axes[jj,jj]}
+	
+			# Create axes subplots
+			axes_kw["sharex"] = sharewith[sharex]
+			axes_kw["sharey"] = sharewith[sharey] if ii!=jj else None
+			axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
+			
+			if (ii==jj):
+				if (nGroups > 1):
+					for kk in range(nGroups):
+						axes[ii,jj].hist(data[cols[jj][kk]],**hist_kw[kk])
+				else:
+					axes[ii,jj].hist(data[cols[jj]],**hist_kw)
+			else:
+				if (pair_type == 'scatter'):
+					if (nGroups > 1):
+						for kk in range(nGroups):
+							scatter(data[cols[jj][kk]],data[cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
+					else:
+						scatter(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
+				elif (pair_type == 'contour'):
+					if (nGroups > 1):
+						for kk in range(nGroups):
+							contourp(data[cols[jj][kk]],data[cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
+					else:
+						contourp(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
+				elif (pair_type == 'hist'):
+					hist2D(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
+					
+			if (labels is not None):
+				if (ii == npar-1):
+					axes[ii,jj].set_xlabel(labels[jj])
+				if (jj == 0 and ii != 0):
+					axes[ii,jj].set_ylabel(labels[ii])
+			
+			if (_debug_ == True):
+				axes[ii,jj].text(0.1,0.8,f"({ii}, {jj})",transform=axes[ii,jj].transAxes)
+			
+		if (_debug_ == True): print("")
 
 
-    # turn off redundant tick labeling
-    if (sharex in ["col", "all"]):
-        # turn off all but the bottom row
-        for ii in range(0,npar-1):
-            for jj in range(0, ii+1):
-                axes[ii,jj].xaxis.set_tick_params(which='both', labelbottom=False, labeltop=False)
-                axes[ii,jj].xaxis.offsetText.set_visible(False)
+	# turn off redundant tick labeling
+	if (sharex in ["col", "all"]):
+		# turn off all but the bottom row
+		for ii in range(0,npar-1):
+			for jj in range(0, ii+1):
+				axes[ii,jj].xaxis.set_tick_params(which='both', labelbottom=False, labeltop=False)
+				axes[ii,jj].xaxis.offsetText.set_visible(False)
 
-    if (sharey in ["row", "all"]):
-        # turn off all but the leftmost columns of each row
-        for ii in range(0,npar):
-            for jj in range(1, ii):
-                axes[ii,jj].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
-                axes[ii,jj].yaxis.offsetText.set_visible(False)
-    
-    # Turn on histogram y-axis labels
-    for ii in range(0,npar):
-        if (histlabel != None):
-            axes[ii,ii].yaxis.tick_right()
-            axes[ii,ii].yaxis.set_label_position("right")
-            axes[ii,ii].set_ylabel(histlabel)
-            axes[ii,ii].tick_params(zorder=3)
-        else:
-            axes[ii,ii].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
-            axes[ii,ii].yaxis.offsetText.set_visible(False)
-            
-    # Squeeze the axes array
-    if (squeeze == True):
-        axes = axes.flatten() # flattens the array along along columns then rows
-        axes = axes[axes != None] # remove the Nones which fill out the missing corner
-        return (fig, axes.item()) if axes.size == 1 else (fig, axes.squeeze())
-    else:
-        return(fig, axes)
-    
-
+	if (sharey in ["row", "all"]):
+		# turn off all but the leftmost columns of each row
+		for ii in range(0,npar):
+			for jj in range(1, ii):
+				axes[ii,jj].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
+				axes[ii,jj].yaxis.offsetText.set_visible(False)
+	
+	# Turn on histogram y-axis labels
+	for ii in range(0,npar):
+		if (histlabel != None):
+			axes[ii,ii].yaxis.tick_right()
+			axes[ii,ii].yaxis.set_label_position("right")
+			axes[ii,ii].set_ylabel(histlabel)
+			axes[ii,ii].tick_params(zorder=3)
+		else:
+			axes[ii,ii].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
+			axes[ii,ii].yaxis.offsetText.set_visible(False)
+			
+	# Squeeze the axes array
+	if (squeeze == True):
+		axes = axes.flatten() # flattens the array along along columns then rows
+		axes = axes[axes != None] # remove the Nones which fill out the missing corner
+		return (fig, axes.item()) if axes.size == 1 else (fig, axes.squeeze())
+	else:
+		return(fig, axes)
 
 def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
