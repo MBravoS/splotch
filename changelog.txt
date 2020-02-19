@@ -1,3 +1,6 @@
+0.4.4.1 (19/02/2020):
+-Fixed bug in cornerplot() when columns given as groups in a numpy array
+
 0.4.4.0 (18/02/2020):
 -cornerplot() now accepts groups of parameters, the 'columns' parameter can be given as a list of lists with each sublist corresponding to a set of parameters to be paired together.
 -Giving multiple groups will overplot corresponding parameters from each group on the same axis.
