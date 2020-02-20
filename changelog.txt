@@ -1,3 +1,8 @@
+0.4.5.0 (20/02/2020):
+-Added sampling to cornerplot() to subsample the input data into a thinned dataset for faster plotting
+-The 'nsamples' and 'sample_type' parameters were added to control the use of this feature.
+-Removed 'sharex' and 'sharey' parameters as they were superfluous in cornerplot().
+
 0.4.4.1 (19/02/2020):
 -Fixed bug in cornerplot() when columns given as groups in a numpy array
 

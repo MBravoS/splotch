@@ -309,8 +309,8 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	return (cbars[0] if len(cbars) == 1 else cbars)
 
 
-def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
-			   sharex='col',sharey='row',labels=None,histlabel=None,figsize=None,squeeze=False,
+def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='rand',labels=None,histlabel=None,
+			   figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
 			   pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
 	""" Creates a corner plot figure and subplots
 	
@@ -339,22 +339,17 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 		can be one of:'contour' | 'scatter' | 'hist' which correspond to contour plots, 
 		scatter plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw'
 		to control the styling of each.
-	wspace : float, optional
-		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
-	hspace : float, optional
-		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
-	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
-		As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`) axes:
-			- True or 'all': x-/y-axis will be shared among all subplots.
-			- False or 'none': each subplot x-/y-axis will be independent.
-			- 'row': each subplot row will share an x-/y-axis (default for sharey).
-			- 'col': each subplot column will share an x-/y-axis  (default for sharex).
+	nsamples : float, optional
+		Specifies the number of samples kept out of the total number of samples. This is useful to speed up
+		plotting if not all of the samples need to be shown. Default: 1 (i.e. no subsampling).
+		Default: the full number samples in `data`.
+	sample_type : str, optional
+		Sets the method used to thin the full set of samples, can be one of the following:
+			- 'end' : Takes the last `nsamples` samples (Useful for MCMC posteriors where the end is often better).
+			- 'rand' : Randomly selects a set of samples. (Only use if confident all posterior chains are stationary).
+			- 'thin' : Evenly select every m samples until a total of `nsamples` are kept.
+		Default: 'end'
 
-		When subplots have a shared x-axis along a column, only the x tick
-		labels of the last complete row of the subplot are created. Similarly, 
-		when subplots have a shared y-axis along a row, only the y tick labels of the
-		first complete column subplot are created. By default, all 1D histogram do not
-		show any ticks labels or axis labels.
 	labels : array-like (str), optional
 		A list of axis labels to be assigned to each parameter. Must be of the same length or longer than
 		the number of parameters.
@@ -362,9 +357,14 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 		The y-axis label for each of the 1D histograms on the diagonal, if None given, then no labels or
 		ticks will be drawn. Labels and ticks will be displayed on the opposite side to the labels for the
 		pair plots, Default: None.
+	
 	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (len(data), len(data))
 		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
 		the default rcParams figure.figsize by the number of rows or columns.
+	wspace : float, optional
+		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
+	hspace : float, optional
+		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
 	squeeze : bool, optional, default: True
 		As per matplotlib's usage, the following applies:
 			- If True, extra dimensions are squeezed out from the returned array of Axes:
@@ -389,6 +389,7 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 	from splotch.base_func import is_numeric, dict_splicer
 	from splotch.plots_2d import contourp, scatter, hist2D
 	from numpy import shape, reshape, full, ndarray, array, arange
+	from numpy.random import choice
 	from pandas import DataFrame, Series, RangeIndex
 	
 	from matplotlib.pyplot import figure
@@ -404,11 +405,6 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 	except ImportError:
 		hasAstropy = False
 	
-	# Validate share variables
-	if (isinstance(sharex, bool)):
-		sharex = "all" if sharex else "none"
-	if (isinstance(sharey, bool)):
-		sharey = "all" if sharey else "none"
 		
 	nGroups = shape(columns)[0] if len(shape(columns)) > 1 else 1	
 	if (_debug_ == True): print(f"Groups: {nGroups}")
@@ -421,7 +417,29 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 		raise ValueError(f"Pair type '{pair_type}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2d'}}.")
 	if (pair_type == 'hist' and nGroups > 1):
 		raise ValueError(f"Cannot overplot groups of 2D histograms. Choose alternative 'pair_type'.")
+
+
+	# Sample the data
+	if (nsamples == None):
+		nsamples = dims[0] # By default, use all samples.
+	else:
+		if (nsamples > dims[0]):
+			raise ValueError(f"Number of samples ({nsamples}) is greater than the total number of samples in data ({dims[0]})")
+		elif (nsamples <= 0):
+			raise ValueError(f"Number of samples ({nsamples}) must be positive and non-zero.")
+	if (sample_type.lower() == 'end'):
+		samps = arange(dims[0]-nsamples,dims[0])
+	elif (sample_type.lower() == 'rand'):
+		samps = choice(arange(0,dims[0]),size=nsamples,replace=False)
+	elif (sample_type.lower() == 'thin'):
+		step = (dims[0]-1)//(nsamples-1) if nsamples > 1 else dims[0] # Get the largest possible step size given the sample size
+		offset = (dims[0] - step*(nsamples-1) - 1) // 2 # Offset of the initial point so that the points are centered
+		samps = array([offset + kk*step for kk in range(nsamples)])
+	else:
+		raise ValueError(f"Sample type '{sample_type}' not recognised.")
 	
+	if (_debug_ == True): print(f"Number of samples: {len(samps)}")
+
 	# Validate input data
 	if isinstance(data, DataFrame) or (hasAstropy and isinstance(data, Table)):
 		if (hasAstropy and isinstance(data, Table)): # Convert astropy.Table to pandas DataFrame if required
@@ -508,39 +526,29 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 		for jj in range(ii, -1, -1):#(0, ii+1, 1):
 			
 			if (_debug_ == True): print(f" {ii},{jj} ",end='')
-			
-			# Select which axes this axis needs to be shared with
-			sharewith = {"none": None,
-						 "all": axes[0,0],
-						 "row": axes[ii,0],
-						 "col": axes[jj,jj]}
-	
-			# Create axes subplots
-			axes_kw["sharex"] = sharewith[sharex]
-			axes_kw["sharey"] = sharewith[sharey] if ii!=jj else None
 			axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
 			
 			if (ii==jj):
 				if (nGroups > 1):
 					for kk in range(nGroups):
-						axes[ii,jj].hist(data[cols[jj][kk]],**hist_kw[kk])
+						axes[ii,jj].hist(data.iloc[samps][cols[jj][kk]],**hist_kw[kk])
 				else:
-					axes[ii,jj].hist(data[cols[jj]],**hist_kw)
+					axes[ii,jj].hist(data.iloc[samps][cols[jj]],**hist_kw)
 			else:
 				if (pair_type == 'scatter'):
 					if (nGroups > 1):
 						for kk in range(nGroups):
-							scatter(data[cols[jj][kk]],data[cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
+							scatter(data.iloc[samps][cols[jj][kk]],data.iloc[samps][cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
 					else:
-						scatter(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
+						scatter(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**pair_kw)
 				elif (pair_type == 'contour'):
 					if (nGroups > 1):
 						for kk in range(nGroups):
-							contourp(data[cols[jj][kk]],data[cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
+							contourp(data.iloc[samps][cols[jj][kk]],data.iloc[samps][cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
 					else:
-						contourp(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
+						contourp(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**pair_kw)
 				elif (pair_type == 'hist'):
-					hist2D(data[cols[jj]],data[cols[ii]],ax=axes[ii,jj],**pair_kw)
+					hist2D(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**pair_kw)
 					
 			if (labels is not None):
 				if (ii == npar-1):
@@ -555,19 +563,16 @@ def cornerplot(data,columns=None,pair_type='contour',wspace=0.0,hspace=0.0,
 
 
 	# turn off redundant tick labeling
-	if (sharex in ["col", "all"]):
-		# turn off all but the bottom row
-		for ii in range(0,npar-1):
-			for jj in range(0, ii+1):
-				axes[ii,jj].xaxis.set_tick_params(which='both', labelbottom=False, labeltop=False)
-				axes[ii,jj].xaxis.offsetText.set_visible(False)
+	for ii in range(0,npar-1):
+		for jj in range(0, ii+1):
+			axes[ii,jj].xaxis.set_tick_params(which='both', labelbottom=False, labeltop=False)
+			axes[ii,jj].xaxis.offsetText.set_visible(False)
 
-	if (sharey in ["row", "all"]):
-		# turn off all but the leftmost columns of each row
-		for ii in range(0,npar):
-			for jj in range(1, ii):
-				axes[ii,jj].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
-				axes[ii,jj].yaxis.offsetText.set_visible(False)
+	# turn off all but the leftmost columns of each row
+	for ii in range(0,npar):
+		for jj in range(1, ii):
+			axes[ii,jj].yaxis.set_tick_params(which='both',labelbottom=False, labeltop=False)
+			axes[ii,jj].yaxis.offsetText.set_visible(False)
 	
 	# Turn on histogram y-axis labels
 	for ii in range(0,npar):
