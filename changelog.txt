@@ -10,6 +10,9 @@
 -cornerplot() now accepts groups of parameters, the 'columns' parameter can be given as a list of lists with each sublist corresponding to a set of parameters to be paired together.
 -Giving multiple groups will overplot corresponding parameters from each group on the same axis.
 
+0.4.3.2 (17/02/2020):
+-Fixed axline() issue when parameters parsed as an array rather than single number
+
 0.4.3.1 (17/02/2020):
 -Made changes to cornerplot() to accept pandas and astropy DataFrames.
 
