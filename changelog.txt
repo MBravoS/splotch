@@ -1,3 +1,7 @@
+0.4.5.1 (21/02/2020):
+-Added weights to hist()
+-Fixed bug where input parameters could only be given as lists, not other iterable types
+
 0.4.5.0 (20/02/2020):
 -Added sampling to cornerplot() to subsample the input data into a thinned dataset for faster plotting
 -The 'nsamples' and 'sample_type' parameters were added to control the use of this feature.
