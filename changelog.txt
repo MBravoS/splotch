@@ -22,6 +22,9 @@
  * Removed "if None in (percent, cmap, clim, s, ...)" as this conflicted with numpy arrays.
  * Removed 'viridis' default from 'cmap' docstring.
 
+0.4.5.1 (21/02/2020):
+-Added weights to hist()
+-Fixed bug where input parameters could only be given as lists, not other iterable types
 
 0.4.5.0 (20/02/2020):
 -Added sampling to cornerplot() to subsample the input data into a thinned dataset for faster plotting
