@@ -1,3 +1,6 @@
+0.4.5.2 (26/02/2020):
+-Fixed bug with 'ins' variable in colorbar()
+
 0.4.5.1 (21/02/2020):
 -Added weights to hist()
 -Fixed bug where input parameters could only be given as lists, not other iterable types

@@ -5,7 +5,7 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.4.5.1
+*Current version*: 0.4.5.2
 
 *Planned releases*:
 * Addition of corner plots (0.4.5.0)

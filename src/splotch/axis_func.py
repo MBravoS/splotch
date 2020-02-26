@@ -207,6 +207,10 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	if type(loc) != int:
 		raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
 
+	### Define the positions of preset colorbars
+	labpad = 0.125 # The padding added for labels
+	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
+
 	# Validate aspect value
 	if (aspect <= 0 or aspect > 1):
 		raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
@@ -219,10 +223,6 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 			height = width/aspect if orientation is 'vertical' else aspect*width
 		elif width == None:
 			width = aspect*height if orientation is 'vertical' else height/aspect
-
-	### Define the positions of preset colorbars
-	labpad = 0.125 # The padding added for labels
-	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
 	
 	# Vertically-oriented colorbars
 	vertPositions = {1:(1+pad-ins*(2*pad+width), 1-height-ins*pad, width, height),
@@ -593,7 +593,8 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	else:
 		return(fig, axes)
 
-def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
+def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,
+			 sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
 
 	This is a more-generalised wrapper around matplotlib.pyplot.subplot function to allow for irregularly divided grids.
