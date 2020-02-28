@@ -1,3 +1,6 @@
+0.4.5.3 (28/02/2020):
+-Added 'fig' parameter to cornerplot() to accept predefined figure objects.
+
 0.4.5.2 (26/02/2020):
 -Fixed bug with 'ins' variable in colorbar()
 
