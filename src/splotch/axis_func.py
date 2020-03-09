@@ -84,7 +84,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	textpar = dict_splicer(textpar,L,[1]*L)
 
-	for a in ax.flatten():
+	for a in flatten(ax):
 		if (a == None): continue # ignore empty subplots
 
 		for ii, lab in enumerate(which):
@@ -278,7 +278,7 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 						 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
 						 bbox_transform=transform if transform != None else ax.transAxes,
 						 borderpad=0)
-		
+
 		cbar = colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
 		
 		# Orient tick axes correctly
@@ -361,10 +361,8 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (len(data), len(data))
 		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
 		the default rcParams figure.figsize by the number of rows or columns.
-	wspace : float, optional
-		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
-	hspace : float, optional
-		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
+	wspace / hspace : float, optional
+		The horzontal/vertical spacing between figure subplots, expressed as a fraction of the subplot width/height.
 	squeeze : bool, optional, default: True
 		As per matplotlib's usage, the following applies:
 			- If True, extra dimensions are squeezed out from the returned array of Axes:
@@ -593,7 +591,9 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	else:
 		return(fig, axes)
 
-def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,sharex='none',sharey='none',squeeze=True,figsize=None,axes_kw={},**kwargs):
+def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,
+			 widths=None,heights=None,sharex='none',sharey='none',squeeze=True,
+			 figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
 
 	This is a more-generalised wrapper around matplotlib.pyplot.subplot function to allow for irregularly divided grids.
@@ -645,11 +645,11 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
 		Not implemented.
 
-	wspace : float, optional
-		The horzontal spacing between figure subplots, expressed as a fraction of the subplot width.
+	wspace / hspace : float, optional
+		The horzontal/vertical spacing between figure subplots, expressed as a fraction of the subplot width/height.
 
-	hspace : float, optional
-		The vertical spacing between figure subplots, expressed as a fraction of the subplot height.
+	width / heights : array-like, optional
+		The width/height ratios of the subplot columns/rows expressed as an array of length ncols/nrows.
 
 	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
 		As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`)
@@ -747,12 +747,27 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	
 	# How many axes away from filling the gridspec evenly and completely
 	delta = (nrows*ncols) - naxes
+
+
+	# Assert that ha/va != center if widths/heights given
+	if (widths == None):
+		widths = [1]*ncols
+	else:
+		if ha=='centre': raise ValueError("Cannot set width ratios when ha = 'centre'")
+	
+	if (heights == None):
+		heights = [1]*nrows
+	else:
+		if va=='centre': raise ValueError("Cannot set height ratios when va = 'centre'")
+
+
 	
 	if (figsize==None): # Auto scale default figure size to num cols/rows.
 		figsize = (rcParams["figure.figsize"][0]*ncols, rcParams["figure.figsize"][1]*nrows)
 	
 	fig = figure(figsize=figsize,**kwargs)
-	gs = GridSpec(ncols=ncols*2, nrows=nrows*2, hspace=hspace, wspace=wspace)
+	gs = GridSpec(ncols=ncols*2, nrows=nrows*2, hspace=hspace, wspace=wspace,
+				  width_ratios=[w for w in widths for kk in range(2)], height_ratios=[h for h in heights for kk in range(2)])
 	
 	axes_kw = dict_splicer(axes_kw,naxes,[1]*naxes)
 	

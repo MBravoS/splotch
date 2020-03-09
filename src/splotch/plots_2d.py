@@ -1122,7 +1122,7 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	
 	from warnings import warn
 	from matplotlib.cm import get_cmap, ScalarMappable
-	from matplotlib.pyplot import gca, contour, legend, Normalize
+	from matplotlib.pyplot import gca, sca, contour, legend, Normalize
 	from numpy import array, linspace, round, ndarray, ceil
 	from scipy.ndimage.filters import gaussian_filter
 
@@ -1236,6 +1236,8 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 
 	if not all(l is None for l in labels): # Set legend location if labels != None
 		ax.legend(loc=lab_loc)
+
+	sca(ax) # After producing colorbar, ensure correct current axis
 
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:

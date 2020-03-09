@@ -614,21 +614,23 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 			bins=[bins]*L
 		else:
 			bins=[int((len(d))**0.4) for d in data]
-	if type(weights) not in [list, tuple] or (len(shape(weights)) == 1):
+	if type(weights) not in [list, tuple, ndarray] or (len(shape(weights)) == 1):
 		weights=[weights]*L
-		print(weights)
 	if type(dens) not in [list, tuple]:
 		dens=[dens]*L
 	if type(cumul) not in [list, tuple]:
 		cumul=[cumul]*L
 	if type(scale) not in [list, tuple, ndarray]:
 		scale=[scale]*L
-	if type(v) not in [list, tuple, ndarray]:
+	if type(v) not in [list, tuple, ndarray] or (len(shape(weights)) == 1):
 		v=[v]*L
 	if type(vstat) not in [list, tuple]:
 		vstat=[vstat]*L
 	if type(plabel) not in [list, tuple]:
 		plabel=[plabel]*L
+
+	print(data)
+	print(v)
 
 
 	if None in [ylog,hist_type,output]:
@@ -661,7 +663,6 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	n_return=[]
 	
 	for i in range(L):
-		print(i)
 		temp_data,bins_hist,bins_plot=bin_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
 		if vstat[i]:
 			temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
