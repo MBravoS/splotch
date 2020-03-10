@@ -1122,13 +1122,13 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	
 	from warnings import warn
 	from matplotlib.cm import get_cmap, ScalarMappable
-	from matplotlib.pyplot import gca, sca, contour, legend, Normalize
+	from matplotlib.pyplot import gca, sca, contour, legend, Normalize, colorbar
 	from numpy import array, linspace, round, ndarray, ceil
 	from scipy.ndimage.filters import gaussian_filter
 
 	from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer,is_numeric
 	from .defaults import Params
-	from .axis_func import colorbar
+	#from .axis_func import 
 	
 	# Initialise defaults
 	#if None in (percent,cmap,clim,s,output):
@@ -1232,7 +1232,8 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	if (clabel is not None):
 		sm = ScalarMappable(cmap=cmap, norm=Normalize(vmin=0, vmax=1))
 		sm._A = [] # fake an array of the scalar mappable.
-		colorbar(sm,width=0.1,height=1,label=clabel)
+		#colorbar(sm,width=0.1,height=1,label=clabel)
+		colorbar(sm,label=clabel)
 
 	if not all(l is None for l in labels): # Set legend location if labels != None
 		ax.legend(loc=lab_loc)

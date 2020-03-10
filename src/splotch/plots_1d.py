@@ -443,7 +443,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	# The lengths of each substitute value list, len=1 if just a single value
 	lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
-	print(lens)
+	#print(lens)
 	
 	if (permute == True):
 		L = prod(lens)
@@ -622,17 +622,16 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		cumul=[cumul]*L
 	if type(scale) not in [list, tuple, ndarray]:
 		scale=[scale]*L
-	if type(v) not in [list, tuple, ndarray] or (len(shape(weights)) == 1):
+	if type(v) not in [list, tuple, ndarray] or (len(shape(v)) == 1):
 		v=[v]*L
 	if type(vstat) not in [list, tuple]:
 		vstat=[vstat]*L
 	if type(plabel) not in [list, tuple]:
 		plabel=[plabel]*L
-
-	print(data)
-	print(v)
-
-
+	
+	#print(data)
+	#print(v)
+	
 	if None in [ylog,hist_type,output]:
 		from .defaults import Params
 		if ylog is None:

@@ -40,7 +40,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 
 	from matplotlib.text import Text
 	from matplotlib.pyplot import gca
-	from numpy import shape, min, max, argmin, argmax, append
+	from numpy import array, shape, max as np_max, argmax, append#, flatten
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	try:
@@ -84,7 +84,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	textpar = dict_splicer(textpar,L,[1]*L)
 
-	for a in flatten(ax):
+	for a in array(ax).flatten():
 		if (a == None): continue # ignore empty subplots
 
 		for ii, lab in enumerate(which):
@@ -102,7 +102,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 				texts = a.legend().get_texts() # Get list of text objects in legend
 			elif (lab in ['c','colorbar']):
 				# Get the axis with the largest ratio between width or height
-				caxInd = argmax([max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
+				caxInd = argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
 				if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
 					texts = [a.figure.get_axes()[caxInd].yaxis.label]
 				else:
@@ -114,7 +114,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 			elif (lab in ['a','all']):
 				texts = [a.xaxis.label,a.yaxis.label,a.title,a.legend().get_texts()]
 
-				caxInd = argmax([max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
+				caxInd = argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
 				if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
 					texts.append(a.figure.get_axes()[caxInd].yaxis.label)
 				else:
@@ -207,6 +207,10 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	if type(loc) != int:
 		raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
 
+	### Define the positions of preset colorbars
+	labpad = 0.125 # The padding added for labels
+	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
+
 	# Validate aspect value
 	if (aspect <= 0 or aspect > 1):
 		raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
@@ -219,10 +223,6 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 			height = width/aspect if orientation is 'vertical' else aspect*width
 		elif width == None:
 			width = aspect*height if orientation is 'vertical' else height/aspect
-
-	### Define the positions of preset colorbars
-	labpad = 0.125 # The padding added for labels
-	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
 	
 	# Vertically-oriented colorbars
 	vertPositions = {1:(1+pad-ins*(2*pad+width), 1-height-ins*pad, width, height),
@@ -310,8 +310,8 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 
 
 def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='rand',labels=None,histlabel=None,
-			   figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
-			   pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
+				fig=None,figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
+				pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
 	""" Creates a corner plot figure and subplots
 	
 	This function accepts columns of data representing multiple parameters in which each combination will be paired
@@ -391,6 +391,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	from pandas import DataFrame, Series, RangeIndex
 	
 	from matplotlib.pyplot import figure
+	from matplotlib.figure import Figure
 	from matplotlib import rcParams
 	from matplotlib.gridspec import GridSpec
 	
@@ -507,24 +508,42 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	#if (figsize==None): # Auto scale default figure size to num cols/rows.
 	#	figsize = (rcParams["figure.figsize"][0]*npar, rcParams["figure.figsize"][0]*npar)
 	
-	fig = figure(figsize=figsize,**kwargs)
-
-	naxes = sum(arange(1,4))
 	axes = full(shape=(npar,npar),fill_value=None)
+	if (fig is None): # Initialise figure and empty array
+		fig = figure(figsize=figsize,**kwargs)
+	else: # figure object was given
+		if (fig.axes != []): # figure does contain axis objects
+			try:
+				if (len(fig.axes) != sum([kk for kk in range(1,npar+1)])):
+					raise ValueError(f"Number of axes in `fig` ({len(fig.axes)}) cannot be mapped to the number of axes required ({sum([kk for kk in range(1,npar+1)])}) for the given parameters.")
+				else: # Reshape the new axes matrix
+					cnt = 0
+					for ii in range(npar-1, -1, -1): # reshape axes list into appropriate matrix
+						for jj in range(ii, -1, -1):
+							axes[ii,jj] = fig.axes[cnt]
+							cnt += 1
+			except (TypeError): # axes in fig was not a list-like object
+				raise TypeError("Figure axes has incorrect type, should be a list of 'matplotlib.axes.Axes' objects.")
+
+	if (all([ax is None for ax in axes.flatten()])):
+		# Set up the GridSpec object
+		gs = GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
+		for ii in range(npar-1, -1, -1): # reshape axes list into appropriate matrix
+			for jj in range(ii, -1, -1):
+				axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
+
+	if (_debug_): print(axes)
 
 	if (nGroups > 1):
 		hist_kw = dict_splicer(hist_kw,nGroups,[1]*nGroups)
 		pair_kw = dict_splicer(pair_kw,nGroups,[1]*nGroups)
 	
-	# Set up the GridSpec object
-	gs = GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
 	
 	if (_debug_): print("\nSubplots:")
 	for ii in range(npar-1, -1, -1):#(0, npar, 1):
 		for jj in range(ii, -1, -1):#(0, ii+1, 1):
 			
 			if (_debug_ == True): print(f" {ii},{jj} ",end='')
-			axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
 			
 			if (ii==jj):
 				if (nGroups > 1):

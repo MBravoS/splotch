@@ -1,3 +1,7 @@
+0.4.6.1 (10/03/2020):
+-Fixed bug in plots_1d.hist() with binned statistics not working for list of data.
+-Switched plots_2d.contourp() to use matplotlib's colourbar instead of our own.
+
 0.4.6.0 (20/02/2020):
 - Made modifications and bugfixes to splt.contourp(), including:
  * Added the 'labels' parameter for labelling contour lines.
@@ -21,6 +25,12 @@
  * Removed multiple calls to "output = Params. ...".
  * Removed "if None in (percent, cmap, clim, s, ...)" as this conflicted with numpy arrays.
  * Removed 'viridis' default from 'cmap' docstring.
+ 
+0.4.5.3 (28/02/2020):
+-Added 'fig' parameter to cornerplot() to accept predefined figure objects.
+
+0.4.5.2 (26/02/2020):
+-Fixed bug with 'ins' variable in colorbar()
 
 0.4.5.1 (21/02/2020):
 -Added weights to hist()
