@@ -1,3 +1,46 @@
+0.4.6.1 (10/03/2020):
+-Fixed bug in plots_1d.hist() with binned statistics not working for list of data.
+-Switched plots_2d.contourp() to use matplotlib's colourbar instead of our own.
+
+0.4.6.0 (20/02/2020):
+- Made modifications and bugfixes to splt.contourp(), including:
+ * Added the 'labels' parameter for labelling contour lines.
+ * Added the 'smooth' parameter to apply a Gaussian smoothing kernel to the contours. 'smooth' is the sigma of the kernel.
+ * Renamed parameter clabel --> labels
+ * Renamed parameter 's' --> linestyle. 's' was ambiguous and could be confused with the 's' used in scatter for "size".
+ * Added alliases for linestyle: 'ls' or 's' and for c: 'color'.
+ * Fixed problem where 'clabel' applied to contour labels, rather than to colorbar as documentation stated
+ * 'clabel' now controls colorbar label and 'labels' controls the labels for the contours.
+ * Fixed bug where percent, bin_type, bins, s (linstyle) would only accept lists and not other iterables
+ * Fixed bug where if the length of s (linestyle) was < 4, code would force linestyle='solid'.
+ * Fixed bug when clabel[0] == None no legend would be plot in the case where other items in clabel were not None.
+ * Fixed bug where if no ax was given and a call was made directly to ax, it would crash.
+ * Adjusted handling of 'color' to accept: strings, floats, arrays. If color is number, now correctly samples the cmap at the correct percent value.
+ * Adjusted usage of labels. If labels=True, automatically generate labels from 'percent'. If labels is string, display only one label in legend. If labels is an array-like, each element applies to an individual contour line. If labels = False or None, do not display a legend.
+ * Adjusted retrieval of next colour in cycler to use: "next(ax._get_lines.prop_cycler)['color']" instead of plotting a temporary line.
+ * Added feature where if length of 'linestyle' or 'color' were less than paercent, they would be cycled until forming a list of corrent length.
+ * Added feature where colorbar is plot if clabel given.
+ * Removed displaying of labels as a default behaiviour.
+ * Removed automatic setting of 'linestyle' to 'solid' if col was not string.
+ * Removed multiple calls to "output = Params. ...".
+ * Removed "if None in (percent, cmap, clim, s, ...)" as this conflicted with numpy arrays.
+ * Removed 'viridis' default from 'cmap' docstring.
+ 
+0.4.5.3 (28/02/2020):
+-Added 'fig' parameter to cornerplot() to accept predefined figure objects.
+
+0.4.5.2 (26/02/2020):
+-Fixed bug with 'ins' variable in colorbar()
+
+0.4.5.1 (21/02/2020):
+-Added weights to hist()
+-Fixed bug where input parameters could only be given as lists, not other iterable types
+
+0.4.5.0 (20/02/2020):
+-Added sampling to cornerplot() to subsample the input data into a thinned dataset for faster plotting
+-The 'nsamples' and 'sample_type' parameters were added to control the use of this feature.
+-Removed 'sharex' and 'sharey' parameters as they were superfluous in cornerplot().
+
 0.4.4.1 (19/02/2020):
 -Fixed bug in cornerplot() when columns given as groups in a numpy array
 

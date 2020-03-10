@@ -443,7 +443,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	# The lengths of each substitute value list, len=1 if just a single value
 	lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
-	print(lens)
+	#print(lens)
 	
 	if (permute == True):
 		L = prod(lens)
@@ -516,9 +516,9 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	return(curves[0] if len(curves)==1 else curves, expr)
 
 #Histogram
-def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=None,v=None,vstat=None,xlim=None,ylim=None,
-			xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
-			ax=None,grid=None,plot_kw={},output=None,**kwargs):
+def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=None,hist_type=None,v=None,vstat=None,xlim=None,ylim=None,
+		 xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
+		 ax=None,grid=None,plot_kw={},output=None,**kwargs):
 	
 	"""1D histogram function.
 	
@@ -541,7 +541,11 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 	cumul : bool or list, optional
 		If true, produces a cumulative distribution instead of a histogram.
 	scale : float or list, optional
-		Scaling the counts.
+		Scaling to be applied to the counts.
+	weights : array-like or None, optional
+		An array of weights with the same shape as data. For each value in data, it will only contribute its given weight towards
+		the bin count (instead of 1). If dens is True, weights will also be normalised so that the integral over the density
+		remains 1. Default: None
 	hist_type : str, optional.
 		Defines the type of histogram to be drawn. 'smooth' and 'step' produce lines, with the former drawing lines conecting
 		the values of each bin positioned on their centre, and the latter drawing a stepwise line, with the edges of each step
@@ -572,7 +576,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 	ylabel : str, optional
 		Sets the label of the y-axis.
 	plabel : str, optional
-		Sets the legend for the plot.
+		Sets the label for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -592,36 +596,42 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 		List containing the arrays with the bin edges for each of the histograms drawn. Only provided if output is True.
 	"""
 	
-	from numpy import cumsum as np_cumsum, max as np_max, sum as np_sum
+	from numpy import cumsum as np_cumsum, max as np_max, sum as np_sum, shape
 	from scipy.stats import binned_statistic
-	from numpy import array, diff, histogram, inf, nan, ones, where
+	from numpy import array, ndarray, diff, histogram, inf, nan, ones, where
 	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
 	from .base_func import axes_handler,bin_axis,dict_splicer,plot_finalizer,step_filler
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(data) is not list:
+	if type(data) not in [list, tuple, ndarray] or (len(shape(data)) == 1):
 		data=[data]
 	L=len(data)
-	if type(bin_type) is not list:
+	if type(bin_type) not in [list, tuple]:
 		bin_type=[bin_type]*L
-	if type(bins) is not list:
+	if type(bins) not in [list, tuple, ndarray]:
 		if bins is not None:
 			bins=[bins]*L
 		else:
 			bins=[int((len(d))**0.4) for d in data]
-	if type(dens) is not list:
+	if type(weights) not in [list, tuple, ndarray] or (len(shape(weights)) == 1):
+		weights=[weights]*L
+	if type(dens) not in [list, tuple]:
 		dens=[dens]*L
-	if type(cumul) is not list:
+	if type(cumul) not in [list, tuple]:
 		cumul=[cumul]*L
-	if type(scale) is not list:
+	if type(scale) not in [list, tuple, ndarray]:
 		scale=[scale]*L
-	if type(v) is not list:
+	if type(v) not in [list, tuple, ndarray] or (len(shape(v)) == 1):
 		v=[v]*L
-	if type(vstat) is not list:
+	if type(vstat) not in [list, tuple]:
 		vstat=[vstat]*L
-	if type(plabel) is not list:
+	if type(plabel) not in [list, tuple]:
 		plabel=[plabel]*L
+	
+	#print(data)
+	#print(v)
+	
 	if None in [ylog,hist_type,output]:
 		from .defaults import Params
 		if ylog is None:
@@ -630,7 +640,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 			hist_type=Params.hist1D_histtype
 		if output is None:
 			output=Params.hist1D_output
-	if type(hist_type) is not list:
+	if type(hist_type) not in [list, tuple, ndarray]:
 		hist_type=[hist_type]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
@@ -656,7 +666,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,hist_type=
 		if vstat[i]:
 			temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
-			temp_y=histogram(temp_data,bins=bins_hist,density=dens[i])[0]
+			temp_y=histogram(temp_data,bins=bins_hist,density=dens[i],weights=weights[i])[0]
 		if cumul[i]:
 			temp_y=np_cumsum(temp_y)
 			if dens[i]:

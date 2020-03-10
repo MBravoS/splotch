@@ -1033,11 +1033,11 @@ def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=No
 	
 	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.contourp() instead.',FutureWarning)
 	
-	contourp(x,y,percent,bin_type,bins,c,cmap,xlim,ylim,clim,xinvert,yinvert,cbar_invert,s,xlog,ylog,title,xlabel,ylabel,
+	contourp(x,y,percent,bin_type,bins,c,cmap,xlim,ylim,clim,xinvert,yinvert,cbar_invert,s,xlog,ylog,title,labels,xlabel,ylabel,
 				clabel,lab_loc,ax,grid,output,plot_kw,**kwargs)
 
-def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
-				cbar_invert=False,s=None,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
+def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=None,linestyle=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
+				cbar_invert=False,xlog=False,ylog=False,title=None,labels=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
 				grid=None,output=None,plot_kw={},**kwargs):
 	
 	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
@@ -1048,20 +1048,22 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None
 		Position of data points in the x axis.
 	y : array-like
 		Position of data points in the y axis.
-	percent : float or list, optional.
+	percent : float or array-like, optional.
 		The percentages of the sample that the contours encircle.
 	bin_type : {'number','width','edges','equal'}, optional
 		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
 		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
 		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
 		float and 'edges' if ndarray.
-	bins : int, float, array-like or list, optional
+	bins : int, float, array-like, optional
 		Gives the values for the bins, according to bin_type.
+	smooth : float, optional
+		The standard deviation for the Gaussian kernel. Default: 0.0 (No smoothing).
 	c : str, float or list, optional
 		The colours of the contours. If float or list of floats, they must be in the range [0,1], as the colours are
 		taken from the given colour map.
 	cmap : str, optional
-		The colour map to be used, viridis by default.
+		The colour map to be used.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -1074,7 +1076,7 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None
 		If true inverts the y-axis.
 	cbar_invert : bool, optional
 		If True inverts the direction of the colour bar (not the colour map).
-	s= str or list, optional.
+	linestyle or ls : str or array-like, optional.
 		Defines the linestyle of the contours.
 	xlog : bool, optional
 		If True the scale of the x-axis is logarithmic.
@@ -1082,12 +1084,15 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None
 		If True the scale of the x-axis is logarithmic.
 	title : str, optional
 		Sets the title of the plot
+	labels : array-like or str, optional
+		Specifies label(s) for the contour(s). If 'str', sets the label for the full set of contours. If an array
+		of strings, sets the labels for each contour. Must be of equal length to number specified by 'percent'.
 	xlabel : str, optional
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
 	clabel : str, optional
-		Sets the legend for the colour axis.
+		Sets the label for the colourbar. If None given, no colourbar will be made.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -1115,66 +1120,100 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None
 		The levels for the contours.
 	"""
 	
-	from matplotlib.cm import get_cmap
-	from numpy import array,linspace, round
-	from matplotlib.pyplot import gca, contour, legend
-	from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer
+	from warnings import warn
+	from matplotlib.cm import get_cmap, ScalarMappable
+	from matplotlib.pyplot import gca, sca, contour, legend, Normalize, colorbar
+	from numpy import array, linspace, round, ndarray, ceil
+	from scipy.ndimage.filters import gaussian_filter
+
+	from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer,is_numeric
+	from .defaults import Params
+	#from .axis_func import 
 	
-	if None in (percent,cmap,clim,s,output):
-		from .defaults import Params
-		if percent is None:
-			percent=Params.sigcont_percent
-		if cmap is None:
-			cmap=Params.sigcont_cmap
-		if clim is None:
-			clim=Params.sigcont_clim
-		if s is None:
-			s=Params.sigcont_linestyle
-		if output is None:
-			output=Params.sigcont_output
+	# Initialise defaults
+	#if None in (percent,cmap,clim,s,output):
+	if percent is None:
+		percent=Params.sigcont_percent  # Probably should change to 'cont_percent'
+	if cmap is None:
+		cmap=Params.sigcont_cmap # * 'cont_cmap'
+	if clim is None:
+		clim=Params.sigcont_clim  # * 'cont_clim'
+	if linestyle is None:
+		linestyle=Params.sigcont_linestyle # * cont_linestyle or cont_ls
+	if output is None:
+		output=Params.sigcont_output # * cont_output
+
+	# Pull out aliases from **kwargs:
+	if 'ls' in kwargs.keys(): linestyle = kwargs.pop('ls')
+	if 's' in kwargs.keys(): linestyle = kwargs.pop('s')
+	if 'color' in kwargs.keys(): c = kwargs.pop('color')
+
+	# Assign current axis
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(percent) is not list:
+	else:
+		ax = gca()
+		old_axes=ax
+
+	if type(percent) not in [list, tuple, ndarray]:
 		percent=[percent]
-	if type(bin_type) is not list:
+	if type(bin_type) not in [list, tuple, ndarray]:
 		bin_type=[bin_type]*2
-	if type(bins) is not list:
+	if type(bins) not in [list, tuple, ndarray]:
 		if bins is None:
 			bins=int((len(x))**0.4)
+		elif (is_numeric(bins) == False):
+			raise ValueError(f"Parameter 'bins' must be numeric, got data type '{type(bins)}'.")
+		else:
+			raise ValueError(f"Data type '{type(bins)}' not recognised, must be one of: list, tuple, ndarray.")
 		bins=[bins]*2
-	if output is None:
-		from .defaults import Params
-		output=Params.hist2D_output
+
+	cmap=get_cmap(cmap) # retrieve/parse colourmap as matplotlib object
+	if c is None: # if no color specified, initiate defaults
+		if len(percent)<4: # if <4 lines, get first color of color cycler
+			c = [next(ax._get_lines.prop_cycler)['color']]*len(percent)
+			clabel = None # Cannot plot meaningful colorbar
+		else:
+			c=cmap([p/100.0 for p in percent])
+	elif type(c) in [list, tuple, ndarray]: # list of colors given
+		if (len(c) < len(percent)): # Repeat linestyle until same length as input percent
+			c = c*int(ceil(len(percent)/len(c)))
+			c = c[:len(percent)] # truncate excess entries
+		if (is_numeric(c)): # sample the cmap at a single value
+			c=cmap(c)
+		if any([type(kk) is str for kk in c]) and clabel is not None:
+			clabel = None # cannot plot colorbar if strings given for color
+	else:
+		if (is_numeric(c)): # sample the cmap at a single value
+			c=cmap(c)
+		elif (type(c) is str):
+			clabel = None
+
+		c=[c]*len(percent) # convert to list
+
+	if type(linestyle) not in [list, tuple, ndarray]:
+		linestyle=[linestyle]*len(percent)
+	else:
+		if (len(linestyle) < len(percent)): # Repeat linestyle until same length as input percent
+			linestyle = linestyle*int(ceil(len(percent)/len(linestyle)))
+			linestyle = linestyle[:len(percent)] # truncate excess entries
+		#raise ValueError(f"Length of linestyle ({len(linestyle)}) does not match length of percent ({len(percent)}).")
 	
-	cmap=get_cmap(cmap)
+	# Validate labels array
+	if (type(labels) in [list, tuple, ndarray]):
+		if (len(labels) != len(percent)):
+			raise ValueError(f"Length of labels ({len(labels)}) does not match length of percent ({len(percent)}).")
+	else:
+		if (type(labels) == bool):
+			labels = [str(round(p,1))+'%' for p in percent] if labels is True else [None]*(len(percent))
+		else:
+			labels = [labels] + [None]*(len(percent)-1) # If only one value given or None, use [<labels>, None, None, None, ...]
+	
 	X,Y,Z=basehist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	CS=[]
-	if c is None:
-		if len(percent)<4:
-			col_ax=gca()
-			l=col_ax.plot([1,2,3])
-			c=[l[0].get_color()]*len(percent)
-			l.pop(0).remove()
-		else:
-			if len(s)<4:
-				s=['solid']*len(percent)
-			c=cmap(linspace(clim[0],clim[1],len(percent)))
-	else:
-		if type(c) is str:
-			c=[c]*len(percent)
-		else:
-			c=cmap(c)
-			s=['solid']*len(percent)
-	if type(clabel) is not list:
-		if clabel is None:
-			clabel=[str(round(p,1))+'%' for p in percent]
-		else:
-			clabel= [clabel] + [None]*(len(percent)-1)
-	if type(s) is not list:
-		s=[s]*len(percent)
-	
+
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
@@ -1186,11 +1225,21 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None
 	level=[]
 	for i in range(len(percent)):
 		level.append(percent_finder(Z,percent[i]/100))
-		CS.append(contour(X,Y,Z.T,levels=[level[i]],colors=[c[i],],linestyles=s[i],**plot_par[i]))
-		if clabel[0] is not None:
-			CS[i].collections[0].set_label(clabel[i])
-	if clabel[0] is not None:
-		legend(loc=lab_loc)
+		CS.append(contour(X,Y,gaussian_filter(Z.T, sigma=smooth),levels=[level[i]],colors=[c[i],],linestyles=linestyle[i],**plot_par[i]))
+		if not all(l is None for l in labels):
+			CS[i].collections[0].set_label(labels[i])
+
+	if (clabel is not None):
+		sm = ScalarMappable(cmap=cmap, norm=Normalize(vmin=0, vmax=1))
+		sm._A = [] # fake an array of the scalar mappable.
+		#colorbar(sm,width=0.1,height=1,label=clabel)
+		colorbar(sm,label=clabel)
+
+	if not all(l is None for l in labels): # Set legend location if labels != None
+		ax.legend(loc=lab_loc)
+
+	sca(ax) # After producing colorbar, ensure correct current axis
+
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
