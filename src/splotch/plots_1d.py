@@ -516,9 +516,9 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	return(curves[0] if len(curves)==1 else curves, expr)
 
 #Histogram
-def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=None,hist_type=None,v=None,vstat=None,xlim=None,ylim=None,
-		 xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,
-		 ax=None,grid=None,plot_kw={},output=None,**kwargs):
+def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=None,hist_type=None,v=None,vstat=None,
+			xlim=None,ylim=None,nmin=0,xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
+			plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},output=None,**kwargs):
 	
 	"""1D histogram function.
 	
@@ -560,6 +560,9 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	nmin : int, optional (default: 0)
+		The minimum number of points required in a bin in order to be plotted.
 	xinvert : bool or list, optional
 		If true inverts the x-axis.
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
@@ -624,6 +627,8 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		scale=[scale]*L
 	if type(v) not in [list, tuple, ndarray] or (len(shape(v)) == 1):
 		v=[v]*L
+	if type(nmin) not in [list, tuple, ndarray] or (len(shape(nmin)) == 1):
+		nmin=[nmin]*L
 	if type(vstat) not in [list, tuple]:
 		vstat=[vstat]*L
 	if type(plabel) not in [list, tuple]:
@@ -663,6 +668,8 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	
 	for i in range(L):
 		temp_data,bins_hist,bins_plot=bin_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
+		n_check=histogram(temp_data,bins=bins_hist,density=False)[0]
+		n_check=n_check>=nmin
 		if vstat[i]:
 			temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:
@@ -678,6 +685,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 				temp_y=temp_y.astype('float')/scale[i]
 		if ylog:
 			temp_y=where(temp_y==0,nan,temp_y)
+		temp_y=where(n_check,temp_y,nan)
 		y=temp_y
 		if hist_type[i]=='step':
 			y=array([y[0]]+[j for j in y])

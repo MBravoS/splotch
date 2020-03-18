@@ -1,3 +1,6 @@
+0.4.6.2 (18/03/2020):
+-Added minimum number of elements per bin to plots_1d.hist(), same functionality as nmin in plots_2d.hist2D().
+
 0.4.6.1 (10/03/2020):
 -Fixed bug in plots_1d.hist() with binned statistics not working for list of data.
 -Switched plots_2d.contourp() to use matplotlib's colourbar instead of our own.
