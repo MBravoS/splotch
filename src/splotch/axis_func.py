@@ -603,7 +603,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 				if (jj == 0 and ii != 0):
 					axes[ii,jj].set_ylabel(labels[ii])
 				if (len(pair_type) == 2 and jj == npar-1 and ii != npar-1):
-					axes[ii,jj].set_ylabel(labels[jj])
+					axes[ii,jj].set_ylabel(labels[ii])
 					axes[ii,jj].yaxis.tick_right()
 					axes[ii,jj].yaxis.set_label_position('right')
 
