@@ -1,3 +1,9 @@
+0.4.6.3 (19/03/2020):
+-cornerplot() can now accepts a list of two for 'pair_type' which sets the plotting types for the lower and upper off-diagonal axes.
+-'pair_kw' is now deprecated and has been replaced by explicitly 'contour_kw', 'scatter_kw' and 'hist2D_kw'.
+-Fixed bug in cornerplot() where labels would not be correctly assigned automatically if more than one group given.
+-cornerplot() now correctly shares the x/y axes of subplots according to their columns/rows without linking 1D histogram axes on the diagonal.
+
 0.4.6.2 (18/03/2020):
 -Added minimum number of elements per bin to plots_1d.hist(), same functionality as nmin in plots_2d.hist2D().
 

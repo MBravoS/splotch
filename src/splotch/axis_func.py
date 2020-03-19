@@ -311,7 +311,7 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 
 def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='rand',labels=None,histlabel=None,
 				fig=None,figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
-				pair_kw={},hist_kw={},axes_kw={},_debug_=False,**kwargs):
+				hist_kw={},contour_kw={},scatter_kw={},hist2D_kw={},axes_kw={},_debug_=False,**kwargs):
 	""" Creates a corner plot figure and subplots
 	
 	This function accepts columns of data representing multiple parameters in which each combination will be paired
@@ -332,11 +332,11 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 			columns = [['A1', 'A2', ...], ['B1', 'B2', ...]]
 
 		which will create pairs for all parameters in each sublist. Having multiple groups will result in
-		multiple histograms and paired plots per axis. As such, pair_type='hist' is not compatible when columns
+		multiple histograms and paired plots per axis. As such, pair_type='hist2D' is not compatible when columns
 		includes multiple groups.
 	pair_type : str, optional
 		The plotting type for the off-diagonal plots,
-		can be one of:'contour' | 'scatter' | 'hist' which correspond to contour plots, 
+		can be one of:'contour' | 'scatter' | 'hist2D' which correspond to contour plots, 
 		scatter plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw'
 		to control the styling of each.
 	nsamples : float, optional
@@ -352,7 +352,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 
 	labels : array-like (str), optional
 		A list of axis labels to be assigned to each parameter. Must be of the same length or longer than
-		the number of parameters.
+		the number of columns (or column groups).
 	histlabel : str, optional
 		The y-axis label for each of the 1D histograms on the diagonal, if None given, then no labels or
 		ticks will be drawn. Labels and ticks will be displayed on the opposite side to the labels for the
@@ -373,10 +373,10 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 			  up being 1x1. For cornerplots with only one set of diagonals, empty axes
 			  will be filled by None.
 
-	pair_kw : dict, optional
+	contour_kw, scatter_kw, hist2D_kw : dict, optional
 		Dictionary of keyword arguments to be parsed into the pair plotting functions. The particular
-		arguments accepted are dependent on the 'pair_type' chosen. If 'columns' contains multiple groups,
-		listed arguments will be associated with each group. 
+		keyword dictionary used is dependent on the 'pair_type' chosen. If 'columns' contains multiple groups,
+		kw arguments in lists are assumed to correspond to each group.
 	hist_kw : dict, optional
 		Dictionary of keyword arguments to be parsed into the 1D histograms plots on the diagonals.
 	**kwargs : Subplot instance properties
@@ -404,6 +404,14 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	except ImportError:
 		hasAstropy = False
 	
+	# Catch deprecated parameters
+	if ('pair_kw' in kwargs.keys()):
+		if (pair_type=='contour'): contour_kw = kwargs['pair_kw']
+		elif (pair_type=='scatter'): scatter_kw = kwargs['pair_kw']
+		elif (pair_type=='hist2D'): hist2D_kw = kwargs['pair_kw']
+		del kwargs['pair_kw']
+		warnings.warn("Parameter 'pair_kw' is deprecated, instead use one of contour_kw, scatter_kw, hist2D_kw")
+
 		
 	nGroups = shape(columns)[0] if len(shape(columns)) > 1 else 1	
 	if (_debug_ == True): print(f"Groups: {nGroups}")
@@ -412,10 +420,20 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	dims = shape(data)
 	
 	# Validate plot parameters
-	if (pair_type not in ['contour','scatter','hist']):
-		raise ValueError(f"Pair type '{pair_type}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2d'}}.")
-	if (pair_type == 'hist' and nGroups > 1):
-		raise ValueError(f"Cannot overplot groups of 2D histograms. Choose alternative 'pair_type'.")
+	if (isinstance(pair_type,(list,ndarray,tuple))):
+		if len(pair_type) > 2:
+			raise ValueError("Too many pair types given.")
+	elif (isinstance(pair_type, str)):
+		pair_type = [pair_type]
+	else:
+		raise ValueError(f"Object type '{type(pair_type)}' not recognised for 'pair_type' argument. Must be either string of list-like.")
+
+	for pair in pair_type:
+		if (pair not in ['contour','scatter','hist2D']):
+			raise ValueError(f"Pair type '{pair}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2D'}}.")
+
+		if (pair == 'hist2D' and nGroups > 1):
+			raise ValueError(f"Cannot overplot groups of 2D histograms. Choose alternative 'pair_type'.")
 
 
 	# Sample the data
@@ -498,7 +516,8 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 
 	# Assign labels if none given
 	if (labels == None): # auto-generate labels from columns if available
-		labels = None if isinstance(data.columns, RangeIndex) else cols
+		if not isinstance(data.columns, RangeIndex):
+			labels = cols if nGroups<=1 else [c[0] for c in cols]
 	else:
 		if (len(labels) < npar):
 			raise ValueError(f"Not enough labels given to match dimensions of data ({dims})")
@@ -519,7 +538,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 				else: # Reshape the new axes matrix
 					cnt = 0
 					for ii in range(npar-1, -1, -1): # reshape axes list into appropriate matrix
-						for jj in range(ii, -1, -1):
+						for jj in range(ii if len(pair_type) == 1 else npar-1, -1, -1):
 							axes[ii,jj] = fig.axes[cnt]
 							cnt += 1
 			except (TypeError): # axes in fig was not a list-like object
@@ -528,20 +547,31 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	if (all([ax is None for ax in axes.flatten()])):
 		# Set up the GridSpec object
 		gs = GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
-		for ii in range(npar-1, -1, -1): # reshape axes list into appropriate matrix
-			for jj in range(ii, -1, -1):
+		for ii in range(npar-1, -1, -1):
+			for jj in range(ii if len(pair_type) == 1 else npar-1, -1, -1):
+				axes_kw['sharex'] = None if ii==npar-1 else axes[npar-1,jj]
+				if ii==jj: # Do not share y-axes of 1D histograms
+					axes_kw["sharey"] = None
+				elif ii==npar-1: # 
+					axes_kw["sharey"] = None if jj==npar-2 else axes[ii,npar-2]
+				else:
+					axes_kw["sharey"] = None if jj==npar-1 else axes[ii,npar-1]
+
 				axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
 
 	if (_debug_): print(axes)
 
 	if (nGroups > 1):
 		hist_kw = dict_splicer(hist_kw,nGroups,[1]*nGroups)
-		pair_kw = dict_splicer(pair_kw,nGroups,[1]*nGroups)
+		contour_kw = dict_splicer(contour_kw,nGroups,[1]*nGroups)
+		scatter_kw = dict_splicer(scatter_kw,nGroups,[1]*nGroups)
+		hist2D_kw = dict_splicer(hist2D_kw,nGroups,[1]*nGroups)
 	
 	
 	if (_debug_): print("\nSubplots:")
 	for ii in range(npar-1, -1, -1):#(0, npar, 1):
-		for jj in range(ii, -1, -1):#(0, ii+1, 1):
+		for jj in range(ii if len(pair_type) == 1 else npar-1, -1, -1):#(0, ii+1, 1):
+			pair_num = 0 if ii > jj else 1
 			
 			if (_debug_ == True): print(f" {ii},{jj} ",end='')
 			
@@ -552,26 +582,31 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 				else:
 					axes[ii,jj].hist(data.iloc[samps][cols[jj]],**hist_kw)
 			else:
-				if (pair_type == 'scatter'):
+				if (pair_type[pair_num] == 'scatter'):
 					if (nGroups > 1):
 						for kk in range(nGroups):
-							scatter(data.iloc[samps][cols[jj][kk]],data.iloc[samps][cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
+							scatter(data.iloc[samps][cols[jj][kk]],data.iloc[samps][cols[ii][kk]],ax=axes[ii,jj],**scatter_kw[kk])
 					else:
-						scatter(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**pair_kw)
-				elif (pair_type == 'contour'):
+						scatter(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**scatter_kw)
+				elif (pair_type[pair_num] == 'contour'):
 					if (nGroups > 1):
 						for kk in range(nGroups):
-							contourp(data.iloc[samps][cols[jj][kk]],data.iloc[samps][cols[ii][kk]],ax=axes[ii,jj],**pair_kw[kk])
+							contourp(data.iloc[samps][cols[jj][kk]],data.iloc[samps][cols[ii][kk]],ax=axes[ii,jj],**contour_kw[kk])
 					else:
-						contourp(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**pair_kw)
-				elif (pair_type == 'hist'):
-					hist2D(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**pair_kw)
+						contourp(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**contour_kw)
+				elif (pair_type[pair_num] == 'hist2D'):
+					hist2D(data.iloc[samps][cols[jj]],data.iloc[samps][cols[ii]],ax=axes[ii,jj],**hist2D_kw)
 					
 			if (labels is not None):
 				if (ii == npar-1):
 					axes[ii,jj].set_xlabel(labels[jj])
 				if (jj == 0 and ii != 0):
 					axes[ii,jj].set_ylabel(labels[ii])
+				if (len(pair_type) == 2 and jj == npar-1 and ii != npar-1):
+					axes[ii,jj].set_ylabel(labels[jj])
+					axes[ii,jj].yaxis.tick_right()
+					axes[ii,jj].yaxis.set_label_position('right')
+
 			
 			if (_debug_ == True):
 				axes[ii,jj].text(0.1,0.8,f"({ii}, {jj})",transform=axes[ii,jj].transAxes)
@@ -581,7 +616,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 
 	# turn off redundant tick labeling
 	for ii in range(0,npar-1):
-		for jj in range(0, ii+1):
+		for jj in range(0, ii + 1 if len(pair_type) == 1 else npar):
 			axes[ii,jj].xaxis.set_tick_params(which='both', labelbottom=False, labeltop=False)
 			axes[ii,jj].xaxis.offsetText.set_visible(False)
 
