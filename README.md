@@ -1,4 +1,4 @@
-<img src="/examples/SPLOTCH_logo.png" alt="drawing" width="350"/>
+<img src="/examples/SPLOTCH_logo.png" alt="drawing" width="750"/>
 
 **Simple PLOTs, Contours and Histograms** is a small package with wrapper functions designed to simplify plotting calls from matplotlib.
 
