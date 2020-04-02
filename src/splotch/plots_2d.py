@@ -32,19 +32,19 @@ def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinver
 	y : array-like, optional
 		Position of data points in the y axis.
 	filled: boolean, optional
-		If True draws filled contours. If not given defaults to the value defined in splotch.Params.
+		If True, draws filled contours. If not given defaults to the value defined in splotch.Params.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	xinvert : bool, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	xlog : bool, optional
-		If True the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.
+		If True, the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.
 	ylog : bool, optional
-		If True the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.
+		If True, the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.
 	title : str, optional
 		Sets the title of the plot
 	xlabel : str, optional
@@ -167,13 +167,13 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 	ylim : tuple-like, optional
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	xinvert : bool or list, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool or list, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	xlog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	ylog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	title : str, optional
 		Sets the title of the plot
 	xlabel : str, optional
@@ -284,13 +284,13 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	ylim : tuple-like, optional
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	xinvert : bool or list, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool or list, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	xlog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	ylog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	title : str, optional
 		Sets the title of the plot
 	xlabel : str, optional
@@ -388,13 +388,13 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	ylim : tuple-like, optional
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	xinvert : bool or list, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool or list, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	xlog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	ylog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	boxtype : str
 		The type of box to plot, patch types include: ellipse | rectangle (Default: ellipse).
 	title : str, optional
@@ -554,15 +554,15 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	nmin : int, optional (default: 0)
 		The minimum number of points required in a bin in order to be plotted.
 	xinvert : bool, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	cbar_invert : bool, optional
-		If True inverts the direction of the colour bar (not the colour map).
+		If True, inverts the direction of the colour bar (not the colour map).
 	xlog : bool, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	ylog : bool, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	clog : bool, optional
 		If True, the colour map is changed from linear to logarithmic.
 	title : str, optional
@@ -669,11 +669,11 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 	clog : bool, optional
 		If True, the colour map is changed from linear to logarithmic.
 	xinvert : bool, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	cbar_invert : bool, optional
-		If True inverts the direction of the colour bar (not the colour map).
+		If True, inverts the direction of the colour bar (not the colour map).
 	title : str, optional
 		Sets the title of the plot
 	xlabel : str, optional
@@ -737,7 +737,7 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 		old_axes=axes_handler(old_axes)
 
 # Scatter
-def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
+def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
 			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""2D pixel-based image plotting function.
@@ -748,7 +748,7 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 		Position of data points in the x-axis.
 	y : array-like or list
 		Position of data points in the y-axis.
-	c : array-like or list, optional
+	c : array-like or list or str, optional
 		Value of data points in the z-axis (colour-axis).
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
@@ -758,16 +758,19 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 		Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
 		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
 		clim` takes priority.
+	density : bool, optional
+		If True, color-codes points by their spatial density to nearby points using a Gaussian
+		kernel density estimate. If 'c' also given, 'density' takes precedence. Default: False.
 	xinvert : bool, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	cbar_invert : bool, optional
-		If True inverts the direction of the colour bar (not the colour map).
+		If True, inverts the direction of the colour bar (not the colour map).
 	xlog : bool, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	ylog : bool, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	title : str, optional
 		Sets the title of the plot
 	xlabel : str, optional
@@ -796,9 +799,11 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 		A list of PathCollection objects representing the plotted data.
 	"""
 
-	from numpy import shape
+	from numpy import shape, vstack
 	from matplotlib.pyplot import scatter, colorbar, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	from scipy.stats import gaussian_kde
+	from warnings import warn
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -828,6 +833,15 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False
 				raise TypeError("`clim` must be of iterable type and have two values only.")
 		except (TypeError):
 			raise TypeError("`clim` must be of iterable type and have two values only.")
+
+	if (density == True):
+		if (all([kk is not None for kk in c])):
+			warn("Cannot specify both `c` and `density`, ignoring `c`.")
+
+		c = [None]*L
+		for i in range(L):
+			xy = vstack([x[i],y[i]])
+			c[i] = gaussian_kde(xy)(xy) # Calculate the Gaussian kernel density estimate
 
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
@@ -887,7 +901,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	thetaticks : 'auto', or ticker
 		* Not implement *
 	cbar_invert : bool, optional
-		If True inverts the direction of the colour bar (not the colour map).
+		If True, inverts the direction of the colour bar (not the colour map).
 	fig : pyplot.Figure, optional
 		Use the given figure to make the plot, defaults to the current figure.
 	plot_kw : dict, optional
@@ -1071,17 +1085,17 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	clim : list, optional
 		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
 	xinvert : bool, optional
-		If true inverts the x-axis.
+		If True, inverts the x-axis.
 	yinvert : bool, optional
-		If true inverts the y-axis.
+		If True, inverts the y-axis.
 	cbar_invert : bool, optional
-		If True inverts the direction of the colour bar (not the colour map).
+		If True, inverts the direction of the colour bar (not the colour map).
 	linestyle or ls : str or array-like, optional.
 		Defines the linestyle of the contours.
 	xlog : bool, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	ylog : bool, optional
-		If True the scale of the x-axis is logarithmic.
+		If True, the scale of the x-axis is logarithmic.
 	title : str, optional
 		Sets the title of the plot
 	labels : array-like or str, optional
