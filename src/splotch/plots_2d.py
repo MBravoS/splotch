@@ -598,7 +598,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		The bin edges for the y axis. Only provided if output is True.
 	"""
 	
-	from numpy import nan
+	from numpy import nan, size, zeros, shape
 	from matplotlib.colors import LogNorm
 	from matplotlib.pyplot import pcolormesh, colorbar
 	from .base_func import axes_handler,basehist2D,plot_finalizer
@@ -609,10 +609,20 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		bin_type=[bin_type]*2
 	if type(bins) not in [list,tuple]:
 		if bins is None:
-			bins=int((len(x))**0.4)
+			bins = max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
 		bins=[bins]*2
+
+	if (size([x,y])==0): # Zero-sized arrays given
+		if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
+		if (cstat != None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
+
 	X,Y,Z=basehist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
-	_,_,counts = basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog) # Also get counts for number threshold cut
+
+	# Also get counts for number threshold cut
+	if (size([x,y])==0):
+		counts = zeros(shape=shape(Z))
+	else:
+		_,_,counts = basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
 
 	# Cut bins which do not meet the number count threshold
 	Z[counts<nmin] = nan
@@ -628,11 +638,13 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 			clog=Params.hist2D_caxis_log
 		if output is None:
 			output=Params.hist2D_output
+
 	if clog:
 		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
-		if cstat is None:
-			Z[Z==0]=nan
+		### (RC): Removed these lines as they caused errors when x=[] or y=[]
+		# if cstat is None: 
+		# 	Z[counts==0]=nan
 		pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
 	if clabel is not None:
 		cbar=colorbar()

@@ -1,3 +1,6 @@
+0.4.6.6 (03/04/2020):
+-Fixed bug when passing empty arrays into hist2d()
+
 0.4.6.5 (02/04/2020):
 -Added 'density' parameter tp scatter().
 -Setting 'density'=True plots the colour of scatter points as their spatial number density to nearby points. This is done using a Gaussian kernel density estimate.

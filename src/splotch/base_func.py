@@ -67,7 +67,7 @@ def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 		The value of each bin.
 	"""
 	
-	from numpy import histogram2d
+	from numpy import histogram2d, size
 	from scipy.stats import binned_statistic_2d
 	
 	x_temp,x_bins_hist,x_bins_plot=bin_axis(x,bin_type[0],bin_num[0],log=xlog)
@@ -75,7 +75,8 @@ def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	if cstat:
 		Z=binned_statistic_2d(x_temp,y_temp,c,statistic=cstat,bins=[x_bins_hist,y_bins_hist])[0]
 	else:
-		Z=histogram2d(x_temp,y_temp,bins=[x_bins_hist,y_bins_hist],density=dens)[0]
+		Z=histogram2d(x_temp,y_temp,bins=[x_bins_hist,y_bins_hist],
+					  density=False if (size(x_temp)==0 or size(y_temp)==0) else dens)[0]
 		if dens and norm:
 			Z*=1.0*len(x)/norm
 	return(x_bins_plot,y_bins_plot,Z)
@@ -111,17 +112,23 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 		The bin centers.
 	
 	"""
-	from numpy import linspace,nanmax,nanmin
+	from numpy import linspace,nanmax,nanmin,size
 	
 	def N(d,b):
+		if (size(d)==0): # If no data given.
+			return linspace(0.0,1.0,num=b+1)
+
 		if nanmin(d)==nanmax(d):
-			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b)
+			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b+1)
 		else:
 			h=linspace(nanmin(d),nanmax(d),num=b+1)
 		return(h)
 	
 	def W(d,b):
 		from math import ceil
+		if (size(d)==0): # If no data given.
+			return linspace(0,1.0,num=ceil(1.0/b))
+
 		if nanmin(d)==nanmax(d):
 			h=array([nanmin(d)-b/2,nanmax(d)+b/2])
 		else:
@@ -133,8 +140,11 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 		return(b)
 	
 	def Q(d,b):
+		if (size(d)==0): # If no data given.
+			return linspace(0.0,1.0,num=b+1)
+
 		if nanmin(d)==nanmax(d):
-			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b)
+			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b+1)
 		else:
 			from math import ceil,floor
 			from numpy import array,concatenate,cumsum,ones,sort
@@ -157,7 +167,7 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 		btype=bdict[type(bins)]
 	bfunc={'number':N,'width':W,'edges':E,'equal':Q}
 	hist_bins=bfunc[btype](data,bins)
-	plot_bins=hist_bins*1.0
+	plot_bins = None if hist_bins is None else hist_bins*1.0
 	if plot_centre:
 		plot_bins=(plot_bins[:-1]+plot_bins[1:])/2
 	if log:
