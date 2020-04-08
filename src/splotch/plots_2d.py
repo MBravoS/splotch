@@ -611,26 +611,6 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		if bins is None:
 			bins = max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
 		bins=[bins]*2
-
-	if (size([x,y])==0): # Zero-sized arrays given
-		if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
-		if (cstat != None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
-
-	X,Y,Z=basehist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
-
-	# Also get counts for number threshold cut
-	if (size([x,y])==0):
-		counts = zeros(shape=shape(Z))
-	else:
-		_,_,counts = basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
-
-	# Cut bins which do not meet the number count threshold
-	Z[counts<nmin] = nan
-	
-	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
-	plot_par.update(kwargs)
 	
 	if None in (clog,output):
 		from .defaults import Params
@@ -638,7 +618,26 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 			clog=Params.hist2D_caxis_log
 		if output is None:
 			output=Params.hist2D_output
-
+	
+	if size([x,y])==0: # Zero-sized arrays given
+		if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
+		if (cstat != None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
+	
+	X,Y,Z=basehist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
+	
+	# Also get counts for number threshold cut
+	if (size([x,y])==0):
+		counts = zeros(shape=shape(Z))
+	else:
+		_,_,counts = basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
+	
+	# Cut bins which do not meet the number count threshold
+	Z[counts<nmin] = nan
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
 	if clog:
 		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
