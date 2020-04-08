@@ -547,9 +547,9 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		the bin count (instead of 1). If dens is True, weights will also be normalised so that the integral over the density
 		remains 1. Default: None
 	hist_type : str, optional.
-		Defines the type of histogram to be drawn. 'smooth' and 'step' produce lines, with the former drawing lines conecting
+		Defines the type of histogram to be drawn. 'line' and 'step' produce lines, with the former drawing lines conecting
 		the values of each bin positioned on their centre, and the latter drawing a stepwise line, with the edges of each step
-		coinciding with the bin edges. 'bar' produces a bar plot. All have filled version (i.e., 'smoothfilled'), which fills
+		coinciding with the bin edges. 'bar' produces a bar plot. All have filled version (i.e., 'linefilled'), which fills
 		the space between the edges of the histogram and 0.
 	v : array-like or list, optional
 		If a valid argument is given in vstat, defines the value used for the binned statistics.
@@ -661,15 +661,15 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
 	
-	plot_type={'smooth':plot,'smoothfilled':fill_between,'step':step,'stepfilled':step_filler,'bar':bar,'barfilled':bar}
-	hist_centre={'smooth':True,'smoothfilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
+	plot_type={'line':plot,'linefilled':fill_between,'step':step,'stepfilled':step_filler,'bar':bar,'barfilled':bar}
+	hist_centre={'line':True,'linefilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
 	bin_edges=[]
 	n_return=[]
 	
 	for i in range(L):
 		temp_data,bins_hist,bins_plot=bin_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
 		n_check=histogram(temp_data,bins=bins_hist,density=False)[0]
-		n_check=n_check>=nmin
+		n_check=n_check>=nmin[i]
 		if vstat[i]:
 			temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
 		else:

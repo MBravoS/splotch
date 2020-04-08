@@ -1,3 +1,7 @@
+0.4.6.8 (08/04/2020):
+-Fixed issue with nmin in plots_1d.hist().
+-Renamed "smooth" to "line" in plots_1d.hist().
+
 0.4.6.7 (08/04/2020):
 -Fixed non-working error raising in plots_2d.hist2D().
 
