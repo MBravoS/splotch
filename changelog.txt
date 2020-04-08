@@ -1,3 +1,23 @@
+0.4.6.7 (08/04/2020):
+-Fixed non-working error raising in plots_2d.hist2D().
+
+0.4.6.6 (03/04/2020):
+-Fixed bug when passing empty arrays into hist2d()
+
+0.4.6.5 (02/04/2020):
+-Added 'density' parameter tp scatter().
+-Setting 'density'=True plots the colour of scatter points as their spatial number density to nearby points. This is done using a Gaussian kernel density estimate.
+-Added scatter example (with 'density' usage) to Examples.ipynb
+
+0.4.6.4 (19/03/2020):
+-Replaced naming of parameters 'm' and 'c' in axline() with 'a' and 'b' to avoid conflict with colour parameter 'c' as per issue #38.
+
+0.4.6.3 (19/03/2020):
+-cornerplot() can now accepts a list of two for 'pair_type' which sets the plotting types for the lower and upper off-diagonal axes.
+-'pair_kw' is now deprecated and has been replaced by explicitly 'contour_kw', 'scatter_kw' and 'hist2D_kw'.
+-Fixed bug in cornerplot() where labels would not be correctly assigned automatically if more than one group given.
+-cornerplot() now correctly shares the x/y axes of subplots according to their columns/rows without linking 1D histogram axes on the diagonal.
+
 0.4.6.2 (18/03/2020):
 -Added minimum number of elements per bin to plots_1d.hist(), same functionality as nmin in plots_2d.hist2D().
 

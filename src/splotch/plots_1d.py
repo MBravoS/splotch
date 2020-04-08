@@ -1,12 +1,12 @@
 #### Definition of all wrappers for 1D plotting
 
 # Generalized lines
-def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
+def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Generalised axis lines.
 	
 	This function aims to generalise the usage of axis lines calls (axvline/axhline) together and to allow
-	lines to be specified by a slope/intercept.
+	lines to be specified by a slope/intercept according to the function y = a*x + b.
 	
 	Parameters
 	----------
@@ -14,10 +14,10 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		x position(s) in data coordinates for a vertical line(s).
 	y : int or list, optional
 		y position(s) in data coordinates for a horizontal line(s).
-	m : int or list, optional
-		Slope(s) of diagonal axis line(s), defaults to 1 if not specified when c is given.
-	c : int or list, optional
-		Intercept points(s) of diagonal axis line(s), defaults to 0 if not specified when m is given.
+	a : int or list, optional
+		Slope(s) of diagonal axis line(s), defaults to 1 if not specified when b is given.
+	b : int or list, optional
+		Intercept points(s) of diagonal axis line(s), defaults to 0 if not specified when a is given.
 	plabel : str, optional
 		Sets label(s) for line(s) and plots legend.
 	lab_loc : int, optional
@@ -47,48 +47,48 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		ax = gca()
 		old_axes=ax
 	
-	if not (any([is_numeric(var) for var in [x,y,m,c]])): # If nothing has been specified
-		raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'm' or 'c'")
+	if not (any([is_numeric(var) for var in [x,y,a,b]])): # If nothing has been specified
+		raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'a' or 'b'")
 	
-	for i, val in enumerate([x,y,m,c]):
+	for i, val in enumerate([x,y,a,b]):
 		if (val is not None):
 			try: # Test whether the parameter is iterable
 				temp=(k for k in val)
 			except TypeError: # If not, convert to a list
 				if   (i == 0): x = [x]
 				elif (i == 1): y = [y]
-				elif (i == 2): m = [m]
-				elif (i == 3): c = [c]
+				elif (i == 2): a = [a]
+				elif (i == 3): b = [b]
 	
 	if (x is not None and y is not None): # Check whether both x and y were specified
 		raise ValueError("'x' and 'y' cannot be both specified")
 	
 	if (x is not None): # Check conditions if x specified
-		if (any([m,c])): # Should not specify m or c, if x given.
-			raise ValueError("'{0}' cannot be specified if x specified".format('m' if m else 'c'))
+		if (any([a,b])): # Should not specify a or b, if x given.
+			raise ValueError("'{0}' cannot be specified if x specified".format('a' if a else 'b'))
 		L = len(x)
 	
 	if (y is not None): # Check conditions if y specified
-		if (any([m,c])): # Should not specify m or c, if y given.
-			raise ValueError("'{0}' cannot be specified if y specified".format('m' if m else 'c'))
+		if (any([a,b])): # Should not specify a or b, if y given.
+			raise ValueError("'{0}' cannot be specified if y specified".format('a' if a else 'b'))
 		L = len(y)
 	
-	if (m is not None):
-		if (c is None): # If no intercept specified
-			c = [0]*len(m) # set c to 0 for all m
+	if (a is not None):
+		if (b is None): # If no intercept specified
+			b = [0]*len(a) # set b to 0 for all a
 		else:
-			if (len(c) == 1):
-				c = [c[0]]*len(m)
-			elif (len(c) != len(m)):
-				if (len(m) == 1):
-					m = [m[0]]*len(c)
+			if (len(b) == 1):
+				b = [b[0]]*len(a)
+			elif (len(b) != len(a)):
+				if (len(a) == 1):
+					a = [a[0]]*len(b)
 				else:
-					raise ValueError("Length of c ({0}) and length of m ({1}) must be equal or otherwise 1".format(len(c),len(m)))
-		L = len(m)
-	elif (c is not None):
-		if (m is None): # If no slope specified
-			m = [1]*len(c) # set m to 1 for all c
-		L = len(c)
+					raise ValueError(f"Length of 'a' ({len(a)}) and length of 'b' ({len(b)}) must be equal or otherwise 1")
+		L = len(a)
+	elif (b is not None):
+		if (a is None): # If no slope specified
+			a = [1]*len(b) # set a to 1 for all b
+		L = len(b)
 	
 	if type(plabel) is not list:
 		plabel=[plabel]*L
@@ -112,14 +112,14 @@ def axline(x=None,y=None,m=None,c=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		for ii, yy in enumerate(y):
 			l = ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
 			lines.append(l)
-	if (m is not None):
-		for ii, pars in enumerate(zip(m,c)):
-			mm = pars[0]; cc = pars[1]
+	if (a is not None):
+		for ii, pars in enumerate(zip(a,b)):
+			aa = pars[0]; bb = pars[1]
 			
 			xLims = ax.get_xlim()
 			yLims = ax.get_ylim()
 			
-			lines += plot([xLims[0],xLims[1]],[mm*xLims[0]+cc,mm*xLims[1]+cc],label=plabel[ii],**plot_par[ii])
+			lines += plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=plabel[ii],**plot_par[ii])
 
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
