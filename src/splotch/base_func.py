@@ -1,11 +1,20 @@
+########################################################################
+######### Base functions for axis_funcs, plots_1d and plots_2d #########
+########################################################################
+
+####################################
 # Boolean, unsigned integer, signed integer, float, complex.
+####################################
 _NUMERIC_KINDS = set('buifc')
 
+####################################
+# Generate new axes, return previous
+####################################
 def axes_handler(new_axis):
 	"""New axis handler
 	
-	This function is a base-level function used by most other plotting functions to set the current Axes instance
-	to ax and returns the old Axes instance to be later reverted.
+	Base-level function used by most other plotting functions to set the current Axes instance to
+	ax and returns the old Axes instance to be later reverted.
 	
 	Parameters
 	----------
@@ -23,10 +32,13 @@ def axes_handler(new_axis):
 	sca(new_axis)
 	return(curr_axis)
 
+####################################
+# Base function for 2D histograms
+####################################
 def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	"""2D histogram base calculation
 	
-	This function is a base-level function used by plots_2d.hist2D() and plots_2d.sigma_cont() to calculate the
+	Base-level function used by plots_2d.hist2D() and plots_2d.sigma_cont() to calculate the
 	underlying histogram.
 	
 	Parameters
@@ -38,10 +50,10 @@ def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 	c : ndarray
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	bin_type : {'number','width','edges','equal'}
-		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
-		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
-		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
-		float and 'edges' if ndarray.
+		Defines how is understood the value given in bins: 'number' for givinf the desired number
+		of bins, 'width' for the width of the bins, 'edges' for the edges of bins, and 'equal' for
+		making bins with equal number of elements (or as close as possible). If not given it is
+		inferred from the data type of bins: 'number' if int, 'width' if float and 'edges' if ndarray.
 	bin_num : int, float or array-like
 		Gives the values for the bins, according to bin_type.
 	norm : float
@@ -50,8 +62,8 @@ def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 		If false the histogram returns raw counts.
 	cstat : str or function
 		Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
-		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and outputs an integer
-		 or float.
+		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and
+		outputs an integer or float.
 	xlog : bool
 		If True the scale of the x-axis is logarithmic.
 	ylog : bool
@@ -84,17 +96,17 @@ def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
 def bin_axis(data,btype,bins,log=False,plot_centre=False):
 	"""Bin construction for histograms
 	
-	This function is a base-level function used by all histogram-related functions to construct the bins.
+	Base-level function used by all histogram-related functions to construct the bins.
 	
 	Parameters
 	----------
 	data : ndarray
 		Data to be binned.
 	bin_type : {'number','width','edges','equal'}
-		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
-		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
-		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
-		float and 'edges' if ndarray.
+		Defines how is understood the value given in bins: 'number' for givinf the desired number
+		of bins, 'width' for the width of the bins, 'edges' for the edges of bins, and 'equal' for
+		making bins with equal number of elements (or as close as possible). If not given it is
+		inferred from the data type of bins: 'number' if int, 'width' if float and 'edges' if ndarray.
 	bins : int, float, array-like or list
 		Gives the values for the bins, according to bin_type.
 	log: bool, optional
@@ -174,10 +186,13 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 		plot_bins=10**plot_bins
 	return(data,hist_bins,plot_bins)
 
+####################################
+# Distribute kwargs dicts
+####################################
 def dict_splicer(plot_dict,Ld,Lx):
 	"""Dictionary constructor for plotting
 	
-	This function is a base-level function used by most other plotting functions to construct a list of dictionaries,
+	Base-level function used by most other plotting functions to construct a list of dictionaries,
 	each containing the passed arguments to the underlying plotting calls for each different dataset.
 	
 	Parameters
@@ -198,8 +213,6 @@ def dict_splicer(plot_dict,Ld,Lx):
 	
 	dict_list=[]
 	dict_keys=plot_dict.keys()
-	#if 'rasterized' not in dict_keys:
-	#	plot_dict['rasterized']=True
 	for i in range(Ld):
 		temp_dict={}
 		for k in dict_keys:
@@ -217,24 +230,26 @@ def dict_splicer(plot_dict,Ld,Lx):
 		dict_list.append(temp_dict)
 	return(dict_list)
 
+####################################
+# General check for numeric values
+####################################
 def is_numeric(array):
-	"""Determine whether the argument has a numeric datatype, when
-	converted to a NumPy array.
-
-	Booleans, unsigned integers, signed integers, floats and complex
-	numbers are the kinds of numeric datatype.
-
+	"""Base-level numeric classificator of variables
+	
+	Determine whether the argument has a numeric datatype, when converted to a NumPy array.
+	Booleans, unsigned integers, signed integers, floats and complex numbers are the kinds of
+	numeric datatype.
+	
 	Parameters
 	----------
 	array : array-like
 		The array to check.
-
+	
 	Returns
 	-------
 	is_numeric : `bool`
 		True if the array has a numeric datatype, False if not.
-
-
+	
 	Credit for code: StackExchange users Gareth Rees and MSeifert.
 	https://codereview.stackexchange.com/questions/128032/check-if-a-numpy-array-contains-numerical-data
 	"""
@@ -242,11 +257,14 @@ def is_numeric(array):
 
 	return asarray(array).dtype.kind in _NUMERIC_KINDS
 
+####################################
+# Levels for contourp
+####################################
 def percent_finder(data,p):
 	"""Level finder for percentage contours
 	
-	This function is a base-level function used by plots_2d.sigma_cont to define the level which contains the requested
-	percentage of the data points.
+	This function is a base-level function used by plots_2d.sigma_cont to define the level which
+	contains the requested percentage of the data points.
 	
 	Parameters
 	----------
@@ -273,11 +291,14 @@ def percent_finder(data,p):
 		min_value=np_min(data_sorted)
 	return(min_value)
 
+####################################
+# Set labels, limits and more
+####################################
 def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_control):
 	"""New axis handler
 	
-	This function is a base-level function used by most other plotting functions to set the current Axes instance
-	to ax and returns the old Axes instance to be later reverted.
+	This function is a base-level function used by most other plotting functions to set the current
+	Axes instance to ax and returns the old Axes instance to be later reverted.
 	
 	Parameters
 	----------
@@ -286,9 +307,11 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	ylog : None or bool
 		If True, the y-axis scale is set to 'log'.
 	xlim : None or array-like
-		If given, defines the low and high limits for the x-axis. The first two elements must be int and/or float.
+		If given, defines the low and high limits for the x-axis. The first two elements must be int
+		and/or float.
 	ylim : None or array-like
-		If given, defines the low and high limits for the y-axis. The first two elements must be int and/or float.
+		If given, defines the low and high limits for the y-axis. The first two elements must be int
+		and/or float.
 	title : None or str
 		If given, defines the title of the figure.
 	xlabel : None or str
@@ -338,6 +361,9 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 		grid_control=Params.grid
 	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
 
+####################################
+# Modified fill_between for hist
+####################################
 def step_filler(x,y,**kwargs):
 	"""Wrapper for a specific fill_between plot.
 	
@@ -364,6 +390,9 @@ def step_filler(x,y,**kwargs):
 	
 	return(None)
 
+####################################
+# Variable type check
+####################################
 def val_checker(val):
 	"""Type check of variable to pass to style functions.
 	
@@ -386,7 +415,5 @@ def val_checker(val):
 				val=bool(strtobool(val))
 			except ValueError:
 				val=val
-				#if val=='None':
-				#	val=None
 	
 	return(val)

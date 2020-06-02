@@ -1,12 +1,16 @@
-#### Definition of all wrappers for 1D plotting
+########################################################################
+############## Definition of all wrappers for 1D plotting ##############
+########################################################################
 
+####################################
 # Generalized lines
+####################################
 def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Generalised axis lines.
 	
-	This function aims to generalise the usage of axis lines calls (axvline/axhline) together and to allow
-	lines to be specified by a slope/intercept according to the function y = a*x + b.
+	This function aims to generalise the usage of axis lines calls (axvline/axhline) together and
+	to allow lines to be specified by a slope/intercept according to the function y = a*x + b.
 	
 	Parameters
 	----------
@@ -27,8 +31,8 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	plot_kw : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
 	**kwargs: Line2D properties, optional
-		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-		A list of available `Line2D` properties can be found here: 
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
+		antialiasing, etc. A list of available `Line2D` properties can be found here: 
 		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
 
 	Returns
@@ -131,26 +135,29 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 
 	return lines[0] if len(lines) == 1 else lines
 
-### Broken axis plot
+####################################
+# Broken axis plot
+####################################
 def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 			   xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
 			   xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 
-	""" Broken Axis Plot Function
+	"""Broken Axis Plot Function
 	
-	Creates a standard plot call with an axis break at `xbreak` or `ybreak` for vertical or horizontal breaks.
+	Creates a standard plot call with an axis break at `xbreak` or `ybreak` for vertical or
+	horizontal breaks.
 	
 	Parameters
 	----------
 	x : array-like or list
-		If list it is assumed that each elemement is array-like. If y is not given, the given values pass to y and a
-		numpy array is generated with numpy.arange() for the x values.
+		If list it is assumed that each elemement is array-like. If y is not given, the given values
+		pass to y and a numpy array is generated with numpy.arange() for the x values.
 	y : array-like or list, optional
 		If list it is assumed that each elemement is array-like.
 	xbreak/ybreak : float or tuple-like, required
 		The location(s) of the vertical or horizontal breaks is controlled by xbreak or ybreak, respectively.
-		The value can be a single location or a tuple defining the (start, stop) points of the break. Only one 
-		coordinate can be broken in a given plot.
+		The value can be a single location or a tuple defining the (start, stop) points of the break.
+		Only one coordinate can be broken in a given plot.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -182,8 +189,8 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	plot_kw : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
 	**kwargs: Line2D properties, optional
-		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-		A list of available `Line2D` properties can be found here: 
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
+		antialiasing, etc. A list of available `Line2D` properties can be found here: 
 		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
 	
 	Returns
@@ -315,10 +322,13 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 
 	return (lines[0] if len(lines) == 1 else lines)
 
+####################################
+# Curves from analytic expressions
+####################################
 def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=None, ylim=None, xinvert=False, yinvert=False,
 		  xlog=False, ylog=False, title=None, xlabel=None, ylabel=None, label=True, lab_loc=0,
 		  grid=None, ax=None, plot_kw={}, **kwargs):
-	""" Function Plotting
+	"""Function Plotting
 	
 	Plot the curve corresponding to a definingned function over the range of [from, to].
 	
@@ -328,13 +338,13 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		An expression parsed either as a string, sympy expression or callable (function or lambda)
 		which will be evaluated by the function in the range of `bounds`.
 	var : str or sympy symbol, default: 'x'
-		The independent variable on which to evaluate the expression (i.e. the variable
-		on the x-axis). This defaults to the first non-numeric element of the expression
-		or otherwise simply assumes this to be 'x'.
+		The independent variable on which to evaluate the expression (i.e. the variable on the x-axis).
+		This defaults to the first non-numeric element of the expression or otherwise simply assumes
+		this to be 'x'.
 	subs : dict, optional
-		If `expr` contains more symbols than the independent variable `var`, this dictionary
-		will substitute numerical values for all additonal symbols given. `subs` is required
-		if additional symbols are specified.
+		If `expr` contains more symbols than the independent variable `var`, this dictionary will
+		substitute numerical values for all additonal symbols given. `subs` is required if
+		additional symbols are specified.
 	bounds : float, optional
 		The range over which the function will be plotted. If not given, these default to
 		the current bounds of the plot.
@@ -361,9 +371,9 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	label : bool, str or list-like, optional (default: True)
 		Sets the label(s) of the curve(s) for the legend. `label` can be one of:
 			- True:
-				Creates a label for every curve defined by `subs`. The label will list all
-				values `subs` that produced the curve. If a parameter in `subs` has only one
-				value (i.e. constant amongst all curves), it will not appear in the label.
+				Creates a label for every curve defined by `subs`. The label will list all values
+				`subs` that produced the curve. If a parameter in `subs` has only one value
+				(i.e. constant amongst all curves), it will not appear in the label.
 			- str:
 				If a single string is given, only one label will be shown and all curves will
 				be shown as the label handle.
@@ -378,8 +388,8 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	ax : pyplot.Axes, optional
 		Use the given axes to make the plot, defaults to the current axes.
 	plot_kw : dict, optional
-		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are
-		Line2D properties. It is recommended that kwargs be parsed implicitly through **kwargs
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D
+		properties. It is recommended that kwargs be parsed implicitly through **kwargs
 		for readability.
 	**kwargs: Line2D properties, optional
 		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
@@ -515,25 +525,28 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	return(curves[0] if len(curves)==1 else curves, expr)
 
-#Histogram
+####################################
+# 1D histogram and binned statistics
+####################################
 def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=None,hist_type=None,v=None,vstat=None,
 			xlim=None,ylim=None,nmin=0,xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
 			plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},output=None,**kwargs):
 	
 	"""1D histogram function.
 	
-	The plotting is done with pyplot.plot(), so histograms are shown with interpolated curves instead of the
-	more common stepwise curve. For this reason splotch.histstep is a better choice for small datasets. 
+	The plotting is done with pyplot.plot(), so histograms are shown with interpolated curves instead
+	of the more common stepwise curve. For this reason splotch.histstep is a better choice for
+	small datasets. 
 	
 	Parameters
 	----------
 	data : array-like or list
 		If list it is assumed that each elemement is array-like.
 	bin_type : {'number','width','edges','equal'}, optional
-		Defines how is understood the value given in bins: 'number' for the desired number of bins, 'width' for the width
-		of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements (or as close
-		as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if float and 'edges'
-		if ndarray.
+		Defines how is understood the value given in bins: 'number' for the desired number of bins,
+		'width' for the width of the bins, 'edges' for the edges of bins, and 'equal' for making
+		bins with equal number of elements (or as close as possible). If not given it is inferred
+		from the data type of bins: 'number' if int, 'width' if float and 'edges'if ndarray.
 	bins : int, float, array-like or list, optional
 		Gives the values for the bins, according to bin_type.
 	dens :  bool or list, optional
@@ -543,20 +556,21 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	scale : float or list, optional
 		Scaling to be applied to the counts.
 	weights : array-like or None, optional
-		An array of weights with the same shape as data. For each value in data, it will only contribute its given weight towards
-		the bin count (instead of 1). If dens is True, weights will also be normalised so that the integral over the density
-		remains 1. Default: None
+		An array of weights with the same shape as data. For each value in data, it will only
+		contribute its given weight towards the bin count (instead of 1). If dens is True, weights
+		will also be normalised so that the integral over the density remains 1. Default: None
 	hist_type : str, optional.
-		Defines the type of histogram to be drawn. 'line' and 'step' produce lines, with the former drawing lines conecting
-		the values of each bin positioned on their centre, and the latter drawing a stepwise line, with the edges of each step
-		coinciding with the bin edges. 'bar' produces a bar plot. All have filled version (i.e., 'linefilled'), which fills
-		the space between the edges of the histogram and 0.
+		Defines the type of histogram to be drawn. 'line' and 'step' produce lines, with the former
+		drawing lines conecting the values of each bin positioned on their centre, and the latter
+		drawing a stepwise line, with the edges of each step coinciding with the bin edges.
+		'bar' produces a bar plot. All have filled version (i.e., 'linefilled'), which fills the
+		space between the edges of the histogram and 0.
 	v : array-like or list, optional
 		If a valid argument is given in vstat, defines the value used for the binned statistics.
 	vstat : str, function  or list, optional
-		Must be or contain one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic
-		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or function(s) that takes a 1D array and outputs an integer
-		 or float.
+		Must be or contain one of the valid str arguments for the statistics variable
+		in scipy.stats.binned_statistic ('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or
+		function(s) that takes a 1D array and outputs an integer or float.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -594,9 +608,11 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	Returns
 	-------
 	n : list
-		List containing the arrays with the values for each histogram drawn. Only provided if output is True.
+		List containing the arrays with the values for each histogram drawn. Only provided
+		if output is True.
 	bins_edges : list
-		List containing the arrays with the bin edges for each of the histograms drawn. Only provided if output is True.
+		List containing the arrays with the bin edges for each of the histograms drawn.
+		Only provided if output is True.
 	"""
 	
 	from numpy import cumsum as np_cumsum, max as np_max, sum as np_sum, shape
@@ -714,85 +730,9 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	if output:
 		return(n_return,bin_edges)
 
-#Step histogram
-def hist_legacy(data,bin_num=None,dens=True,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=True,
-			title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={}):
-	
-	"""'Clasic' 1D histogram function.
-	
-	This function is designed around pyplot.hist(), so it lacks the functionality to use arbitraty y-axis
-	normalisation of splotch.hist().
-	It is better choice for small datasets, as it plots with stepwise curves, instead of the interpolated
-	ones of splotch.hist().
-	
-	Parameters
-	----------
-	data : array-like or list
-		If list it is assumed that each elemement is array-like.
-	bin_num : int or list, optional
-		Number of bins.
-	dens :  bool or list, optional
-		If false the histogram returns raw counts.
-	xlim : tuple-like, optional
-		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
-	ylim : tuple-like, optional
-		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
-	xinvert : bool or list, optional
-		If true inverts the x-axis.
-	yinvert : bool or list, optional
-		If true inverts the y-axis.
-	xlog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
-	ylog : bool or list, optional
-		If True the scale of the x-axis is logarithmic.
-	title : str, optional
-		Sets the title of the plot
-	xlabel : str, optional
-		Sets the label of the x-axis.
-	ylabel : str, optional
-		Sets the label of the y-axis.
-	plabel : str, optional
-		Sets the legend for the plot.
-	lab_loc : int, optional
-		Defines the position of the legend
-	ax : pyplot.Axes, optional
-		Use the given axes to make the plot, defaults to the current axes.
-	grid : boolean, optional
-		If not given defaults to the value defined in splotch.Params.
-	plot_par : dict, optional
-		Passes the given dictionary as a kwarg to the plotting function.
-	
-	Returns
-	-------
-	None
-	"""
-	
-	from matplotlib.pyplot import hist, legend
-	from .base_func import axes_handler,dict_splicer,plot_finalizer
-	
-	if ax is not None:
-		old_axes=axes_handler(ax)
-	if type(data) is not list:
-		data=[data]
-	L=len(data)
-	if bin_num is None:
-		bin_num=[int((len(d))**0.4) for d in data]
-	if type(bin_num) is not list:
-		bin_num=[bin_num+1]*L
-	if type(plabel) is not list:
-		plabel=[plabel]*L
-	plot_par=dict_splicer(plot_kw,L,[len(x) for x in data])
-	for i in range(L):
-		temp_data,bins,temp=bin_axis(data[i],bin_num[i],log=xlog)
-		hist(temp_data,bins=bins,density=dens,label=plabel[i],**plot_par[i])
-	if any(plabel):
-		legend(loc=lab_loc)
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
-
-	if ax is not None:
-		old_axes=axes_handler(old_axes)
-
-#Plots
+####################################
+# Standard plots
+####################################
 def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
 			ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
@@ -803,8 +743,8 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	Parameters
 	----------
 	x : array-like or list
-		If list it is assumed that each elemement is array-like. If y is not given, the given values pass to y and a
-		numpy array is generated with numpy.arange() for the x values.
+		If list it is assumed that each elemement is array-like. If y is not given, the given
+		values pass to y and a numpy array is generated with numpy.arange() for the x values.
 	y : array-like or list, optional
 		If list it is assumed that each elemement is array-like.
 	xlim : tuple-like, optional
@@ -834,23 +774,22 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	grid : boolean, optional
 		If not given defaults to the value defined in splotch.Params.
 	plot_kw : dict, optional
-		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are
+		Line2D properties.
 	**kwargs: Line2D properties, optional
-		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-		A list of available `Line2D` properties can be found here: 
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
+		antialiasing, etc. A list of available `Line2D` properties can be found here: 
 		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
 	
 	Returns
 	-------
 	lines
 		A list of Line2D objects representing the plotted data.
-
 	"""
-
+	
 	from numpy import shape, arange
 	from matplotlib.pyplot import plot, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
-	
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -882,5 +821,5 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
-
+	
 	return (lines[0] if len(lines) == 1 else lines)

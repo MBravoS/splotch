@@ -1,7 +1,7 @@
 def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 
 	""" Adjusts text instances.
-
+	
 	Function which allows the user to adjust texts of one or many of either x/y-axis labels,
 	title, legend, colorbars, etc.
 	
@@ -9,7 +9,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	----------
 	which : str, array-like or list
 		Which `Text` instance(s) to apply the text properties to.
-
+	
 		Valid arguments can be one or many of the following:
 			* 'x'|'xlabel'	 : x-axis label 
 			* 'y'|'ylabel'	 : y-axis label 
@@ -19,15 +19,12 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 			* 'c'|'colorbar' : Color bar
 			* 'T'|'text' 	 : Text objects
 			* 'a'|'all'		 : All instances of all the above
-
 	ax : pyplot.Axes or list, optional
 		Use the given axes to adjust text, defaults to the current axis.
 		If a list of Axis instances given, the text properties is applied to each.
-
 	text_kw : dict, optional
 		Explicit dictionary of kwargs to be parsed to matplotlib `Text` instance.
 		It is recommended that text keyword arguments be given as **kwargs.
-
 	**kwargs : Text instance properties
 		kwargs are used to specify properties of `Text` instances
 		A list of valid `Text` kwargs can be found here:
@@ -37,7 +34,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	-------
 	None
 	"""
-
+	
 	from matplotlib.text import Text
 	from matplotlib.pyplot import gca
 	from numpy import array, shape, max as np_max, argmax, append#, flatten
@@ -49,44 +46,42 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 		if (ax == None):
 			ax = gca()
 		ax = [ax]
-
+	
 	# Validate `which` value(s)
 	whichRef = ['x','y','t','s','k','l','c','T','a',
 				'xlabel','ylabel','title','suptitle','ticks','legend','colorbar','text','all']
-
+	
 	try: # check if iterable
 		_ = (i for i in which)
 		if (type(which) == str):
 			which = [which]
-
 	except (TypeError):
 		which = [which]
-
+	
 	for w in which:
 		try:
 			wInd = whichRef.index(w)
 			wComp = (wInd + len(whichRef)//2) % len(whichRef) # get the complimenting short/long version
 			if (whichRef[wComp] in which):
 				raise TypeError("adjust_text() received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[wInd],whichRef[wComp]))
-
 		except (ValueError):
 			if (type(w) != Text):
 				raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w,', '.join(whichRef)))
 			
-
+	
 	L = len(which)
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	textpar = text_kw.copy()
 	textpar.update(kwargs)
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	textpar = dict_splicer(textpar,L,[1]*L)
-
+	
 	for a in array(ax).flatten():
 		if (a == None): continue # ignore empty subplots
-
+		
 		for ii, lab in enumerate(which):
 			if (lab in ['x','xlabel']):
 				texts = [a.xaxis.label]
@@ -113,15 +108,15 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 				texts = [lab]
 			elif (lab in ['a','all']):
 				texts = [a.xaxis.label,a.yaxis.label,a.title,a.legend().get_texts()]
-
+				
 				caxInd = argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
 				if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
 					texts.append(a.figure.get_axes()[caxInd].yaxis.label)
 				else:
 					texts.append(a.figure.get_axes()[caxInd].xaxis.label)
-
+				
 				texts = texts + [child for child in a.get_children()[:-4] if type(child) == Text]
-
+			
 			for t in texts: # Actually apply the font changes
 				t.set(**textpar[ii])
 	
@@ -137,13 +132,14 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	Parameters
 	----------
 	mappable : ScalarMappable, optional
-		A list or individual matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described by this colorbar(s).
-		This argument is optional and will seek out any mappables currently present in each axis given if
-		nothing is specified.	
+		A list or individual matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described
+		by this colorbar(s). This argument is optional and will seek out any mappables currently
+		present in each axis given if nothing is specified.
 	ax : pyplot.Axes, optional
-		Use the given axes to produce the colorbars onto. If multiple axes are given, number of mappable objects given must be 
-		either one or equal to the number of axis objects. If no mappables are provided, a mappable will be searched for
-		independently for each axis. Defaults to the current axis.
+		Use the given axes to produce the colorbars onto. If multiple axes are given, number of
+		mappable objects given must be either one or equal to the number of axis objects. If no
+		mappables are provided, a mappable will be searched for independently for each axis.
+		Defaults to the current axis.
 	label : str, optional
 		The label to be given to the colorbar
 	orientation : optional
@@ -153,25 +149,29 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 		Specifies the location of the colorbar. Can be a two element tuple-like object in the format
 		of (x0, y0).
 	transform : matplotlib.transforms.Transform instance, optional
-		The transformation instance to be used for colorbar location if loc is tuple-like. For example, using ax.transAxes()
-		will specify the colorbar location in the coordinates of the axis; (0,0) is bottom-left and (1,1)
-		is top-right. Default: ax.transAxes.
+		The transformation instance to be used for colorbar location if loc is tuple-like. For example,
+		using ax.transAxes() will specify the colorbar location in the coordinates of the axis; (0,0)
+		is bottom-left and (1,1) is top-right. Default: ax.transAxes.
 	inset : boolean, optional
-		Whether to inset the colorbar within the inside of the axis. If loc not tuple-like, this will add
-		padding to both sides of the colorbar to avoid colliding with the axis spine. Default: False.
+		Whether to inset the colorbar within the inside of the axis. If loc not tuple-like, this
+		will add padding to both sides of the colorbar to avoid colliding with the axis spine.
+		Default: False.
 	aspect : float, optional
-		The aspect ratio of the colorbar always taken as the ratio of the long-side to the short-side.
-		Default: 0.05
+		The aspect ratio of the colorbar always taken as the ratio of the long-side to the
+		short-side. Default: 0.05
 	width, height : float, optional
-		The width and height of the colorbar in the coordinate system of specified `transform`, which by
-		default is in the coordinates of the axis.
+		The width and height of the colorbar in the coordinate system of specified `transform`,
+		which by default is in the coordinates of the axis.
 	pad : float, optional
-		The padding given to the colorbar axis offset from the margin of the axis. If loc is specified to an edge
-		which has an axis label/ticks, padding will be added from the edge of the label.
+		The padding given to the colorbar axis offset from the margin of the axis. If loc is
+		specified to an edge which has an axis label/ticks, padding will be added from the edge
+		of the label.
 	ticks : None, list-like or Locator() object, optional
-		Specifies the locations of ticks on th colorbar axis. If None, ticks are determined automatically from the input.
+		Specifies the locations of ticks on th colorbar axis. If None, ticks are determined
+		automatically from the input.
 	bar_kw : dict, optional
-		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are colorbar properties.
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are colorbar
+		properties.
 	**kwargs : Colorbar properties, optional
 		Keyword arguments are used to specify matplotlib.pyplot.colorbar specific properties such as
 		extend, spacing, format, drawedges, etc. The list of available properties can be found here: 
@@ -184,12 +184,10 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	"""
 	
 	from .base_func import axes_handler, dict_splicer
-
 	from matplotlib.pyplot import gca
 	from mpl_toolkits.axes_grid1.inset_locator import inset_axes, zoomed_inset_axes
 	from mpl_toolkits.axes_grid1.colorbar import colorbar
 	
-
 	# Validate axis input
 	if ax is not None:
 		try: # check if iterable
@@ -203,14 +201,14 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	else:
 		axes = [gca()]
 		old_axes = axes[0]
-
+	
 	if type(loc) != int:
 		raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
-
+	
 	### Define the positions of preset colorbars
 	labpad = 0.125 # The padding added for labels
 	ins = 1 if inset == True else 0 # Convert inset boolean to a binary multiplier
-
+	
 	# Validate aspect value
 	if (aspect <= 0 or aspect > 1):
 		raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
@@ -245,16 +243,15 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 					 7:(0-width-labpad-pad+ins*(width+labpad+2*pad), 0.5*(1-height), width, height),
 					 8:(0.5*(1-width), 0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
 					 9:(0.5*(1-width), 0.5*(1-height), width, height)}
-
-
+	
 	# Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
 	#bar_par = {**bar_kw, **kwargs} # For Python > 3.5
 	bar_par = bar_kw.copy()
 	bar_par.update(kwargs)
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	bar_par = dict_splicer(bar_par,len(axes),[1]*len(axes))
-
+	
 	cbars = [] # Initiate empty list of colorbars for output
 	for ii, ax in enumerate(axes):
 		if mappable == None:
@@ -273,12 +270,12 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 					raise ValueError("Number of mappables given must be either 1 or equal to the number of axes specified.")
 			except (TypeError):
 				mapper = mappable
-
+		
 		cax = inset_axes(ax, width='100%', height='100%',
 						 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
 						 bbox_transform=transform if transform != None else ax.transAxes,
 						 borderpad=0)
-
+		
 		cbar = colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
 		
 		# Orient tick axes correctly
@@ -303,45 +300,42 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 			if (flip == True):
 				cbar.ax.yaxis.set_label_position('left')
 				cbar.ax.yaxis.tick_left()
-
+		
 		cbars.append(cbar)
-
+	
 	return (cbars[0] if len(cbars) == 1 else cbars)
-
 
 def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='rand',labels=None,histlabel=None,
 				fig=None,figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
 				hist_kw={},contour_kw={},scatter_kw={},hist2D_kw={},axes_kw={},_debug_=False,**kwargs):
 	""" Creates a corner plot figure and subplots
 	
-	This function accepts columns of data representing multiple parameters in which each combination will be paired
-	will each other to form the off-diagonals of a corner plot. The diagonals show a 1D histogram representation
-	of each individual parameter.
+	This function accepts columns of data representing multiple parameters in which each combination
+	will be paired will each other to form the off-diagonals of a corner plot. The diagonals show a
+	1D histogram representation of each individual parameter.
 	
 	Parameters
 	----------
 	data : array-like
-		The input data frame with each parameter represented by an individual column, the zeroth axis
-		should be the list of samples and the next axis should be the number of dimensions.
+		The input data frame with each parameter represented by an individual column, the zeroth
+		axis should be the list of samples and the next axis should be the number of dimensions.
 		Accepted data types are: pandas.DataFrame, pandas.Series, numpy.ndarray, astropy.table.Table.
 	columns : array-like
-		The column labels (or indices) that specify which columns within 'data' to use. if none specified,
-		every column in 'data' with a numeric datatype will be used. To group columns together, columns can 
-		be given as a list of lists, e.g.:
-
+		The column labels (or indices) that specify which columns within 'data' to use. if none
+		specified, every column in 'data' with a numeric datatype will be used. To group columns
+		together, columns can be given as a list of lists, e.g.:
 			columns = [['A1', 'A2', ...], ['B1', 'B2', ...]]
-
-		which will create pairs for all parameters in each sublist. Having multiple groups will result in
-		multiple histograms and paired plots per axis. As such, pair_type='hist2D' is not compatible when columns
-		includes multiple groups.
+		which will create pairs for all parameters in each sublist. Having multiple groups will
+		result in multiple histograms and paired plots per axis. As such, pair_type='hist2D' is not
+		compatible when columns includes multiple groups.
 	pair_type : str, optional
 		The plotting type for the off-diagonal plots,
-		can be one of:'contour' | 'scatter' | 'hist2D' which correspond to contour plots, 
-		scatter plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw'
-		to control the styling of each.
+		can be one of:'contour' | 'scatter' | 'hist2D' which correspond to contour plots, scatter
+		plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw' to control
+		the styling of each.
 	nsamples : float, optional
-		Specifies the number of samples kept out of the total number of samples. This is useful to speed up
-		plotting if not all of the samples need to be shown. Default: 1 (i.e. no subsampling).
+		Specifies the number of samples kept out of the total number of samples. This is useful to
+		speed up plotting if not all of the samples need to be shown. Default: 1 (i.e. no subsampling).
 		Default: the full number samples in `data`.
 	sample_type : str, optional
 		Sets the method used to thin the full set of samples, can be one of the following:
@@ -349,20 +343,19 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 			- 'rand' : Randomly selects a set of samples. (Only use if confident all posterior chains are stationary).
 			- 'thin' : Evenly select every m samples until a total of `nsamples` are kept.
 		Default: 'end'
-
 	labels : array-like (str), optional
-		A list of axis labels to be assigned to each parameter. Must be of the same length or longer than
-		the number of columns (or column groups).
+		A list of axis labels to be assigned to each parameter. Must be of the same length or longer
+		than the number of columns (or column groups).
 	histlabel : str, optional
-		The y-axis label for each of the 1D histograms on the diagonal, if None given, then no labels or
-		ticks will be drawn. Labels and ticks will be displayed on the opposite side to the labels for the
-		pair plots, Default: None.
-	
+		The y-axis label for each of the 1D histograms on the diagonal, if None given, then no
+		labels or ticks will be drawn. Labels and ticks will be displayed on the opposite side to
+		the labels for the pair plots, Default: None.
 	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (len(data), len(data))
-		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
-		the default rcParams figure.figsize by the number of rows or columns.
+		The dimensions of the figure (width, height) in inches. If not specified, the default is to
+		scale the default rcParams figure.figsize by the number of rows or columns.
 	wspace / hspace : float, optional
-		The horzontal/vertical spacing between figure subplots, expressed as a fraction of the subplot width/height.
+		The horzontal/vertical spacing between figure subplots, expressed as a fraction of the
+		subplot width/height.
 	squeeze : bool, optional, default: True
 		As per matplotlib's usage, the following applies:
 			- If True, extra dimensions are squeezed out from the returned array of Axes:
@@ -372,11 +365,10 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 			  is always a 2D array containing Axes instances, even if it ends
 			  up being 1x1. For cornerplots with only one set of diagonals, empty axes
 			  will be filled by None.
-
 	contour_kw, scatter_kw, hist2D_kw : dict, optional
 		Dictionary of keyword arguments to be parsed into the pair plotting functions. The particular
-		keyword dictionary used is dependent on the 'pair_type' chosen. If 'columns' contains multiple groups,
-		kw arguments in lists are assumed to correspond to each group.
+		keyword dictionary used is dependent on the 'pair_type' chosen. If 'columns' contains
+		multiple groups, kw arguments in lists are assumed to correspond to each group.
 	hist_kw : dict, optional
 		Dictionary of keyword arguments to be parsed into the 1D histograms plots on the diagonals.
 	**kwargs : Subplot instance properties
@@ -411,8 +403,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 		elif (pair_type=='hist2D'): hist2D_kw = kwargs['pair_kw']
 		del kwargs['pair_kw']
 		warnings.warn("Parameter 'pair_kw' is deprecated, instead use one of contour_kw, scatter_kw, hist2D_kw")
-
-		
+	
 	nGroups = shape(columns)[0] if len(shape(columns)) > 1 else 1	
 	if (_debug_ == True): print(f"Groups: {nGroups}")
 			
@@ -427,15 +418,12 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 		pair_type = [pair_type]
 	else:
 		raise ValueError(f"Object type '{type(pair_type)}' not recognised for 'pair_type' argument. Must be either string of list-like.")
-
 	for pair in pair_type:
 		if (pair not in ['contour','scatter','hist2D']):
 			raise ValueError(f"Pair type '{pair}' not a valid argument. Must be one of {{'contour'|'scatter'|'hist2D'}}.")
-
 		if (pair == 'hist2D' and nGroups > 1):
 			raise ValueError(f"Cannot overplot groups of 2D histograms. Choose alternative 'pair_type'.")
-
-
+	
 	# Sample the data
 	if (nsamples == None):
 		nsamples = dims[0] # By default, use all samples.
@@ -456,7 +444,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 		raise ValueError(f"Sample type '{sample_type}' not recognised.")
 	
 	if (_debug_ == True): print(f"Number of samples: {len(samps)}")
-
+	
 	# Validate input data
 	if isinstance(data, DataFrame) or (hasAstropy and isinstance(data, Table)):
 		if (hasAstropy and isinstance(data, Table)): # Convert astropy.Table to pandas DataFrame if required
@@ -513,7 +501,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	npar = cols.size//nGroups if len(dims) > 1 else 1 # second axis defines the dimensions of parameters
 	if (_debug_ == True): print(f"\nDimensions: {dims}")
 	if (_debug_ == True): print(f"\nAxes: {npar}")
-
+	
 	# Assign labels if none given
 	if (labels == None): # auto-generate labels from columns if available
 		if not isinstance(data.columns, RangeIndex):
@@ -523,7 +511,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 			raise ValueError(f"Not enough labels given to match dimensions of data ({dims})")
 	
 	if (_debug_ == True): print(f"\nColumns:\n {cols}")
-
+	
 	#if (figsize==None): # Auto scale default figure size to num cols/rows.
 	#	figsize = (rcParams["figure.figsize"][0]*npar, rcParams["figure.figsize"][0]*npar)
 	
@@ -543,7 +531,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 							cnt += 1
 			except (TypeError): # axes in fig was not a list-like object
 				raise TypeError("Figure axes has incorrect type, should be a list of 'matplotlib.axes.Axes' objects.")
-
+	
 	if (all([ax is None for ax in axes.flatten()])):
 		# Set up the GridSpec object
 		gs = GridSpec(ncols=npar,nrows=npar,wspace=wspace,hspace=hspace)
@@ -558,9 +546,9 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 					axes_kw["sharey"] = None if jj==npar-1 else axes[ii,npar-1]
 
 				axes[ii,jj] = fig.add_subplot(gs[ii, jj], **axes_kw)
-
+	
 	if (_debug_): print(axes)
-
+	
 	if (nGroups > 1):
 		hist_kw = dict_splicer(hist_kw,nGroups,[1]*nGroups)
 		contour_kw = dict_splicer(contour_kw,nGroups,[1]*nGroups)

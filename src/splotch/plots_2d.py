@@ -1,21 +1,10 @@
-#### Definition of all wrappers for 2D plotting
+########################################################################
+############## Definition of all wrappers for 2D plotting ##############
+########################################################################
 
-#Level contours
-def cont(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
-			ylabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-	
-	"""Level contour plotting function (legacy name).
-	
-	This provides legacy compatibily for old code using the original name of the function.
-	This function will eventually be removed, so consider switching to plots_2d.contour().
-	"""
-	
-	import warnings
-	
-	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.contour() instead.',FutureWarning)
-	
-	contour(z,x,y,filled,xlim,ylim,xinvert,yinvert,xlog,ylog,title,xlabel,ylabel,lab_loc,ax,grid,plot_kw={},**kwargs)
-
+####################################
+# Level contours
+####################################
 def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
 			ylabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
@@ -106,22 +95,220 @@ def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinver
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-#Errorbars
-def errbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
-	title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+####################################
+# Contours from density histograms
+####################################
+def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=None,linestyle=None,xlim=None,ylim=None,clim=None,
+				xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,labels=None,xlabel=None,
+				ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
 	
-	"""Errorbar plotting function (legacy name).
+	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
 	
-	This provides legacy compatibily for old code using the original name of the function.
-	This function will eventually be removed, so consider switching to plots_2d.errorbar().
+	Parameters
+	----------
+	x : array-like
+		Position of data points in the x axis.
+	y : array-like
+		Position of data points in the y axis.
+	percent : float or array-like, optional.
+		The percentages of the sample that the contours encircle.
+	bin_type : {'number','width','edges','equal'}, optional
+		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
+		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
+		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
+		float and 'edges' if ndarray.
+	bins : int, float, array-like, optional
+		Gives the values for the bins, according to bin_type.
+	smooth : float, optional
+		The standard deviation for the Gaussian kernel. Default: 0.0 (No smoothing).
+	c : str, float or list, optional
+		The colours of the contours. If float or list of floats, they must be in the range [0,1], as the colours are
+		taken from the given colour map.
+	cmap : str, optional
+		The colour map to be used.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	clim : list, optional
+		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
+	xinvert : bool, optional
+		If True, inverts the x-axis.
+	yinvert : bool, optional
+		If True, inverts the y-axis.
+	cbar_invert : bool, optional
+		If True, inverts the direction of the colour bar (not the colour map).
+	linestyle or ls : str or array-like, optional.
+		Defines the linestyle of the contours.
+	xlog : bool, optional
+		If True, the scale of the x-axis is logarithmic.
+	ylog : bool, optional
+		If True, the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	labels : array-like or str, optional
+		Specifies label(s) for the contour(s). If 'str', sets the label for the full set of contours. If an array
+		of strings, sets the labels for each contour. Must be of equal length to number specified by 'percent'.
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	clabel : str, optional
+		Sets the label for the colourbar. If None given, no colourbar will be made.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	output : boolean, optional
+		If True, returns the edges and values of the underlying histogram plus the levels of the contours.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
+	**kwargs: QuadContourSet properties, optional
+		kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
+		The list of available properties can be found here: 
+		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html
+	
+	Returns
+	-------
+	bin_edges_x : array
+		The bin edges for the x axis.
+	bin_edges_y : array
+		The bin edges for the y axis.
+	n : array
+		The values of the underlying histogram.
+	l : array
+		The levels for the contours.
 	"""
 	
-	import warnings
+	from warnings import warn
+	from matplotlib.cm import get_cmap, ScalarMappable
+	from matplotlib.pyplot import gca, sca, contour, legend, Normalize, colorbar
+	from numpy import array, linspace, round, ndarray, ceil
+	from scipy.ndimage.filters import gaussian_filter
+	from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer,is_numeric
+	from .defaults import Params
+	#from .axis_func import 
 	
-	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.errorbar() instead.',FutureWarning)
+	# Initialise defaults
+	#if None in (percent,cmap,clim,s,output):
+	if percent is None:
+		percent=Params.sigcont_percent  # Probably should change to 'cont_percent'
+	if cmap is None:
+		cmap=Params.sigcont_cmap # * 'cont_cmap'
+	if clim is None:
+		clim=Params.sigcont_clim  # * 'cont_clim'
+	if linestyle is None:
+		linestyle=Params.sigcont_linestyle # * cont_linestyle or cont_ls
+	if output is None:
+		output=Params.sigcont_output # * cont_output
 	
-	errorbar(x,y,xerr,yerr,xlim,ylim,xinvert,yinvert,xlog,ylog,title,xlabel,ylabel,plabel,lab_loc,ax,grid,plot_kw,**kwargs)
+	# Pull out aliases from **kwargs:
+	if 'ls' in kwargs.keys(): linestyle = kwargs.pop('ls')
+	if 's' in kwargs.keys(): linestyle = kwargs.pop('s')
+	if 'color' in kwargs.keys(): c = kwargs.pop('color')
+	
+	# Assign current axis
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	else:
+		ax = gca()
+		old_axes=ax
+	
+	if type(percent) not in [list, tuple, ndarray]:
+		percent=[percent]
+	if type(bin_type) not in [list, tuple, ndarray]:
+		bin_type=[bin_type]*2
+	if type(bins) not in [list, tuple, ndarray]:
+		if bins is None:
+			bins=int((len(x))**0.4)
+		elif (is_numeric(bins) == False):
+			raise ValueError(f"Parameter 'bins' must be numeric, got data type '{type(bins)}'.")
+		else:
+			raise ValueError(f"Data type '{type(bins)}' not recognised, must be one of: list, tuple, ndarray.")
+		bins=[bins]*2
+	
+	cmap=get_cmap(cmap) # retrieve/parse colourmap as matplotlib object
+	if c is None: # if no color specified, initiate defaults
+		if len(percent)<4: # if <4 lines, get first color of color cycler
+			c = [next(ax._get_lines.prop_cycler)['color']]*len(percent)
+			clabel = None # Cannot plot meaningful colorbar
+		else:
+			c=cmap([p/100.0 for p in percent])
+	elif type(c) in [list, tuple, ndarray]: # list of colors given
+		if (len(c) < len(percent)): # Repeat linestyle until same length as input percent
+			c = c*int(ceil(len(percent)/len(c)))
+			c = c[:len(percent)] # truncate excess entries
+		if (is_numeric(c)): # sample the cmap at a single value
+			c=cmap(c)
+		if any([type(kk) is str for kk in c]) and clabel is not None:
+			clabel = None # cannot plot colorbar if strings given for color
+	else:
+		if (is_numeric(c)): # sample the cmap at a single value
+			c=cmap(c)
+		elif (type(c) is str):
+			clabel = None
+		c=[c]*len(percent) # convert to list
+	
+	if type(linestyle) not in [list, tuple, ndarray]:
+		linestyle=[linestyle]*len(percent)
+	else:
+		if (len(linestyle) < len(percent)): # Repeat linestyle until same length as input percent
+			linestyle = linestyle*int(ceil(len(percent)/len(linestyle)))
+			linestyle = linestyle[:len(percent)] # truncate excess entries
+		#raise ValueError(f"Length of linestyle ({len(linestyle)}) does not match length of percent ({len(percent)}).")
+	
+	# Validate labels array
+	if (type(labels) in [list, tuple, ndarray]):
+		if (len(labels) != len(percent)):
+			raise ValueError(f"Length of labels ({len(labels)}) does not match length of percent ({len(percent)}).")
+	else:
+		if (type(labels) == bool):
+			labels = [str(round(p,1))+'%' for p in percent] if labels is True else [None]*(len(percent))
+		else:
+			labels = [labels] + [None]*(len(percent)-1) # If only one value given or None, use [<labels>, None, None, None, ...]
+	
+	X,Y,Z=basehist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
+	X=(X[:-1]+X[1:])/2
+	Y=(Y[:-1]+Y[1:])/2
+	CS=[]
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+	plot_par = plot_kw.copy()
+	plot_par.update(kwargs)
+	
+	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
+	plot_par=dict_splicer(plot_par,len(percent),[1]*len(percent))
+	
+	level=[]
+	for i in range(len(percent)):
+		level.append(percent_finder(Z,percent[i]/100))
+		CS.append(contour(X,Y,gaussian_filter(Z.T, sigma=smooth),levels=[level[i]],colors=[c[i],],linestyles=linestyle[i],**plot_par[i]))
+		if not all(l is None for l in labels):
+			CS[i].collections[0].set_label(labels[i])
+	
+	if (clabel is not None):
+		sm = ScalarMappable(cmap=cmap, norm=Normalize(vmin=0, vmax=1))
+		sm._A = [] # fake an array of the scalar mappable.
+		#colorbar(sm,width=0.1,height=1,label=clabel)
+		colorbar(sm,label=clabel)
+	
+	if not all(l is None for l in labels): # Set legend location if labels != None
+		ax.legend(loc=lab_loc)
+	
+	sca(ax) # After producing colorbar, ensure correct current axis
+	
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+	if output:
+		return(X,Y,Z.T,array(level))
 
+####################################
+# Errorbands
+####################################
 def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',band_stat_high='std',line=False,xlim=None,ylim=None,
 				xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
 				plabel=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
@@ -262,6 +449,9 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
+####################################
+# Errorbars
+####################################
 def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
 				title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
@@ -333,15 +523,15 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	L=len(x)
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-
+	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
-
+	
 	for i in range(L):
 		errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
 	if any(plabel):
@@ -350,22 +540,9 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-#Errorboxes
-def errbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
-	title=None,xlabel=None,ylabel=None,plabel=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
-	
-	"""Errorbox plotting function (legacy name).
-	
-	This provides legacy compatibily for old code using the original name of the function.
-	This function will eventually be removed, so consider switching to plots_2d.errorbox().
-	"""
-	
-	import warnings
-	
-	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.errorbox() instead.',FutureWarning)
-	
-	errorbox(x,y,xerr,yerr,xlim,ylim,xinvert,yinvert,xlog,ylog,boxtype,title,xlabel,ylabel,plabel,grid,lab_loc,ax,plot_kw,**kwargs)
-
+####################################
+# Errorboxes
+####################################
 def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
 			title=None,xlabel=None,ylabel=None,plabel=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
@@ -417,7 +594,6 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		kwargs are used to specify matplotlib specific properties such as facecolor, linestyle, alpha, etc.
 		A list of available `Patch` properties can be found here: 
 		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.patches.Rectangle.html
-
 	
 	Returns
 	-------
@@ -426,9 +602,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	
 	from matplotlib.pyplot import errorbar, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
-
 	from numpy import shape, full, array
-
 	from matplotlib.collections import PatchCollection
 	from matplotlib.patches import Ellipse, Rectangle
 	
@@ -442,11 +616,11 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		xerr=[xerr]
 	if type(yerr) is not list:
 		yerr=[yerr]
-
+	
 	L=len(x)
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-
+	
 	# Validate format of xerr and yerr
 	for i in range(L):
 		# x-axis errors
@@ -464,7 +638,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 				xerr[i] = array(xerr[i])
 				if (shape(xerr[i])[0] != 2 or shape(xerr[i])[1] != len(x[i])):
 					print('dong') # Raise exception for invalid length of points
-
+		
 		# y-axis errors
 		if (shape(yerr[i]) == ()): # single error for all points
 			yerr[i] = full((2,len(y[i])), yerr[i])
@@ -480,16 +654,15 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 				yerr[i] = array(yerr[i])
 				if (shape(yerr[i])[0] != 2 or shape(yerr[i])[1] != len(y[i])):
 					print('dong') # Raise exception for invalid length of points
-
-
+	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par = dict_splicer(plot_par,L,[1]*L)
- 
+	
 	PathColls = []
 	# Loop over data points; create box/ellipse from errors at each point
 	for i in range(L):
@@ -501,11 +674,11 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 				errorboxes.append( Ellipse((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
 			else:
 				print('dang')
-
+		
 		# Create and add patch collection with specified colour/alpha
 		pc = PatchCollection(errorboxes, **plot_par[i])
 		ax.add_collection(pc)
-
+	
 	# for i in range(L):
 	# 	errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
 	if any(plabel):
@@ -514,8 +687,9 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-
-# Histogram and 2D binned statistics
+####################################
+# 2D histogram and binned statistics
+####################################
 def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
 			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
 			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
@@ -529,10 +703,10 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	y : array-like
 		Position of data points in the y axis.
 	bin_type : {'number','width','edges','equal'}, optional
-		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
-		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
-		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
-		float and 'edges' if ndarray.
+		Defines how is understood the value given in bins: 'number' for givinf the desired number of
+		bins, 'width' for the width of the bins, 'edges' for the edges of bins, and 'equal' for
+		making bins with equal number of elements (or as close as possible). If not given it is
+		inferred from the data type of bins: 'number' if int, 'width' if float and 'edges' if ndarray.
 	bins : int, float, array-like or list, optional
 		Gives the values for the bins, according to bin_type.
 	dens : bool or list, optional
@@ -543,8 +717,8 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	cstat : str or function, optional
 		Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
-		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and outputs an integer
-		 or float.
+		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and
+		outputs an integer or float.
 	xlim : tuple-like, optional
 		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
 	ylim : tuple-like, optional
@@ -587,7 +761,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	**kwargs : pcolormesh properties, optional
 		kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
 		https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html
-
+	
 	Returns
 	-------
 	n : array
@@ -656,7 +830,9 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	if output:
 		return(Z.T,X,Y)
 
-# Image
+####################################
+# Image from 2D array
+####################################
 def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=False,yinvert=False,cbar_invert=False,clog=None,
 		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
@@ -665,8 +841,8 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 	Parameters
 	----------
 	im : array-like
-		Value for each pixel in an x-y 2D array, where the first dimension is the x-position and the second is
-		the y-position.
+		Value for each pixel in an x-y 2D array, where the first dimension is the x-position and the
+		second is the y-position.
 	x : array-like, optional
 		Position of data points in the x axis.
 	y : array-like, optional
@@ -726,14 +902,14 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 	if clog is None:
 		from .defaults import Params
 		clog=Params.img_caxis_log
-
+	
 	X, Y = meshgrid(x, y)
-
+	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs) 
-
+	
 	if clog:
 		pcolormesh(X,Y,im.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
 	else:
@@ -747,7 +923,9 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
 
-# Scatter
+####################################
+# Scatter plots
+####################################
 def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
 			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
@@ -767,8 +945,8 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
 	clim : tuple-like, optional
 		Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
-		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
-		clim` takes priority.
+		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are
+		given, `clim` takes priority.
 	density : bool, optional
 		If True, color-codes points by their spatial density to nearby points using a Gaussian
 		kernel density estimate. If 'c' also given, 'density' takes precedence. Default: False.
@@ -809,7 +987,7 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	paths
 		A list of PathCollection objects representing the plotted data.
 	"""
-
+	
 	from numpy import shape, vstack
 	from matplotlib.pyplot import scatter, colorbar, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
@@ -827,12 +1005,12 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	L=len(x)
 	if type(plabel) is not list:
 		plabel=[plabel]*L
-
+	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
 	if (clim != None):
 		try:
@@ -844,19 +1022,18 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 				raise TypeError("`clim` must be of iterable type and have two values only.")
 		except (TypeError):
 			raise TypeError("`clim` must be of iterable type and have two values only.")
-
+	
 	if (density == True):
 		if (all([kk is not None for kk in c])):
 			warn("Cannot specify both `c` and `density`, ignoring `c`.")
-
 		c = [None]*L
 		for i in range(L):
 			xy = vstack([x[i],y[i]])
 			c[i] = gaussian_kde(xy)(xy) # Calculate the Gaussian kernel density estimate
-
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
-
+	
 	paths = []
 	for i in range(L):
 		p = scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
@@ -871,9 +1048,12 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
-
+	
 	return paths[0] if len(paths) == 1 else paths
 
+####################################
+# Sector plots
+####################################
 def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlabel="",thetalabel="",clabel=None,rstep=None,
 			thetastep=15.0,rticks='auto',thetaticks='auto',cbar_invert=False,fig=None,plot_kw={},**kwargs):
 	
@@ -893,8 +1073,8 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 		The lower and upper limits for the angular axis (degrees).
 	clim : tuple-like, optional
 		Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
-		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are given,
-		clim` takes priority.
+		Functions equivalently to the `vmin, vmax` arguments used by `colors.Normalize`. If both are
+		given, `clim` takes priority.
 	rotate : float, optional
 		By how many degrees (clockwise) to rotate the entire plot (valid values in [-180, 180]).
 	rlabel : str, optional
@@ -1013,7 +1193,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	L = shape(theta)[0] if len(shape(theta)) > 1 else 1
 	plot_par = plot_kw.copy()
 	plot_par.update(kwargs)
-
+	
 	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
 	if (clim != None):
 		try:
@@ -1040,234 +1220,5 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
-
+	
 	return sector_ax
-
-# Contours encircling the densest region down to a certain percentage 
-def sigma_cont(x,y,percent=None,bin_type=None,bins=None,c=None,cmap=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
-				cbar_invert=False,s=None,xlog=False,ylog=False,title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
-				grid=None,output=None,plot_kw={},**kwargs):
-	
-	"""Contour function, encircling the highest density regions that contain the given percentages of the sample (legacy name).
-	
-	This provides legacy compatibily for old code using the original name of the function.
-	This function will eventually be removed, so consider switching to plots_2d.contourp().
-	"""
-	
-	import warnings
-	
-	warnings.warn('This function provides legacy support and it will be removed in the future. Use plots_2d.contourp() instead.',FutureWarning)
-	
-	contourp(x,y,percent,bin_type,bins,c,cmap,xlim,ylim,clim,xinvert,yinvert,cbar_invert,s,xlog,ylog,title,labels,xlabel,ylabel,
-				clabel,lab_loc,ax,grid,output,plot_kw,**kwargs)
-
-def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=None,linestyle=None,xlim=None,ylim=None,clim=None,xinvert=False,yinvert=False,
-				cbar_invert=False,xlog=False,ylog=False,title=None,labels=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,
-				grid=None,output=None,plot_kw={},**kwargs):
-	
-	"""Contour function, encircling the highest density regions that contain the given percentages of the sample.
-	
-	Parameters
-	----------
-	x : array-like
-		Position of data points in the x axis.
-	y : array-like
-		Position of data points in the y axis.
-	percent : float or array-like, optional.
-		The percentages of the sample that the contours encircle.
-	bin_type : {'number','width','edges','equal'}, optional
-		Defines how is understood the value given in bins: 'number' for givinf the desired number of bins, 'width' for
-		the width of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements
-		(or as close as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if
-		float and 'edges' if ndarray.
-	bins : int, float, array-like, optional
-		Gives the values for the bins, according to bin_type.
-	smooth : float, optional
-		The standard deviation for the Gaussian kernel. Default: 0.0 (No smoothing).
-	c : str, float or list, optional
-		The colours of the contours. If float or list of floats, they must be in the range [0,1], as the colours are
-		taken from the given colour map.
-	cmap : str, optional
-		The colour map to be used.
-	xlim : tuple-like, optional
-		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
-	ylim : tuple-like, optional
-		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
-	clim : list, optional
-		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
-	xinvert : bool, optional
-		If True, inverts the x-axis.
-	yinvert : bool, optional
-		If True, inverts the y-axis.
-	cbar_invert : bool, optional
-		If True, inverts the direction of the colour bar (not the colour map).
-	linestyle or ls : str or array-like, optional.
-		Defines the linestyle of the contours.
-	xlog : bool, optional
-		If True, the scale of the x-axis is logarithmic.
-	ylog : bool, optional
-		If True, the scale of the x-axis is logarithmic.
-	title : str, optional
-		Sets the title of the plot
-	labels : array-like or str, optional
-		Specifies label(s) for the contour(s). If 'str', sets the label for the full set of contours. If an array
-		of strings, sets the labels for each contour. Must be of equal length to number specified by 'percent'.
-	xlabel : str, optional
-		Sets the label of the x-axis.
-	ylabel : str, optional
-		Sets the label of the y-axis.
-	clabel : str, optional
-		Sets the label for the colourbar. If None given, no colourbar will be made.
-	lab_loc : int, optional
-		Defines the position of the legend
-	ax : pyplot.Axes, optional
-		Use the given axes to make the plot, defaults to the current axes.
-	grid : boolean, optional
-		If not given defaults to the value defined in splotch.Params.
-	output : boolean, optional
-		If True, returns the edges and values of the underlying histogram plus the levels of the contours.
-	plot_kw : dict, optional
-		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
-	**kwargs: QuadContourSet properties, optional
-		kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
-		The list of available properties can be found here: 
-		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html
-	
-	Returns
-	-------
-	bin_edges_x : array
-		The bin edges for the x axis.
-	bin_edges_y : array
-		The bin edges for the y axis.
-	n : array
-		The values of the underlying histogram.
-	l : array
-		The levels for the contours.
-	"""
-	
-	from warnings import warn
-	from matplotlib.cm import get_cmap, ScalarMappable
-	from matplotlib.pyplot import gca, sca, contour, legend, Normalize, colorbar
-	from numpy import array, linspace, round, ndarray, ceil
-	from scipy.ndimage.filters import gaussian_filter
-
-	from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer,is_numeric
-	from .defaults import Params
-	#from .axis_func import 
-	
-	# Initialise defaults
-	#if None in (percent,cmap,clim,s,output):
-	if percent is None:
-		percent=Params.sigcont_percent  # Probably should change to 'cont_percent'
-	if cmap is None:
-		cmap=Params.sigcont_cmap # * 'cont_cmap'
-	if clim is None:
-		clim=Params.sigcont_clim  # * 'cont_clim'
-	if linestyle is None:
-		linestyle=Params.sigcont_linestyle # * cont_linestyle or cont_ls
-	if output is None:
-		output=Params.sigcont_output # * cont_output
-
-	# Pull out aliases from **kwargs:
-	if 'ls' in kwargs.keys(): linestyle = kwargs.pop('ls')
-	if 's' in kwargs.keys(): linestyle = kwargs.pop('s')
-	if 'color' in kwargs.keys(): c = kwargs.pop('color')
-
-	# Assign current axis
-	if ax is not None:
-		old_axes=axes_handler(ax)
-	else:
-		ax = gca()
-		old_axes=ax
-
-	if type(percent) not in [list, tuple, ndarray]:
-		percent=[percent]
-	if type(bin_type) not in [list, tuple, ndarray]:
-		bin_type=[bin_type]*2
-	if type(bins) not in [list, tuple, ndarray]:
-		if bins is None:
-			bins=int((len(x))**0.4)
-		elif (is_numeric(bins) == False):
-			raise ValueError(f"Parameter 'bins' must be numeric, got data type '{type(bins)}'.")
-		else:
-			raise ValueError(f"Data type '{type(bins)}' not recognised, must be one of: list, tuple, ndarray.")
-		bins=[bins]*2
-
-	cmap=get_cmap(cmap) # retrieve/parse colourmap as matplotlib object
-	if c is None: # if no color specified, initiate defaults
-		if len(percent)<4: # if <4 lines, get first color of color cycler
-			c = [next(ax._get_lines.prop_cycler)['color']]*len(percent)
-			clabel = None # Cannot plot meaningful colorbar
-		else:
-			c=cmap([p/100.0 for p in percent])
-	elif type(c) in [list, tuple, ndarray]: # list of colors given
-		if (len(c) < len(percent)): # Repeat linestyle until same length as input percent
-			c = c*int(ceil(len(percent)/len(c)))
-			c = c[:len(percent)] # truncate excess entries
-		if (is_numeric(c)): # sample the cmap at a single value
-			c=cmap(c)
-		if any([type(kk) is str for kk in c]) and clabel is not None:
-			clabel = None # cannot plot colorbar if strings given for color
-	else:
-		if (is_numeric(c)): # sample the cmap at a single value
-			c=cmap(c)
-		elif (type(c) is str):
-			clabel = None
-
-		c=[c]*len(percent) # convert to list
-
-	if type(linestyle) not in [list, tuple, ndarray]:
-		linestyle=[linestyle]*len(percent)
-	else:
-		if (len(linestyle) < len(percent)): # Repeat linestyle until same length as input percent
-			linestyle = linestyle*int(ceil(len(percent)/len(linestyle)))
-			linestyle = linestyle[:len(percent)] # truncate excess entries
-		#raise ValueError(f"Length of linestyle ({len(linestyle)}) does not match length of percent ({len(percent)}).")
-	
-	# Validate labels array
-	if (type(labels) in [list, tuple, ndarray]):
-		if (len(labels) != len(percent)):
-			raise ValueError(f"Length of labels ({len(labels)}) does not match length of percent ({len(percent)}).")
-	else:
-		if (type(labels) == bool):
-			labels = [str(round(p,1))+'%' for p in percent] if labels is True else [None]*(len(percent))
-		else:
-			labels = [labels] + [None]*(len(percent)-1) # If only one value given or None, use [<labels>, None, None, None, ...]
-	
-	X,Y,Z=basehist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
-	X=(X[:-1]+X[1:])/2
-	Y=(Y[:-1]+Y[1:])/2
-	CS=[]
-
-	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
-	plot_par.update(kwargs)
-	
-	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
-	plot_par=dict_splicer(plot_par,len(percent),[1]*len(percent))
-	
-	level=[]
-	for i in range(len(percent)):
-		level.append(percent_finder(Z,percent[i]/100))
-		CS.append(contour(X,Y,gaussian_filter(Z.T, sigma=smooth),levels=[level[i]],colors=[c[i],],linestyles=linestyle[i],**plot_par[i]))
-		if not all(l is None for l in labels):
-			CS[i].collections[0].set_label(labels[i])
-
-	if (clabel is not None):
-		sm = ScalarMappable(cmap=cmap, norm=Normalize(vmin=0, vmax=1))
-		sm._A = [] # fake an array of the scalar mappable.
-		#colorbar(sm,width=0.1,height=1,label=clabel)
-		colorbar(sm,label=clabel)
-
-	if not all(l is None for l in labels): # Set legend location if labels != None
-		ax.legend(loc=lab_loc)
-
-	sca(ax) # After producing colorbar, ensure correct current axis
-
-	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
-	if ax is not None:
-		old_axes=axes_handler(old_axes)
-	if output:
-		return(X,Y,Z.T,array(level))
-

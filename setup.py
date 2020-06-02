@@ -14,6 +14,6 @@ setup(name='splotch',
 		include_package_data=True,
 		package_data={'src':['styles/*.style']},
 		#cmdclass={'install':new_install},
-		install_requires=['numpy>=1.10','matplotlib>=2.2.0','scipy>=1.0.0'],
+		install_requires=['numpy>=1.15','matplotlib>=3.0.0','scipy>=1.1.0','sympy>=1.2'],
 		zip_safe=False)
 

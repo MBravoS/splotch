@@ -1,12 +1,18 @@
-#Object containing the default values for SPLOTCH functions
+########################################################################
+########################### SPLOTCH defaults ###########################
+########################################################################
+
+####################################
+# Default values class
+####################################
 class Params:
 	#Contours
 	cont_filled=False
-	sigcont_percent=[68.27,95.45]
-	sigcont_cmap='viridis'
-	sigcont_clim=[0.33,0.67]
-	sigcont_linestyle=['solid','dashed','dotted']
-	sigcont_output=False
+	cont_cmap='viridis'
+	cont_clim=[0.33,0.67]
+	cont_linestyle=['solid','dashed','dotted']
+	contp_percent=[68.27,95.45]
+	contp_output=False
 	#Grid
 	grid=False
 	grid_which='major'
@@ -19,14 +25,3 @@ class Params:
 	hist2D_output=False
 	#Images
 	img_caxis_log=False
-
-class Params0():
-	def __init__(self):
-		self._params = {}
-	def __setitem__(self, key, val):
-		self._params[key] = val
-	def __getitem__(self, key):
-		return self._params[key]
-
-#params = Params0()
-#params['test'] = 'yay!'
