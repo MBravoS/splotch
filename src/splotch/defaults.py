@@ -9,7 +9,6 @@ class Params:
 	#Contours
 	cont_filled=False
 	cont_cmap='viridis'
-	cont_clim=[0.33,0.67]
 	cont_linestyle=['solid','dashed','dotted']
 	contp_percent=[68.27,95.45]
 	contp_output=False

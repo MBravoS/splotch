@@ -82,8 +82,8 @@ def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinver
 		y=linspace(0,1,z.shape[1])
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
@@ -194,26 +194,26 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	# Initialise defaults
 	#if None in (percent,cmap,clim,s,output):
 	if percent is None:
-		percent=Params.sigcont_percent  # Probably should change to 'cont_percent'
+		percent=Params.contp_percent  # Probably should change to 'cont_percent'
 	if cmap is None:
-		cmap=Params.sigcont_cmap # * 'cont_cmap'
+		cmap=Params.cont_cmap
 	if clim is None:
-		clim=Params.sigcont_clim  # * 'cont_clim'
+		clim=[0.33,0.67]
 	if linestyle is None:
-		linestyle=Params.sigcont_linestyle # * cont_linestyle or cont_ls
+		linestyle=Params.cont_linestyle # * cont_linestyle or cont_ls
 	if output is None:
-		output=Params.sigcont_output # * cont_output
+		output=Params.contp_output # * cont_output
 	
 	# Pull out aliases from **kwargs:
-	if 'ls' in kwargs.keys(): linestyle = kwargs.pop('ls')
-	if 's' in kwargs.keys(): linestyle = kwargs.pop('s')
-	if 'color' in kwargs.keys(): c = kwargs.pop('color')
+	if 'ls' in kwargs.keys(): linestyle=kwargs.pop('ls')
+	if 's' in kwargs.keys(): linestyle=kwargs.pop('s')
+	if 'color' in kwargs.keys(): c=kwargs.pop('color')
 	
 	# Assign current axis
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
-		ax = gca()
+		ax=gca()
 		old_axes=ax
 	
 	if type(percent) not in [list, tuple, ndarray]:
@@ -232,31 +232,31 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	cmap=get_cmap(cmap) # retrieve/parse colourmap as matplotlib object
 	if c is None: # if no color specified, initiate defaults
 		if len(percent)<4: # if <4 lines, get first color of color cycler
-			c = [next(ax._get_lines.prop_cycler)['color']]*len(percent)
-			clabel = None # Cannot plot meaningful colorbar
+			c=[next(ax._get_lines.prop_cycler)['color']]*len(percent)
+			clabel=None # Cannot plot meaningful colorbar
 		else:
 			c=cmap([p/100.0 for p in percent])
 	elif type(c) in [list, tuple, ndarray]: # list of colors given
 		if (len(c) < len(percent)): # Repeat linestyle until same length as input percent
-			c = c*int(ceil(len(percent)/len(c)))
-			c = c[:len(percent)] # truncate excess entries
+			c=c*int(ceil(len(percent)/len(c)))
+			c=c[:len(percent)] # truncate excess entries
 		if (is_numeric(c)): # sample the cmap at a single value
 			c=cmap(c)
 		if any([type(kk) is str for kk in c]) and clabel is not None:
-			clabel = None # cannot plot colorbar if strings given for color
+			clabel=None # cannot plot colorbar if strings given for color
 	else:
 		if (is_numeric(c)): # sample the cmap at a single value
 			c=cmap(c)
 		elif (type(c) is str):
-			clabel = None
+			clabel=None
 		c=[c]*len(percent) # convert to list
 	
 	if type(linestyle) not in [list, tuple, ndarray]:
 		linestyle=[linestyle]*len(percent)
 	else:
 		if (len(linestyle) < len(percent)): # Repeat linestyle until same length as input percent
-			linestyle = linestyle*int(ceil(len(percent)/len(linestyle)))
-			linestyle = linestyle[:len(percent)] # truncate excess entries
+			linestyle=linestyle*int(ceil(len(percent)/len(linestyle)))
+			linestyle=linestyle[:len(percent)] # truncate excess entries
 		#raise ValueError(f"Length of linestyle ({len(linestyle)}) does not match length of percent ({len(percent)}).")
 	
 	# Validate labels array
@@ -265,9 +265,9 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 			raise ValueError(f"Length of labels ({len(labels)}) does not match length of percent ({len(percent)}).")
 	else:
 		if (type(labels) == bool):
-			labels = [str(round(p,1))+'%' for p in percent] if labels is True else [None]*(len(percent))
+			labels=[str(round(p,1))+'%' for p in percent] if labels is True else [None]*(len(percent))
 		else:
-			labels = [labels] + [None]*(len(percent)-1) # If only one value given or None, use [<labels>, None, None, None, ...]
+			labels=[labels] + [None]*(len(percent)-1) # If only one value given or None, use [<labels>, None, None, None, ...]
 	
 	X,Y,Z=basehist2D(x,y,c,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
@@ -275,8 +275,8 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 	CS=[]
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
@@ -290,8 +290,8 @@ def contourp(x,y,percent=None,bin_type=None,bins=None,smooth=0.0,c=None,cmap=Non
 			CS[i].collections[0].set_label(labels[i])
 	
 	if (clabel is not None):
-		sm = ScalarMappable(cmap=cmap, norm=Normalize(vmin=0, vmax=1))
-		sm._A = [] # fake an array of the scalar mappable.
+		sm=ScalarMappable(cmap=cmap, norm=Normalize(vmin=0, vmax=1))
+		sm._A=[] # fake an array of the scalar mappable.
 		#colorbar(sm,width=0.1,height=1,label=clabel)
 		colorbar(sm,label=clabel)
 	
@@ -409,7 +409,7 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 		band_kw['alpha']=0.4
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#band_par = {**plot_kw, **kwargs} # For Python > 3.5
+	#band_par={**plot_kw, **kwargs} # For Python > 3.5
 	band_kw.update(kwargs)
 	
 	band_stat=[band_stat_low,band_stat_high]
@@ -525,12 +525,12 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		plabel=[plabel]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	for i in range(L):
 		errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
@@ -625,48 +625,48 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	for i in range(L):
 		# x-axis errors
 		if (shape(xerr[i]) == ()): # single error for all points
-			xerr[i] = full((2,len(x[i])), xerr[i])
+			xerr[i]=full((2,len(x[i])), xerr[i])
 		else:
 			if (len(shape(xerr[i])) == 1):
 				if (shape(xerr[i])[0] == len(x[i])): # single error for each point
-					xerr[i] = array([xerr[i], xerr[i]])
+					xerr[i]=array([xerr[i], xerr[i]])
 				elif (shape(xerr[i])[0] == 2): # separate upper and lower errors for all points
-					xerr[i] = full((len(x[i]), 2), xerr[i]).T
+					xerr[i]=full((len(x[i]), 2), xerr[i]).T
 				else:
 					print('ding') # Raise exception for invalid length of points
 			elif (len(shape(xerr[i])) == 2): # separate upper and lower errors for each point
-				xerr[i] = array(xerr[i])
+				xerr[i]=array(xerr[i])
 				if (shape(xerr[i])[0] != 2 or shape(xerr[i])[1] != len(x[i])):
 					print('dong') # Raise exception for invalid length of points
 		
 		# y-axis errors
 		if (shape(yerr[i]) == ()): # single error for all points
-			yerr[i] = full((2,len(y[i])), yerr[i])
+			yerr[i]=full((2,len(y[i])), yerr[i])
 		else:
 			if (len(shape(yerr[i])) == 1):
 				if (shape(yerr[i])[0] == len(y[i])): # single error for each point
-					yerr[i] = array([yerr[i], yerr[i]])
+					yerr[i]=array([yerr[i], yerr[i]])
 				elif (shape(yerr[i])[0] == 2): # separate upper and lower errors for all points
-					yerr[i] = full((len(y[i]), 2), yerr[i]).T
+					yerr[i]=full((len(y[i]), 2), yerr[i]).T
 				else:
 					print('ding') # Raise exception for invalid length of points
 			elif (len(shape(yerr[i])) == 2): # separate upper and lower errors for each point
-				yerr[i] = array(yerr[i])
+				yerr[i]=array(yerr[i])
 				if (shape(yerr[i])[0] != 2 or shape(yerr[i])[1] != len(y[i])):
 					print('dong') # Raise exception for invalid length of points
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
-	PathColls = []
+	PathColls=[]
 	# Loop over data points; create box/ellipse from errors at each point
 	for i in range(L):
-		errorboxes = []
+		errorboxes=[]
 		for xx, yy, xe, ye in zip(x[i], y[i], xerr[i].T, yerr[i].T):
 			if (boxtype.lower().startswith('rect')):
 				errorboxes.append( Rectangle((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
@@ -676,7 +676,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 				print('dang')
 		
 		# Create and add patch collection with specified colour/alpha
-		pc = PatchCollection(errorboxes, **plot_par[i])
+		pc=PatchCollection(errorboxes, **plot_par[i])
 		ax.add_collection(pc)
 	
 	# for i in range(L):
@@ -783,7 +783,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 		bin_type=[bin_type]*2
 	if type(bins) not in [list,tuple]:
 		if bins is None:
-			bins = max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
+			bins=max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
 		bins=[bins]*2
 	
 	if None in (clog,output):
@@ -801,16 +801,16 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	
 	# Also get counts for number threshold cut
 	if (size([x,y])==0):
-		counts = zeros(shape=shape(Z))
+		counts=zeros(shape=shape(Z))
 	else:
-		_,_,counts = basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
+		_,_,counts=basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
 	
 	# Cut bins which do not meet the number count threshold
-	Z[counts<nmin] = nan
+	Z[counts<nmin]=nan
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	if clog:
 		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
@@ -903,11 +903,11 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 		from .defaults import Params
 		clog=Params.img_caxis_log
 	
-	X, Y = meshgrid(x, y)
+	X, Y=meshgrid(x, y)
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs) 
 	
 	if clog:
@@ -1007,17 +1007,17 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 		plabel=[plabel]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
 	if (clim != None):
 		try:
-			_ = (e for e in clim)
+			_=(e for e in clim)
 			if (len(clim) == 2):
-				plot_par['vmin'] = clim[0]
-				plot_par['vmax'] = clim[1]
+				plot_par['vmin']=clim[0]
+				plot_par['vmax']=clim[1]
 			else:
 				raise TypeError("`clim` must be of iterable type and have two values only.")
 		except (TypeError):
@@ -1026,20 +1026,20 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	if (density == True):
 		if (all([kk is not None for kk in c])):
 			warn("Cannot specify both `c` and `density`, ignoring `c`.")
-		c = [None]*L
+		c=[None]*L
 		for i in range(L):
-			xy = vstack([x[i],y[i]])
-			c[i] = gaussian_kde(xy)(xy) # Calculate the Gaussian kernel density estimate
+			xy=vstack([x[i],y[i]])
+			c[i]=gaussian_kde(xy)(xy) # Calculate the Gaussian kernel density estimate
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each scatter call
 	plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
 	
-	paths = []
+	paths=[]
 	for i in range(L):
-		p = scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
+		p=scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
 		paths.append(p)
 	if clabel is not None:
-		cbar = colorbar()
+		cbar=colorbar()
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
@@ -1119,30 +1119,30 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	from numpy import array, linspace, arange, shape, sqrt, floor, round, degrees, radians, pi
 	
 	if (fig == None):
-		fig = gcf()
+		fig=gcf()
 	
 	# rotate a bit for better orientation
-	trans_rotate = Affine2D().translate(0.0, 0)
+	trans_rotate=Affine2D().translate(0.0, 0)
 	
 	# scale degree to radians
-	trans_scale = Affine2D().scale(pi/180.0, 1.)
-	trans = trans_rotate + trans_scale + PolarAxes.PolarTransform()
+	trans_scale=Affine2D().scale(pi/180.0, 1.)
+	trans=trans_rotate + trans_scale + PolarAxes.PolarTransform()
 	
 	# Get theta ticks
 	#if (thetaticks == 'auto'):
-	thetaticks = arange(*radians(array(thetalim)-rotate),step=radians(thetastep))
-	theta_gridloc = FixedLocator(thetaticks[thetaticks/(2*pi) < 1])
-	theta_tickfmtr = DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)+rotate)):g}" for tck in thetaticks])))
+	thetaticks=arange(*radians(array(thetalim)-rotate),step=radians(thetastep))
+	theta_gridloc=FixedLocator(thetaticks[thetaticks/(2*pi) < 1])
+	theta_tickfmtr=DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)+rotate)):g}" for tck in thetaticks])))
 	
-	#tick_fmtr = DictFormatter(dict(angle_ticks))
-	#tick_fmtr = angle_helper.Formatter()
+	#tick_fmtr=DictFormatter(dict(angle_ticks))
+	#tick_fmtr=angle_helper.Formatter()
 	
 	if (rstep == None):
-		rstep = 0.5
+		rstep=0.5
 	
-	r_gridloc = FixedLocator(arange(rlim[0],rlim[1],step=rstep))
+	r_gridloc=FixedLocator(arange(rlim[0],rlim[1],step=rstep))
 	
-	grid = floating_axes.GridHelperCurveLinear(
+	grid=floating_axes.GridHelperCurveLinear(
 		PolarAxes.PolarTransform(),
 		extremes=(*radians(array(thetalim)-rotate), *rlim),
 		grid_locator1=theta_gridloc,
@@ -1151,12 +1151,12 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 		tick_formatter2=None,
 	)
 	
-	ax = floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
+	ax=floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
 	fig.add_subplot(ax)
 	
 	# tick references
-	thetadir_ref = ['top','right','bottom','left']
-	rdir_ref = ['bottom','left','top','right']
+	thetadir_ref=['top','right','bottom','left']
+	rdir_ref=['bottom','left','top','right']
 	
 	# adjust axes directions
 	ax.axis["left"].set_axis_direction('bottom') # Radius axis (displayed)
@@ -1182,41 +1182,41 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	ax.axis["top"].label.set_text(thetalabel)
 	
 	# create a parasite axes whose transData in RA, cz
-	sector_ax = ax.get_aux_axes(trans)
+	sector_ax=ax.get_aux_axes(trans)
 	
 	# This has a side effect that the patch is drawn twice, and possibly over some other
 	# artists. So, we decrease the zorder a bit to prevent this. 
-	sector_ax.patch = ax.patch  
-	sector_ax.patch.zorder = 0.9
+	sector_ax.patch=ax.patch  
+	sector_ax.patch.zorder=0.9
 	
 	
-	L = shape(theta)[0] if len(shape(theta)) > 1 else 1
-	plot_par = plot_kw.copy()
+	L=shape(theta)[0] if len(shape(theta)) > 1 else 1
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Insert clim as vmin, vmax into **kwargs dictionary, if given.
 	if (clim != None):
 		try:
-			_ = (e for e in clim)
+			_=(e for e in clim)
 			if (len(clim) == 2):
-				plot_par['vmin'] = clim[0]
-				plot_par['vmax'] = clim[1]
+				plot_par['vmin']=clim[0]
+				plot_par['vmax']=clim[1]
 			else:
 				raise TypeError("`clim` must be of iterable type and have two values only.")
 		except (TypeError):
 			raise TypeError("`clim` must be of iterable type and have two values only.")
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	#plot_par = dict_splicer(plot_par,L,[1]*L)
+	#plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	if (L == 1):
-		sctr = sector_ax.scatter(theta-rotate, r, **plot_par)
+		sctr=sector_ax.scatter(theta-rotate, r, **plot_par)
 	else:
 		for ii in range(L):
-			sctr = sector_ax.scatter(theta[ii]-rotate, r[ii],**plot_par[ii])
+			sctr=sector_ax.scatter(theta[ii]-rotate, r[ii],**plot_par[ii])
 	
 	if clabel is not None:
-		cbar = colorbar(sctr)
+		cbar=colorbar(sctr)
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()

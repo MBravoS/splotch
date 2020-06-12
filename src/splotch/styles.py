@@ -22,52 +22,52 @@ def use_style(path):
 	
 	### SPLOTCH specific
 	# Get list of available parameters within the splotch.Params class
-	validParams = [key for key in Params.__dict__.keys() if key[:1] != '_']
+	validParams=[key for key in Params.__dict__.keys() if key[:1] != '_']
 	
 	# find first Splotch line
-	begin = None
+	begin=None
 	with open(path, 'r') as file:
 		for num, line in enumerate(file.readlines()):
 			if ("##### splotch configuration" in line.lower()):
-				begin = num
+				begin=num
 				
-	spltFile = open(path, 'r')
-	allLines = spltFile.readlines()
-	spltLines = allLines[begin:]
-	pltLines = allLines[:begin]
+	spltFile=open(path, 'r')
+	allLines=spltFile.readlines()
+	spltLines=allLines[begin:]
+	pltLines=allLines[:begin]
 	spltFile.close()
 	pltDict ={}
 	
 	for line in spltLines:
 		if (":" in line): # This line calls a parameter
-			par = line.split(":")[0].rstrip()
+			par=line.split(":")[0].rstrip()
 			if par[0] == '#':
 				continue
 			else:
-				val = line.split(":")[-1].lstrip().replace("\n","")
+				val=line.split(":")[-1].lstrip().replace("\n","")
 				
 				# Adjust parameter value for booleans and numbers (i.e. floats/integer)
 				if ',' in val:
-					val = [val_checker(v) for v in val.split(',')]
+					val=[val_checker(v) for v in val.split(',')]
 				else:
-					val = val_checker(val)
+					val=val_checker(val)
 				
 				if (par in validParams): # only edit parameters that exist within Params Class
 					setattr(Params,par,val)
 	
 	for line in pltLines:
 		if (":" in line): # This line calls a parameter
-			par = line.split(":")[0].rstrip().lstrip()
+			par=line.split(":")[0].rstrip().lstrip()
 			if par[0] == '#':
 				continue
 			else:
-				val = line.split('#')[0].split(":")[-1].lstrip().replace("\n","").rstrip()
+				val=line.split('#')[0].split(":")[-1].lstrip().replace("\n","").rstrip()
 				
 				# Adjust parameter value for booleans and numbers (i.e. floats/integer)
 				if ',' in val and "'" not in val:
-					val = [val_checker(v.rstrip()) for v in val.split(',')]
+					val=[val_checker(v.rstrip()) for v in val.split(',')]
 				else:
-					val = val_checker(val.rstrip())
+					val=val_checker(val.rstrip())
 				
 				pltDict[par]=val
 	style.use(pltDict)
@@ -89,7 +89,7 @@ def reset_style():
 	import os
 	import splotch
 	
-	basedir = os.path.dirname(splotch.__file__)
+	basedir=os.path.dirname(splotch.__file__)
 	splotch.use_style("{0}/styles/default.style".format(basedir))
 	
 	return(None)

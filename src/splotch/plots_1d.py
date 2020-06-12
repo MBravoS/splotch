@@ -10,7 +10,7 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	"""Generalised axis lines.
 	
 	This function aims to generalise the usage of axis lines calls (axvline/axhline) together and
-	to allow lines to be specified by a slope/intercept according to the function y = a*x + b.
+	to allow lines to be specified by a slope/intercept according to the function y=a*x + b.
 	
 	Parameters
 	----------
@@ -48,7 +48,7 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
-		ax = gca()
+		ax=gca()
 		old_axes=ax
 	
 	if not (any([is_numeric(var) for var in [x,y,a,b]])): # If nothing has been specified
@@ -59,10 +59,10 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 			try: # Test whether the parameter is iterable
 				temp=(k for k in val)
 			except TypeError: # If not, convert to a list
-				if   (i == 0): x = [x]
-				elif (i == 1): y = [y]
-				elif (i == 2): a = [a]
-				elif (i == 3): b = [b]
+				if   (i == 0): x=[x]
+				elif (i == 1): y=[y]
+				elif (i == 2): a=[a]
+				elif (i == 3): b=[b]
 	
 	if (x is not None and y is not None): # Check whether both x and y were specified
 		raise ValueError("'x' and 'y' cannot be both specified")
@@ -70,29 +70,29 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	if (x is not None): # Check conditions if x specified
 		if (any([a,b])): # Should not specify a or b, if x given.
 			raise ValueError("'{0}' cannot be specified if x specified".format('a' if a else 'b'))
-		L = len(x)
+		L=len(x)
 	
 	if (y is not None): # Check conditions if y specified
 		if (any([a,b])): # Should not specify a or b, if y given.
 			raise ValueError("'{0}' cannot be specified if y specified".format('a' if a else 'b'))
-		L = len(y)
+		L=len(y)
 	
 	if (a is not None):
 		if (b is None): # If no intercept specified
-			b = [0]*len(a) # set b to 0 for all a
+			b=[0]*len(a) # set b to 0 for all a
 		else:
 			if (len(b) == 1):
-				b = [b[0]]*len(a)
+				b=[b[0]]*len(a)
 			elif (len(b) != len(a)):
 				if (len(a) == 1):
-					a = [a[0]]*len(b)
+					a=[a[0]]*len(b)
 				else:
 					raise ValueError(f"Length of 'a' ({len(a)}) and length of 'b' ({len(b)}) must be equal or otherwise 1")
-		L = len(a)
+		L=len(a)
 	elif (b is not None):
 		if (a is None): # If no slope specified
-			a = [1]*len(b) # set a to 1 for all b
-		L = len(b)
+			a=[1]*len(b) # set a to 1 for all b
+		L=len(b)
 	
 	if type(plabel) is not list:
 		plabel=[plabel]*L
@@ -100,28 +100,28 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		raise ValueError("Length of plabel list ({0}) must match the number of lines given ({1}).".format(len(plabel),L))
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
-	lines = [] # Initialising list which contains each line
+	lines=[] # Initialising list which contains each line
 	if (x is not None):
 		for ii, xx in enumerate(x):
-			l = ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
+			l=ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
 			lines.append(l)
 	if (y is not None):
 		for ii, yy in enumerate(y):
-			l = ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
+			l=ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
 			lines.append(l)
 	if (a is not None):
 		for ii, pars in enumerate(zip(a,b)):
-			aa = pars[0]; bb = pars[1]
+			aa=pars[0]; bb=pars[1]
 			
-			xLims = ax.get_xlim()
-			yLims = ax.get_ylim()
+			xLims=ax.get_xlim()
+			yLims=ax.get_ylim()
 			
 			lines += plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=plabel[ii],**plot_par[ii])
 
@@ -210,7 +210,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
-		ax = gca()
+		ax=gca()
 		old_axes=ax
 
 	if type(x) is not list or len(shape(x))==1:
@@ -234,63 +234,63 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 
 
 	if type(xbreak) not in [list,tuple,ndarray]:
-		xbreak = (xbreak, xbreak)
+		xbreak=(xbreak, xbreak)
 	else:
 		if (len(xbreak) != 2):
 			raise ValueError("xbreak must be a single value of a tuple-like list of two elements.")
 	
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	# Get the original axis position
-	pos0 = ax.get_position(original=True)
-	width0, height0 = pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
+	pos0=ax.get_position(original=True)
+	width0, height0=pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
 	
-	lines = [] # Initialising list which contains each line
+	lines=[] # Initialising list which contains each line
 	for i in range(L):
 		# First side plot call
-		l1 = ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
+		l1=ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
 		
 		# Get the axis limits if not already specified
-		xlims = ax.get_xlim() if xlim == None else xlim
-		ylims = ax.get_ylim() if ylim == None else ylim
+		xlims=ax.get_xlim() if xlim == None else xlim
+		ylims=ax.get_ylim() if ylim == None else ylim
 	
 		# Define the positions of the two separated axes
 		if (i == 0):
-			pos1 = Bbox(list(pos0.get_points()))
-			pos1.x1 = pos1.x0 + (pos1.x1-pos1.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
+			pos1=Bbox(list(pos0.get_points()))
+			pos1.x1=pos1.x0 + (pos1.x1-pos1.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
 			
-			pos2 = Bbox(list(pos0.get_points()))
-			pos2.x0 = pos2.x0 + (pos2.x1-pos2.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
+			pos2=Bbox(list(pos0.get_points()))
+			pos2.x0=pos2.x0 + (pos2.x1-pos2.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
 			
 			ax.set_position(pos1) # Resize the first axis
-			ax2 = ax.figure.add_axes(pos2) # Add and duplicate the plotting in the second axis
+			ax2=ax.figure.add_axes(pos2) # Add and duplicate the plotting in the second axis
 			
 			# Set the new axis limits at the break point
 			ax.set_xlim(xlims[0],xbreak[0])
 			ax2.set_xlim(xbreak[1],xlims[1])
 		
 		# Second side plot call
-		l2 = ax2.plot(x[i],y[i],label=None,**plot_par[i])
+		l2=ax2.plot(x[i],y[i],label=None,**plot_par[i])
 
 		lines.append((*l1,*l2)) # Add line as tuple of both axes.
 		
-		width1, height1 = pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
-		width2, height2 = pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
+		width1, height1=pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
+		width2, height2=pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
 		
-		dx1, dy1 = 0.01 * width0/(width0-width1-sep/2), height1*0.025
+		dx1, dy1=0.01 * width0/(width0-width1-sep/2), height1*0.025
 		
-		dash_kw = dict(transform=ax2.transAxes, color='black', linestyle='-', marker='', clip_on=False)
+		dash_kw=dict(transform=ax2.transAxes, color='black', linestyle='-', marker='', clip_on=False)
 		ax2.plot((0 - dx1, 0 + dx1), (0 - dy1, 0 + dy1), **dash_kw)  # bottom-right diagonal
 		ax2.plot((0 - dx1, 0 + dx1), (1 - dy1, 1 + dy1), **dash_kw)  # top-right diagonal
 		
-		dx2, dy2 = 0.01 * width0/(width0-width2-sep/2), height2*0.025
+		dx2, dy2=0.01 * width0/(width0-width2-sep/2), height2*0.025
 		dash_kw.update(transform=ax.transAxes)  # switch to the left axes
 		ax.plot((1 - dx2, 1 + dx2), (0 - dy2, 0 + dy2), **dash_kw)  # bottom-left sep/5iagonal
 		ax.plot((1 - dx2, 1 + dx2), (1 - dy2, 1 + dy2), **dash_kw)  # top-left sep/5iagonal
@@ -423,25 +423,25 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		ax=gca()
 		old_axes=ax
 	
-	isfunc = False
+	isfunc=False
 	if (isinstance(expr, str)):
-		expr = sympify(expr)
+		expr=sympify(expr)
 	elif (callable(expr)):
-		isfunc = True
+		isfunc=True
 	elif (isinstance(expr, Expr)):
 		pass
 	else:
 		raise TypeError(f"`expr` must be of type `str` or sympy.Expr, instead got {type(expr)}.")
 	
 	if (isfunc == False):
-		symbs = expr.free_symbols # Get the symbols in the expression
-		symbkeys = [str(sym) for sym in symbs]
+		symbs=expr.free_symbols # Get the symbols in the expression
+		symbkeys=[str(sym) for sym in symbs]
 		
 		if (var != None): # Validate the independent variable
 			if (var not in symbkeys):
 				raise ValueError(f"Independent variable '{var}' was not found in 'expr'.")
 		else: # Assume independent variable is 'x', otherwise, assume the first symbol.
-			var = 'x' if 'x' in symbkeys or len(symbkeys)==0 else symbkeys[0]
+			var='x' if 'x' in symbkeys or len(symbkeys)==0 else symbkeys[0]
 		
 		# Validate the substitution variable names
 		if (subs != None):
@@ -452,54 +452,54 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 					raise KeyError(f"Substitution variable '{key}' does not exist in 'expr'.")
 	
 	# The lengths of each substitute value list, len=1 if just a single value
-	lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
+	lens=[len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
 	#print(lens)
 	
 	if (permute == True):
-		L = prod(lens)
-		perms = array(meshgrid(*subs.values())).reshape(len(subs),-1)
-		permsubs = {}
+		L=prod(lens)
+		perms=array(meshgrid(*subs.values())).reshape(len(subs),-1)
+		permsubs={}
 		for ii, key in enumerate(list(subs)):
-			permsubs[key] = perms[ii]
-		subsarr = dict_splicer(permsubs,L,[1]*L)
+			permsubs[key]=perms[ii]
+		subsarr=dict_splicer(permsubs,L,[1]*L)
 	else:
-		L = max(lens) if len(lens) > 0 else 1
-		subsarr = dict_splicer(subs,L,[1]*L)
+		L=max(lens) if len(lens) > 0 else 1
+		subsarr=dict_splicer(subs,L,[1]*L)
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	if (bounds == None):
 		if (xlim != None):
-			bounds = xlim
+			bounds=xlim
 		else:
-			bounds = ax.get_xlim()
+			bounds=ax.get_xlim()
 	
 	
-	vararr = logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
+	vararr=logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
 	
-	curves = [None]*L
+	curves=[None]*L
 	for ii in range(L):
 		if (isfunc):
-			curvearr = expr(vararr, **subsarr[ii])
+			curvearr=expr(vararr, **subsarr[ii])
 		else:
-			func = lambdify(var, expr.subs(subsarr[ii]), 'numpy') # returns a numpy-ready function
-			curvearr = func(vararr)
+			func=lambdify(var, expr.subs(subsarr[ii]), 'numpy') # returns a numpy-ready function
+			curvearr=func(vararr)
 		
-		curves[ii] = plot(vararr,curvearr,**plot_par[ii])[0]
+		curves[ii]=plot(vararr,curvearr,**plot_par[ii])[0]
 	
 	# Create the legend object
 	if (label == True):
-		labellist = ['']*L
+		labellist=['']*L
 		for ii in range(L): # Make a label for each of sub values
 			# Create a list of the sub names and their values.
-			substrs = ["{0} = {1}".format(key,subsarr[ii][key]) for jj, key in enumerate(list(subsarr[ii])) if lens[jj]>1]
-			labellist[ii] = "; ".join(substrs) # join substitute strings together
+			substrs=["{0}={1}".format(key,subsarr[ii][key]) for jj, key in enumerate(list(subsarr[ii])) if lens[jj]>1]
+			labellist[ii]="; ".join(substrs) # join substitute strings together
 		
 		ax.legend(handles=curves, labels=labellist, loc=lab_loc)
 	
@@ -509,7 +509,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 						handlelength=rcParams["legend.handlelength"]*L**0.8)
 		else:
 			if (len(label) == L): # number of labels matches number of curves
-				labellist = label
+				labellist=label
 			else:
 				raise ValueError("Length of 'label' list does not match the number of curves defined by 'subs'.")
 			ax.legend(handles=curves, labels=labellist, loc=lab_loc)
@@ -665,8 +665,8 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		hist_type=[hist_type]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	# Check if width is given as a kwarg
 	if 'width' in plot_par.keys():
@@ -675,7 +675,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		if hist_type!='bar':
 			temp=plot_par.pop('width')
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	plot_type={'line':plot,'linefilled':fill_between,'step':step,'stepfilled':step_filler,'bar':bar,'barfilled':bar}
 	hist_centre={'line':True,'linefilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
@@ -806,14 +806,14 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		plabel=[plabel]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-	#plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-	plot_par = plot_kw.copy()
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
-	plot_par = dict_splicer(plot_par,L,[1]*L)
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
-	lines = [] # Initialising list which contains each line
+	lines=[] # Initialising list which contains each line
 	for i in range(L):
 		lines += plot(x[i],y[i],label=plabel[i],**plot_par[i])
 	if any(plabel):
