@@ -1,3 +1,8 @@
+0.5.0.0 (22/06/2020):
+-Removal of legacy function names.
+-Complete re-work of plots_2d.contourp().
+-Improved handling of x-axis values on plots_2d.errorband().
+
 0.4.6.9 (18/06/2020):
 -Fixed bad use of scipy binned_statistics in plots_2d.hist2D()
 
