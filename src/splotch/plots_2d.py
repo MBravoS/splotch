@@ -803,7 +803,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	if (size([x,y])==0):
 		counts=zeros(shape=shape(Z))
 	else:
-		_,_,counts=basehist2D(x,y,c,bin_type,bins,scale,dens,'count',xlog,ylog)
+		_,_,counts = basehist2D(x,y,c,bin_type,bins,None,False,None,xlog,ylog)
 	
 	# Cut bins which do not meet the number count threshold
 	Z[counts<nmin]=nan

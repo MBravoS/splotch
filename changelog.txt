@@ -1,3 +1,6 @@
+0.4.6.9 (18/06/2020):
+-Fixed bad use of scipy binned_statistics in plots_2d.hist2D()
+
 0.4.6.8 (08/04/2020):
 -Fixed issue with nmin in plots_1d.hist().
 -Renamed "smooth" to "line" in plots_1d.hist().
