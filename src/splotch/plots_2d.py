@@ -171,7 +171,7 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
 	"""
 	
 	from warnings import warn
-	from matplotlib import lines, patches
+	from matplotlib import lines, patches, rcParams
 	from matplotlib.cm import get_cmap, ScalarMappable
 	from matplotlib.colors import Normalize
 	from matplotlib.pyplot import gca, sca, contour, contourf, legend, Normalize, colorbar 
@@ -220,7 +220,10 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
 	if not filled and len(percent)<4 and 'colors' not in plot_par.keys(): # if drawing <4 lines with no color specified, get first color of color cycler
 		plot_par['colors']=[next(ax._get_lines.prop_cycler)['color']]*len(percent)
 	if 'colors' in plot_par.keys():
-		plot_par.pop('cmap')
+		if type(plot_par['colors']) is str:
+			plot_par['colors']=[plot_par['colors'] for i in range(len(percent))]
+		if 'cmap' in plot_par.keys():
+			plot_par.pop('cmap')
 	elif max_spacing:
 		if type(plot_par['cmap']) is str:
 			plot_par['cmap']=get_cmap(plot_par['cmap'])
@@ -235,28 +238,26 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
 			raise ValueError(f"Length of labels ({len(plabel)}) does not match length of percent ({len(percent)}).")
 	else:
 		if plabel is None:
-			plabel=[f'{round(p,1)}\%' for p in percent]
+			if rcParams['text.usetex']:
+				plabel=[f'{round(p,1)}\%' for p in percent]
+			else:
+				plabel=[f'{round(p,1)}%' for p in percent]
 	
 	X,Y,Z=basehist2D(x,y,None,bin_type,bins,None,None,None,xlog,ylog)
 	X=(X[:-1]+X[1:])/2
 	Y=(Y[:-1]+Y[1:])/2
 	
 	level=array([percent_finder(Z,p/100) for p in percent])
-	func_dict[filled](X,Y,gaussian_filter(Z.T,sigma=smooth),levels=level,**plot_par)
+	plot_return=func_dict[filled](X,Y,gaussian_filter(Z.T,sigma=smooth),levels=level,**plot_par)
 	
 	if plabel:
-		if 'colors' not in plot_par.keys():
-			temp_ax=gca().get_children()
-			temp_col=[]
-			for i in range(len(percent)):
-				temp_col.append(temp_ax[i].get_facecolor()[-1])
-			plot_par['colors']=temp_col
-		if 'linestyles' not in plot_par.keys():
-			temp_ax=gca().get_children()
-			temp_ls=[]
-			for i in range(len(percent)):
-				temp_ls.append(temp_ax[i].get_linestyle()[-1])
-			plot_par['linestyles']=temp_ls
+		plot_par['colors']=plot_return.colors
+		if type(plot_par['colors']) is str:
+			plot_par['colors']=[plot_par['colors'] for i in range(len(percent))]
+		if type(plot_return.linestyles) is str:
+			plot_par['linestyles']=[plot_return.linestyles for i in range(len(percent))]
+		elif plot_return.linestyles is None:
+			plot_par['linestyles']=['solid' for i in range(len(percent))]
 		if filled:
 			legend([patches.Patch(color=plot_par['colors'][i]) for i in range(len(percent))],plabel,numpoints=1,loc=lab_loc)
 		else:
