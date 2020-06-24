@@ -5,7 +5,7 @@
 ####################################
 # Generalized lines
 ####################################
-def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
+def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Generalised axis lines.
 	
@@ -22,7 +22,7 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 		Slope(s) of diagonal axis line(s), defaults to 1 if not specified when b is given.
 	b : int or list, optional
 		Intercept points(s) of diagonal axis line(s), defaults to 0 if not specified when a is given.
-	plabel : str, optional
+	label : str, optional
 		Sets label(s) for line(s) and plots legend.
 	lab_loc : int, optional
 		Defines the position of the legend. Defaults as lab_loc=0.
@@ -44,7 +44,17 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	
 	from matplotlib.pyplot import plot, legend, gca
 	from .base_func import axes_handler,plot_finalizer,dict_splicer,is_numeric
+	from warnings import warn
 	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label', 'm':'a', 'c':'b'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
+			elif (var=='m'): a = kwargs.pop(var)
+			elif (var=='c'): b = kwargs.pop(var)
+
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
@@ -94,10 +104,10 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 			a=[1]*len(b) # set a to 1 for all b
 		L=len(b)
 	
-	if type(plabel) is not list:
-		plabel=[plabel]*L
-	elif (len(plabel) != L):
-		raise ValueError("Length of plabel list ({0}) must match the number of lines given ({1}).".format(len(plabel),L))
+	if type(label) is not list:
+		label=[label]*L
+	elif (len(label) != L):
+		raise ValueError("Length of label list ({0}) must match the number of lines given ({1}).".format(len(label),L))
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -110,11 +120,11 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 	lines=[] # Initialising list which contains each line
 	if (x is not None):
 		for ii, xx in enumerate(x):
-			l=ax.axvline(x=xx,**plot_par[ii],label=plabel[ii])
+			l=ax.axvline(x=xx,**plot_par[ii],label=label[ii])
 			lines.append(l)
 	if (y is not None):
 		for ii, yy in enumerate(y):
-			l=ax.axhline(y=yy,**plot_par[ii],label=plabel[ii])
+			l=ax.axhline(y=yy,**plot_par[ii],label=label[ii])
 			lines.append(l)
 	if (a is not None):
 		for ii, pars in enumerate(zip(a,b)):
@@ -123,12 +133,12 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 			xLims=ax.get_xlim()
 			yLims=ax.get_ylim()
 			
-			lines += plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=plabel[ii],**plot_par[ii])
+			lines += plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii])
 
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
 			
-	if any(plabel):
+	if any(label):
 		legend(loc=lab_loc)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
@@ -140,7 +150,7 @@ def axline(x=None,y=None,a=None,b=None,plabel=None,lab_loc=0,ax=None,plot_kw={},
 ####################################
 def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 			   xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
-			   xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+			   xlabel=None,ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 
 	"""Broken Axis Plot Function
 	
@@ -178,7 +188,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
+	label : str, optional
 		Sets the legend for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
@@ -205,7 +215,14 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	from numpy import shape, arange, ndarray
 	from matplotlib.pyplot import plot, legend, show, sca, gca
 	from matplotlib.transforms import Bbox
+	from warnings import warn
 	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -222,8 +239,8 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	else:
 		if type(y) is not list or len(shape(y))==1:
 			y=[y]
-	if type(plabel) is not list:
-		plabel=[plabel]*L
+	if type(label) is not list:
+		label=[label]*L
 	
 	# Validate x/ybreak
 	if (xbreak == None):
@@ -255,7 +272,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 	lines=[] # Initialising list which contains each line
 	for i in range(L):
 		# First side plot call
-		l1=ax.plot(x[i],y[i],label=plabel[i],**plot_par[i])
+		l1=ax.plot(x[i],y[i],label=label[i],**plot_par[i])
 		
 		# Get the axis limits if not already specified
 		xlims=ax.get_xlim() if xlim == None else xlim
@@ -312,7 +329,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 					ax2.set_xticks(ax2.get_xticks()[1:]) # Remove duplicate tick on right side
 	sca(ax)
 	
-	if any(plabel):
+	if any(label):
 		ax.legend(loc=lab_loc)
 	
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
@@ -406,6 +423,8 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	"""
 	
+	from .base_func import axes_handler,dict_splicer,plot_finalizer
+
 	from sympy import symbols, sympify, Expr
 	from sympy.utilities.lambdify import lambdify
 	from numpy import linspace, logspace, log10, empty, array, meshgrid, prod
@@ -414,8 +433,14 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	from matplotlib.pyplot import plot, legend, gca
 	from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
 	from matplotlib import rcParams
+	from warnings import warn
 	
-	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -482,7 +507,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	
 	vararr=logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
-	
+
 	curves=[None]*L
 	for ii in range(L):
 		if (isfunc):
@@ -498,9 +523,11 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		labellist=['']*L
 		for ii in range(L): # Make a label for each of sub values
 			# Create a list of the sub names and their values.
-			substrs=["{0}={1}".format(key,subsarr[ii][key]) for jj, key in enumerate(list(subsarr[ii])) if lens[jj]>1]
-			labellist[ii]="; ".join(substrs) # join substitute strings together
-		
+			labellist[ii]="; ".join([f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) # join substitute strings together
+		# else:
+		# 	print([f"{key}={subsarr[0][key]}" for jj, key in enumerate(list(subsarr[0]))])
+		# 	labellist="; ".join([f"{key}={subsarr[0][key]}" for jj, key in enumerate(list(subsarr[0]))]) # join substitute strings together
+
 		ax.legend(handles=curves, labels=labellist, loc=lab_loc)
 	
 	elif (isinstance(label, Iterable)): # A list-like iterable object or string has been given
@@ -530,7 +557,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 ####################################
 def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=None,hist_type=None,v=None,vstat=None,
 			xlim=None,ylim=None,nmin=0,xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
-			plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},output=None,**kwargs):
+			label=None,lab_loc=0,ax=None,grid=None,plot_kw={},output=None,**kwargs):
 	
 	"""1D histogram function.
 	
@@ -592,7 +619,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
+	label : str, optional
 		Sets the label for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
@@ -620,7 +647,15 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	from numpy import array, ndarray, diff, histogram, inf, nan, ones, where
 	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
 	from .base_func import axes_handler,bin_axis,dict_splicer,plot_finalizer,step_filler
+	from warnings import warn
 	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
+
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	if type(data) not in [list, tuple, ndarray] or (len(shape(data)) == 1):
@@ -647,8 +682,8 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		nmin=[nmin]*L
 	if type(vstat) not in [list, tuple]:
 		vstat=[vstat]*L
-	if type(plabel) not in [list, tuple]:
-		plabel=[plabel]*L
+	if type(label) not in [list, tuple]:
+		label=[label]*L
 	
 	#print(data)
 	#print(v)
@@ -719,10 +754,10 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 					temp_ax.relim()
 					temp_ax.autoscale()
 				plot_par[i]['fill']=False
-		plot_type[hist_type[i]](bins_plot,y,label=plabel[i],**plot_par[i])
+		plot_type[hist_type[i]](bins_plot,y,label=label[i],**plot_par[i])
 		bin_edges.append(bins_plot)
 		n_return.append(temp_y)
-	if any(plabel):
+	if any(label):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -734,7 +769,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 # Standard plots
 ####################################
 def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
-			ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+			ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""Base plotting function.
 	
@@ -765,7 +800,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
+	label : str, optional
 		Sets the legend for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
@@ -790,6 +825,14 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	from numpy import shape, arange
 	from matplotlib.pyplot import plot, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	from warnings import warn
+
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -802,8 +845,8 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	else:
 		if type(y) is not list or len(shape(y))==1:
 			y=[y]
-	if type(plabel) is not list:
-		plabel=[plabel]*L
+	if type(label) is not list:
+		label=[label]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -815,8 +858,8 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	
 	lines=[] # Initialising list which contains each line
 	for i in range(L):
-		lines += plot(x[i],y[i],label=plabel[i],**plot_par[i])
-	if any(plabel):
+		lines += plot(x[i],y[i],label=label[i],**plot_par[i])
+	if any(label):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:

@@ -273,9 +273,9 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
 ####################################
 # Errorbands
 ####################################
-def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',band_stat_high='std',line=False,xlim=None,ylim=None,
+def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_high='std',line=False,xlim=None,ylim=None,
 				xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
-				plabel=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
+				label=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
 	
 	"""Errorbar plotting function.
 	
@@ -294,20 +294,14 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 		if ndarray.
 	bins : int, float, array-like or list, optional
 		Gives the values for the bins, according to bin_type.
-	band_stat_low : str, int, float or function, optional
-		Defines how to calculate the lower limit of the error band. When passing a string it must be either one of the options
+	stat_low / shat_high : str, int, float or function, optional
+		Defines how to calculate the lower/upper limits of the error band. When passing a string it must be either one of the options
 		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
 		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
 		interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
 		characteristics required by scipy.stats.binned_statistic().
-	band_stat_high : str, int, float or function, optional
-		Defines how to calculate the upper limit of the error band. When passing a string it must be either one of the options
-		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
-		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
-		interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
-		characteristics required by scipy.stats.binned_statistic().
-	line_stat : str, int, float or function, optional
-		Defines how to calculate the centre of the error band. This centre is used to position the band when either of the band
+	stat_mid : str, int, float or function, optional
+		Defines how to calculate the midpoint reference of the error band. This middle point is used to position the band when either of the band
 		bounds is the standard deviation, or a multiple of that. When passing a string it must be either one of the options
 		for scipy.stats.binned_statistic() When passing an integer or float is interpreted as being the percentile for the limit.
 		When passing a function it must have the input and ouput characteristics required by scipy.stats.binned_statistic().
@@ -331,8 +325,8 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
-		Sets the legend for the plot.
+	label : str, optional
+		Sets the label for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -351,6 +345,8 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 	None
 	"""
 	
+	from splotch.base_func import axes_handler,bin_axis,plot_finalizer
+	
 	import numpy as np
 	from numbers import Number
 	import scipy.stats as stats
@@ -358,10 +354,25 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 	from functools import partial
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
-	from splotch.base_func import axes_handler,bin_axis,plot_finalizer
+	from matplotlib.pyplot import gca
+	from warnings import warn
+
 	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label','band_stat_low':'stat_low','band_stat_high':'stat_high','line_stat':'stat_mid'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
+			if (dep=='band_stat_low'): stat_low = kwargs.pop(dep)
+			if (dep=='band_stat_high'): stat_high = kwargs.pop(dep)
+			if (dep=='line_stat'): stat_mid = kwargs.pop(dep)
+
 	if ax is not None:
 		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
 	if ylog is None:
 		from splotch.defaults import Params
 		ylog=Params.hist1D_yaxis_log
@@ -376,7 +387,7 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 	#band_par={**plot_kw, **kwargs} # For Python > 3.5
 	band_kw.update(kwargs)
 	
-	band_stat=[band_stat_low,band_stat_high]
+	band_stat=[stat_low,stat_high]
 	band_multi=np.ones(2)
 	for i in range(len(band_stat)):
 		if isinstance(band_stat[i],Number):
@@ -385,11 +396,11 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 			band_multi[i]=float(band_stat[i].replace('std',''))
 			band_stat[i]='std'
 	
-	if isinstance(line_stat,Number):
-		line_stat=partial(percentile,q=line_stat)
+	if isinstance(stat_mid,Number):
+		stat_mid=partial(percentile,q=stat_mid)
 	
 	temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
-	temp_y=stats.binned_statistic(temp_x,y,statistic=line_stat,bins=bins_hist)[0]
+	temp_y=stats.binned_statistic(temp_x,y,statistic=stat_mid,bins=bins_hist)[0]
 	if band_stat[0]==band_stat[1]:
 		band_low,band_high=[stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]]*2
 	else:
@@ -401,13 +412,13 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 		band_high=temp_y+band_multi[1]*band_high
 	if ylog:
 		temp_y=np.where(temp_y==0,np.nan,temp_y)
-	x=stats.binned_statistic(temp_x,x,statistic=line_stat,bins=bins_hist)[0]
+	x=stats.binned_statistic(temp_x,x,statistic=stat_mid,bins=bins_hist)[0]
 	y=temp_y
 	
-	plt.fill_between(x,band_low,band_high,**band_kw)
+	plt.fill_between(x,band_low,band_high,label=label,**band_kw)
 	if line:
-		plt.plot(x,y,label=plabel,**line_kw)
-	if plabel is not None:
+		plt.plot(x,y,**line_kw)
+	if label is not None:
 		plt.legend(loc=lab_loc)
 	
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
@@ -418,7 +429,7 @@ def errorband(x,y,bin_type=None,bins=None,line_stat='mean',band_stat_low='std',b
 # Errorbars
 ####################################
 def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
-				title=None,xlabel=None,ylabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+				title=None,xlabel=None,ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""Errorbar plotting function.
 	
@@ -452,8 +463,8 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
-		Sets the legend for the plot.
+	label : str, optional
+		Sets the label for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -471,12 +482,24 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	-------
 	None
 	"""
-	
-	from matplotlib.pyplot import errorbar, legend
+
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
+	from matplotlib.pyplot import errorbar, legend, gca
+	from warnings import warn
+
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
 	if type(x) is not list:
 		x=[x]
 	if type(y) is not list:
@@ -486,8 +509,8 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	if type(yerr) is not list:
 		yerr=[yerr]
 	L=len(x)
-	if type(plabel) is not list:
-		plabel=[plabel]*L
+	if type(label) is not list:
+		label=[label]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -498,8 +521,8 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	for i in range(L):
-		errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
-	if any(plabel):
+		errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=label[i],**plot_par[i])
+	if any(label):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -509,7 +532,7 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 # Errorboxes
 ####################################
 def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
-			title=None,xlabel=None,ylabel=None,plabel=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
+			title=None,xlabel=None,ylabel=None,label=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Errorbox plotting function.
 	
@@ -545,8 +568,8 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		Sets the label of the x-axis.
 	ylabel : str, optional
 		Sets the label of the y-axis.
-	plabel : str, optional
-		Sets the legend for the plot.
+	label : str, optional
+		Sets the label for the plot.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -565,14 +588,27 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	None
 	"""
 	
-	from matplotlib.pyplot import errorbar, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
+	
+	from matplotlib.pyplot import errorbar, legend, gca
 	from numpy import shape, full, array
 	from matplotlib.collections import PatchCollection
 	from matplotlib.patches import Ellipse, Rectangle
+
+	from warnings import warn
+
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
 	if type(x) is not list:
 		x=[x]
 	if type(y) is not list:
@@ -583,8 +619,8 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		yerr=[yerr]
 	
 	L=len(x)
-	if type(plabel) is not list:
-		plabel=[plabel]*L
+	if type(label) is not list:
+		label=[label]*L
 	
 	# Validate format of xerr and yerr
 	for i in range(L):
@@ -598,11 +634,11 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 				elif (shape(xerr[i])[0] == 2): # separate upper and lower errors for all points
 					xerr[i]=full((len(x[i]), 2), xerr[i]).T
 				else:
-					print('ding') # Raise exception for invalid length of points
+					raise ValueError(f"Invalid shape ({shape(xerr[i])}) for 'xerr' array.")
 			elif (len(shape(xerr[i])) == 2): # separate upper and lower errors for each point
 				xerr[i]=array(xerr[i])
 				if (shape(xerr[i])[0] != 2 or shape(xerr[i])[1] != len(x[i])):
-					print('dong') # Raise exception for invalid length of points
+					raise ValueError(f"Invalid shape ({shape(xerr[i])}) for 'xerr' array.")
 		
 		# y-axis errors
 		if (shape(yerr[i]) == ()): # single error for all points
@@ -614,11 +650,11 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 				elif (shape(yerr[i])[0] == 2): # separate upper and lower errors for all points
 					yerr[i]=full((len(y[i]), 2), yerr[i]).T
 				else:
-					print('ding') # Raise exception for invalid length of points
+					raise ValueError(f"Invalid shape ({shape(yerr[i])}) for 'yerr' array.")
 			elif (len(shape(yerr[i])) == 2): # separate upper and lower errors for each point
 				yerr[i]=array(yerr[i])
 				if (shape(yerr[i])[0] != 2 or shape(yerr[i])[1] != len(y[i])):
-					print('dong') # Raise exception for invalid length of points
+					raise ValueError(f"Invalid shape ({shape(yerr[i])}) for 'yerr' array.")
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -630,23 +666,21 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	
 	PathColls=[]
 	# Loop over data points; create box/ellipse from errors at each point
+	boxdict = {'rec':Rectangle,'ell':Ellipse}
 	for i in range(L):
 		errorboxes=[]
-		for xx, yy, xe, ye in zip(x[i], y[i], xerr[i].T, yerr[i].T):
-			if (boxtype.lower().startswith('rect')):
-				errorboxes.append( Rectangle((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
-			elif (boxtype.lower().startswith('ell')):
-				errorboxes.append( Ellipse((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
+		for j, (xx, yy, xe, ye) in enumerate(zip(x[i], y[i], xerr[i].T, yerr[i].T)):
+			if (boxtype.lower()[:3] in ['rec','ell']):
+				errorboxes.append( boxdict[boxtype.lower()[:3]]((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
+				if j == 0: errorboxes[i].set_label(label[i])
 			else:
-				print('dang')
+				raise ValueError(f"boxtype '{boxtype}' not recognised.")
 		
 		# Create and add patch collection with specified colour/alpha
 		pc=PatchCollection(errorboxes, **plot_par[i])
 		ax.add_collection(pc)
 	
-	# for i in range(L):
-	# 	errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=plabel[i],**plot_par[i])
-	if any(plabel):
+	if any(label):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -711,7 +745,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	ylabel : str, optional
 		Sets the label of the y-axis.
 	clabel : str, optional
-		Sets the legend for the colour axis.
+		Setting `clabel` triggers the generation of a colourbar with axis label given by its value.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -731,9 +765,9 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	-------
 	n : array
 		The values of the histogram. Only provided if output is True.
-	bin_edges_x : array
+	x_edges : array
 		The bin edges for the x axis. Only provided if output is True.
-	bin_edges_y : array
+	y_edges : array
 		The bin edges for the y axis. Only provided if output is True.
 	"""
 	
@@ -833,7 +867,7 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 	ylabel : str, optional
 		Sets the label of the y-axis.
 	clabel : str, optional
-		Sets the legend for the colour axis.
+		Setting `clabel` triggers the generation of a colourbar with axis label given by its value.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -892,7 +926,7 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 # Scatter plots
 ####################################
 def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
-			xlabel=None,ylabel=None,clabel=None,plabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+			xlabel=None,ylabel=None,clabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""2D pixel-based image plotting function.
 	
@@ -932,7 +966,9 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	ylabel : str, optional
 		Sets the label of the y-axis.
 	clabel : str, optional
-		Sets the legend for the colour axis.
+		Setting `clabel` triggers the generation of a colourbar with axis label given by its value.
+	label : str, optional
+		Sets the label for the scatter plot.
 	lab_loc : int, optional
 		Defines the position of the legend
 	ax : pyplot.Axes, optional
@@ -958,6 +994,13 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	from scipy.stats import gaussian_kde
 	from warnings import warn
+
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -968,8 +1011,8 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	if type(c) is not list or len(shape(c))==1:
 		c=[c]
 	L=len(x)
-	if type(plabel) is not list:
-		plabel=[plabel]*L
+	if type(label) is not list:
+		label=[label]*L
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -1001,14 +1044,14 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	
 	paths=[]
 	for i in range(L):
-		p=scatter(x[i],y[i],c=c[i],label=plabel[i],**plot_par[i])
+		p=scatter(x[i],y[i],c=c[i],label=label[i],**plot_par[i])
 		paths.append(p)
 	if clabel is not None:
 		cbar=colorbar()
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
-	if any(plabel):
+	if any(label):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
@@ -1019,7 +1062,7 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 ####################################
 # Sector plots
 ####################################
-def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlabel="",thetalabel="",clabel=None,rstep=None,
+def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlabel="",thetalabel="",clabel=None,label=None,rstep=None,
 			thetastep=15.0,rticks='auto',thetaticks='auto',cbar_invert=False,fig=None,plot_kw={},**kwargs):
 	
 	""" Sector Plot function
@@ -1047,7 +1090,9 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	thetalabel : str, optional
 		Sets the label of the theta-axis.
 	clabel : str, optional
-		Sets the legend for the colour axis.
+		Setting `clabel` triggers the generation of a colourbar with axis label given by its value.
+	label : str, optional
+		Sets the label for the scatter plot.
 	rstep : float, optional
 		Sets the step size of r ticks.
 	thetastep : float, optional, default: 15.0
@@ -1175,15 +1220,16 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	#plot_par=dict_splicer(plot_par,L,[1]*L)
 	
 	if (L == 1):
-		sctr=sector_ax.scatter(theta-rotate, r, **plot_par)
+		sctr=sector_ax.scatter(theta-rotate, r, label=label, **plot_par)
 	else:
 		for ii in range(L):
-			sctr=sector_ax.scatter(theta[ii]-rotate, r[ii],**plot_par[ii])
+			sctr=sector_ax.scatter(theta[ii]-rotate, r[ii], label=label[ii],**plot_par[ii])
 	
 	if clabel is not None:
 		cbar=colorbar(sctr)
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
+
 	
 	return sector_ax
