@@ -186,6 +186,8 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	from matplotlib.pyplot import gca
 	from mpl_toolkits.axes_grid1.inset_locator import inset_axes, zoomed_inset_axes
 	from mpl_toolkits.axes_grid1.colorbar import colorbar
+	import matplotlib.ticker as tckr
+
 	
 	# Validate axis input
 	if ax is not None:
@@ -274,8 +276,9 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 						 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
 						 bbox_transform=transform if transform != None else ax.transAxes,
 						 borderpad=0)
-		
+
 		cbar=colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
+		cbar.ax.yaxis.set_major_formatter = tckr.ScalarFormatter()
 		
 		# Orient tick axes correctly
 		if (orientation is 'horizontal'):
@@ -290,6 +293,9 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 			else:
 				cbar.ax.xaxis.set_label_position('top')
 				cbar.ax.xaxis.tick_top()
+
+			cbar.ax.yaxis.set_ticks([], minor=True)
+		
 		else:
 			cbar.ax.set_ylabel(label)
 			
@@ -299,10 +305,14 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 			if (flip == True):
 				cbar.ax.yaxis.set_label_position('left')
 				cbar.ax.yaxis.tick_left()
+
+			cbar.ax.xaxis.set_ticks([], minor=True)
+
 		
 		cbars.append(cbar)
 	
 	return (cbars[0] if len(cbars) == 1 else cbars)
+
 
 def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='rand',labels=None,histlabel=None,
 				fig=None,figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
