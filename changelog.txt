@@ -1,3 +1,7 @@
+0.5.0.2 (25/06/2020):
+-Fixed errorbox() not showing labels in legend.
+-Change 'boxtype' naming to 'box_type' to be consistent with other functions.
+
 0.5.0.1 (24/06/2020):
 -Changed usage of 'plabel' to 'label' to be consistent with matplotlib standards.
 -'plabel' remains in the contourp() function as the percentages label parameter.

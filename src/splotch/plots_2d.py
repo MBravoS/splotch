@@ -531,7 +531,7 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 ####################################
 # Errorboxes
 ####################################
-def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,boxtype='ellipse',
+def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,box_type='ellipse',
 			title=None,xlabel=None,ylabel=None,label=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
 	
 	"""Errorbox plotting function.
@@ -560,7 +560,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		If True, the scale of the x-axis is logarithmic.
 	ylog : bool or list, optional
 		If True, the scale of the x-axis is logarithmic.
-	boxtype : str
+	box_type : str
 		The type of box to plot, patch types include: ellipse | rectangle (Default: ellipse).
 	title : str, optional
 		Sets the title of the plot
@@ -593,16 +593,17 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	from matplotlib.pyplot import errorbar, legend, gca
 	from numpy import shape, full, array
 	from matplotlib.collections import PatchCollection
-	from matplotlib.patches import Ellipse, Rectangle
+	from matplotlib.patches import Ellipse, Rectangle, Patch
 
 	from warnings import warn
 
 	# Handle deprecated variables
-	deprecated = {'plabel':'label'}
+	deprecated = {'plabel':'label','boxtype':'box_type'}
 	for dep in deprecated:
 		if dep in kwargs:
 			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
 			if (dep=='plabel'): label = kwargs.pop(dep)
+			if (dep=='boxtype'): box_type = kwargs.pop(dep)
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -618,6 +619,10 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	if type(yerr) is not list:
 		yerr=[yerr]
 	
+	boxdict = {'rec':Rectangle,'ell':Ellipse}
+	if (box_type.lower()[:3] not in ['rec','ell']):
+		raise ValueError(f"box_type '{box_type}' not recognised.")
+
 	L=len(x)
 	if type(label) is not list:
 		label=[label]*L
@@ -667,21 +672,20 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	PathColls=[]
 	# Loop over data points; create box/ellipse from errors at each point
 	boxdict = {'rec':Rectangle,'ell':Ellipse}
+	boxhandles = []
 	for i in range(L):
 		errorboxes=[]
 		for j, (xx, yy, xe, ye) in enumerate(zip(x[i], y[i], xerr[i].T, yerr[i].T)):
-			if (boxtype.lower()[:3] in ['rec','ell']):
-				errorboxes.append( boxdict[boxtype.lower()[:3]]((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
-				if j == 0: errorboxes[i].set_label(label[i])
-			else:
-				raise ValueError(f"boxtype '{boxtype}' not recognised.")
+			errorboxes.append( boxdict[box_type.lower()[:3]]((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
 		
+
 		# Create and add patch collection with specified colour/alpha
 		pc=PatchCollection(errorboxes, **plot_par[i])
+		boxhandles.append(Patch(**plot_par[i]))
 		ax.add_collection(pc)
 	
 	if any(label):
-		legend(loc=lab_loc)
+		legend(handles=boxhandles,labels=label,loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
