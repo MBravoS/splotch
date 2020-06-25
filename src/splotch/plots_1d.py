@@ -52,8 +52,8 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 		if dep in kwargs:
 			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
 			if (dep=='plabel'): label = kwargs.pop(dep)
-			elif (var=='m'): a = kwargs.pop(var)
-			elif (var=='c'): b = kwargs.pop(var)
+			elif (dep=='m'): a = kwargs.pop(var)
+			elif (dep=='c'): b = kwargs.pop(var)
 
 	if ax is not None:
 		old_axes=axes_handler(ax)

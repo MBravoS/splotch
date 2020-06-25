@@ -1,3 +1,6 @@
+0.5.0.3 (25/06/2020):
+-Fixed bug in axline()
+
 0.5.0.2 (25/06/2020):
 -Fixed errorbox() not showing labels in legend.
 -Change 'boxtype' naming to 'box_type' to be consistent with other functions.
