@@ -15,8 +15,8 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.5.0.6
+*Current version*: 0.5.0.7
 
 *Planned releases*:
-* Addition of ridgeline plots, a.k.a joyplots (0.4.7.0).
-* Addition of legend customisation function (0.4.8.0).
+* Addition of statistics-based equivalents for errorbar and errorbox, rename errorband to statband, add replacement with an error-driven errorband (0.5.1.0). 
+* Addition of legend customisation function (0.5.2.0).

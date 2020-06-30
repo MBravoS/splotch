@@ -1,3 +1,6 @@
+0.5.0.7 (30/06/2020):
+-Fixed bugged deprecation warning in plots_1d.axline()
+
 0.5.0.6 (30/06/2020):
 -Added alpha to plots_2d.contourp() label
 

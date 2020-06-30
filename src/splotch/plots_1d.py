@@ -34,12 +34,12 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
 		antialiasing, etc. A list of available `Line2D` properties can be found here: 
 		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-
+	
 	Returns
 	-------
 	lines
 		A list of Line2D objects representing the plotted data.
-
+	
 	"""
 	
 	from matplotlib.pyplot import plot, legend, gca
@@ -47,14 +47,12 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 	from warnings import warn
 	
 	# Handle deprecated variables
-	deprecated = {'plabel':'label', 'm':'a', 'c':'b'}
+	deprecated = {'plabel':'label'}
 	for dep in deprecated:
 		if dep in kwargs:
 			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
 			if (dep=='plabel'): label = kwargs.pop(dep)
-			elif (dep=='m'): a = kwargs.pop(dep)
-			elif (dep=='c'): b = kwargs.pop(dep)
-
+	
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
@@ -133,8 +131,8 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 			xLims=ax.get_xlim()
 			yLims=ax.get_ylim()
 			
-			lines += plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii])
-
+			lines.append(plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii]))
+			
 			ax.set_xlim(xLims)
 			ax.set_ylim(yLims)
 			
