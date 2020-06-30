@@ -254,14 +254,22 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
 		plot_par['colors']=plot_return.colors
 		if type(plot_par['colors']) is str:
 			plot_par['colors']=[plot_par['colors'] for i in range(len(percent))]
-		if type(plot_return.linestyles) is str:
+		plot_par['linestyles']=plot_return.linestyles
+		if type(plot_par['linestyles']) is str:
 			plot_par['linestyles']=[plot_return.linestyles for i in range(len(percent))]
-		elif plot_return.linestyles is None:
+		elif plot_par['linestyles'] is None:
 			plot_par['linestyles']=['solid' for i in range(len(percent))]
+		plot_par['alpha']=plot_return.alpha
+		if type(plot_par['alpha']) is float:
+			plot_par['alpha']=[plot_return.alpha for i in range(len(percent))]
+		elif plot_par['alpha'] is None:
+			plot_par['alpha']=[1.0 for i in range(len(percent))]
 		if filled:
-			legend([patches.Patch(color=plot_par['colors'][i]) for i in range(len(percent))],plabel,numpoints=1,loc=lab_loc)
+			legend([patches.Patch(color=plot_par['colors'][i],alpha=plot_par['alpha'][i])for i in range(len(percent))],
+					plabel,numpoints=1,loc=lab_loc)
 		else:
-			legend([lines.Line2D([0,1],[0,1],color=plot_par['colors'][i],linestyle=plot_par['linestyles'][i]) for i in range(len(percent))],
+			legend([lines.Line2D([0,1],[0,1],color=plot_par['colors'][i],linestyle=plot_par['linestyles'][i],
+									alpha=plot_par['alpha'][i]) for i in range(len(percent))],
 					plabel,numpoints=1,loc=lab_loc)
 	
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
