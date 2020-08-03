@@ -518,7 +518,7 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		yerr=[yerr]
 	L=len(x)
 	if type(label) is not list:
-		label=[label]*L
+		label=[label for i in range(L)]
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -633,7 +633,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 
 	L=len(x)
 	if type(label) is not list:
-		label=[label]*L
+		label=[label for i in range(L)]
 	
 	# Validate format of xerr and yerr
 	for i in range(L):
@@ -824,11 +824,8 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	plot_par=plot_kw.copy()
 	plot_par.update(kwargs)
 	if clog:
-		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
+		pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=False),**plot_par)
 	else:
-		### (RC): Removed these lines as they caused errors when x=[] or y=[]
-		# if cstat is None: 
-		# 	Z[counts==0]=nan
 		pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
 	if clabel is not None:
 		cbar=colorbar()
@@ -1001,7 +998,7 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 		A list of PathCollection objects representing the plotted data.
 	"""
 	
-	from numpy import shape, vstack
+	from numpy import array, dtype, shape, vstack
 	from matplotlib.pyplot import scatter, colorbar, legend
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	from scipy.stats import gaussian_kde
@@ -1016,15 +1013,17 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(x) is not list or len(shape(x))==1:
+	if type(x) is not list or (len(shape(x))==1 and array(x).dtype is not dtype('O')):
 		x=[x]
-	if type(y) is not list or len(shape(y))==1:
+	if type(y) is not list or (len(shape(y))==1 and array(y).dtype is not dtype('O')):
 		y=[y]
-	if type(c) is not list or len(shape(c))==1:
-		c=[c]
 	L=len(x)
+	if type(c) is not list or (len(shape(c))==1 and array(c).dtype is not dtype('O')):
+		c=[c]
+		if type(c[0]) is str or c[0] is None:
+			c=[c[0] for i in range(L)]
 	if type(label) is not list:
-		label=[label]*L
+		label=[label for i in range(L)]
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5

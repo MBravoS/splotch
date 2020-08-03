@@ -103,7 +103,7 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 		L=len(b)
 	
 	if type(label) is not list:
-		label=[label]*L
+		label=[label for i in range(L)]
 	elif (len(label) != L):
 		raise ValueError("Length of label list ({0}) must match the number of lines given ({1}).".format(len(label),L))
 	
@@ -238,7 +238,7 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 		if type(y) is not list or len(shape(y))==1:
 			y=[y]
 	if type(label) is not list:
-		label=[label]*L
+		label=[label for i in range(L)]
 	
 	# Validate x/ybreak
 	if (xbreak == None):
@@ -421,8 +421,8 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	"""
 	
-	from .base_func import axes_handler,dict_splicer,plot_finalizer
-
+	from .base_func import axes_handler,dict_splicer,plot_finalizer,simpler_dict_splicer
+	
 	from sympy import symbols, sympify, Expr
 	from sympy.utilities.lambdify import lambdify
 	from numpy import linspace, logspace, log10, empty, array, meshgrid, prod
@@ -476,7 +476,6 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 	
 	# The lengths of each substitute value list, len=1 if just a single value
 	lens=[len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
-	#print(lens)
 	
 	if (permute == True):
 		L=prod(lens)
@@ -484,10 +483,10 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		permsubs={}
 		for ii, key in enumerate(list(subs)):
 			permsubs[key]=perms[ii]
-		subsarr=dict_splicer(permsubs,L,[1]*L)
+		subsarr=simpler_dict_splicer(permsubs,L,[1]*L)
 	else:
 		L=max(lens) if len(lens) > 0 else 1
-		subsarr=dict_splicer(subs,L,[1]*L)
+		subsarr=simpler_dict_splicer(subs,L,[1]*L)
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -503,9 +502,8 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		else:
 			bounds=ax.get_xlim()
 	
-	
 	vararr=logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
-
+	
 	curves=[None]*L
 	for ii in range(L):
 		if (isfunc):
@@ -513,7 +511,6 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		else:
 			func=lambdify(var, expr.subs(subsarr[ii]), 'numpy') # returns a numpy-ready function
 			curvearr=func(vararr)
-		
 		curves[ii]=plot(vararr,curvearr,**plot_par[ii])[0]
 	
 	# Create the legend object
@@ -525,7 +522,7 @@ def curve(expr, var=None, subs={}, permute=False, bounds=None, num=101, xlim=Non
 		# else:
 		# 	print([f"{key}={subsarr[0][key]}" for jj, key in enumerate(list(subsarr[0]))])
 		# 	labellist="; ".join([f"{key}={subsarr[0][key]}" for jj, key in enumerate(list(subsarr[0]))]) # join substitute strings together
-
+		
 		ax.legend(handles=curves, labels=labellist, loc=lab_loc)
 	
 	elif (isinstance(label, Iterable)): # A list-like iterable object or string has been given
@@ -640,9 +637,9 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		Only provided if output is True.
 	"""
 	
-	from numpy import cumsum as np_cumsum, max as np_max, sum as np_sum, shape
+	from numpy import cumsum as np_cumsum, sum as np_sum, shape
 	from scipy.stats import binned_statistic
-	from numpy import array, ndarray, diff, histogram, inf, nan, ones, where
+	from numpy import array, ndarray, diff, dtype, histogram, inf, nan, nanmax, nanmean, nanstd, ones, where
 	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
 	from .base_func import axes_handler,bin_axis,dict_splicer,plot_finalizer,step_filler
 	from warnings import warn
@@ -656,7 +653,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(data) not in [list, tuple, ndarray] or (len(shape(data)) == 1):
+	if type(data) not in [list, tuple, ndarray] or (len(shape(data)) == 1 and array(data).dtype is not dtype('O')):
 		data=[data]
 	L=len(data)
 	if type(bin_type) not in [list, tuple]:
@@ -681,10 +678,9 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	if type(vstat) not in [list, tuple]:
 		vstat=[vstat]*L
 	if type(label) not in [list, tuple]:
-		label=[label]*L
-	
-	#print(data)
-	#print(v)
+		label=[label for i in range(L)]
+	if type(xlim) in [int,float]:
+		xlim=[nanmean(data)-xlim*nanstd(data),nanmean(data)+xlim*nanstd(data)]
 	
 	if None in [ylog,hist_type,output]:
 		from .defaults import Params
@@ -726,7 +722,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		if cumul[i]:
 			temp_y=np_cumsum(temp_y)
 			if dens[i]:
-				temp_y=temp_y.astype('float')/np_max(temp_y)
+				temp_y=temp_y.astype('float')/nanmax(temp_y)
 		if scale[i]:
 			if dens[i]:
 				temp_y*=len(data[i])/scale[i]
@@ -737,7 +733,11 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		temp_y=where(n_check,temp_y,nan)
 		y=temp_y
 		if hist_type[i]=='step':
-			y=array([y[0]]+[j for j in y])
+			if ylog:
+				y=array([y[0]]+[j for j in y])
+			else:
+				bins_plot=array([bins_plot[0]]+[b for b in bins_plot]+[bins_plot[-1]])
+				y=array([0,y[0]]+[j for j in y]+[0])
 		if 'bar' in hist_type[i]:
 			#prop_cycle=rcParams['axes.prop_cycle']
 			#barcolor=prop_cycle.by_key()['color']
@@ -760,6 +760,10 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+	if len(n_return)==1:
+		n_return=n_return[0]
+	if len(bin_edges)==1:
+		bin_edges=bin_edges[0]
 	if output:
 		return(n_return,bin_edges)
 
@@ -844,7 +848,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 		if type(y) is not list or len(shape(y))==1:
 			y=[y]
 	if type(label) is not list:
-		label=[label]*L
+		label=[label for i in range(L)]
 	
 	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
 	#plot_par={**plot_kw, **kwargs} # For Python > 3.5

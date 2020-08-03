@@ -129,7 +129,6 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 	def N(d,b):
 		if (size(d)==0): # If no data given.
 			return linspace(0.0,1.0,num=b+1)
-
 		if nanmin(d)==nanmax(d):
 			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b+1)
 		else:
@@ -140,7 +139,6 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 		from math import ceil
 		if (size(d)==0): # If no data given.
 			return linspace(0,1.0,num=ceil(1.0/b))
-
 		if nanmin(d)==nanmax(d):
 			h=array([nanmin(d)-b/2,nanmax(d)+b/2])
 		else:
@@ -152,9 +150,12 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
 		return(b)
 	
 	def Q(d,b):
+		if type(b) is not int:
+			raise TypeError('bins must be integer when bin_type="equal"')
+		if len(d)<b:
+			raise IndexError('the number of bins must be smaller than the length of the data when bin_type="equal"')
 		if (size(d)==0): # If no data given.
 			return linspace(0.0,1.0,num=b+1)
-
 		if nanmin(d)==nanmax(d):
 			h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b+1)
 		else:
@@ -290,6 +291,45 @@ def percent_finder(data,p):
 	except ValueError:
 		min_value=np_min(data_sorted)
 	return(min_value)
+	
+####################################
+# Simpler version for curve params
+####################################
+def simpler_dict_splicer(plot_dict,Ld,Lx):
+	"""Simpler dictionary constructor specifically for plots_1d.curve() plotting
+	
+	Base-level function used to construct a list of dictionaries for the characters in the expressions
+	to be replaced with numerical values in plots_1d.curve().
+	
+	Parameters
+	----------
+	plot_dict : dict
+		Contains the parameters to be passed to the underlying plotting function.
+	Ld : int
+		Number of plots to be made.
+	Lx : list
+		Contains the lenght of the data array of each plot to be made.
+	
+	Returns
+	-------
+	dict_list : list
+		List of dictionaries, one for each plot to be made.
+	"""
+	from numbers import Number
+	
+	dict_list=[]
+	dict_keys=plot_dict.keys()
+	for i in range(Ld):
+		temp_dict={}
+		for k in dict_keys:
+			try:
+				temp=(i for i in plot_dict[k])
+			except TypeError:
+				temp_dict[k]=plot_dict[k]
+			else:
+				temp_dict[k]=plot_dict[k][i]
+		dict_list.append(temp_dict)
+	return(dict_list)
 
 ####################################
 # Set labels, limits and more
