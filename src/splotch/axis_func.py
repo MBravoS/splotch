@@ -12,6 +12,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 		Valid arguments can be one or many of the following:
 			* 'x'|'xlabel'	 : x-axis label 
 			* 'y'|'ylabel'	 : y-axis label 
+			* 'k'|'tick'	 : ticks
 			* 't'|'title'	 : Title
 			* 's'|'suptitle' : Sup. title
 			* 'l'|'legend'	 : Legend text
@@ -52,11 +53,19 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	
 	try: # check if iterable
 		_=(i for i in which)
-		if (type(which) == str):
-			which=[which]
+		if (isinstance(which, str)): # If string instance
+			if which in whichRef[9:]: # Set to a single-item list if one of the long references
+				which=[which]
+			else: # Else, check this is not a combination of shortened references i.e., 'xyk'
+				# Check condition: All of the characters are recognised letters and there are no duplicates
+				if (all(w in whichRef[:9] for w in list(which)) and len(which) <= len(set(which))):
+					which = list(which) # set to a list of each of the letters
+				else:
+					which = [which]
+				
 	except (TypeError):
 		which=[which]
-	
+
 	for w in which:
 		try:
 			wInd=whichRef.index(w)
@@ -66,7 +75,7 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 		except (ValueError):
 			if (type(w) != Text):
 				raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w,', '.join(whichRef)))
-			
+				
 	
 	L=len(which)
 	
@@ -93,7 +102,8 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 			elif (lab in ['k','ticks']):
 				texts=append(a.get_yticklabels(), a.get_xticklabels())
 			elif (lab in ['l','legend']):
-				texts=a.legend().get_texts() # Get list of text objects in legend
+				lgnd = a.get_legend()
+				if (lgnd != None): texts = lgnd.get_texts() # Get list of text objects in legend (if it exists)
 			elif (lab in ['c','colorbar']):
 				# Get the axis with the largest ratio between width or height
 				caxInd=argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
@@ -106,8 +116,11 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 			elif (type(lab) == Text):
 				texts=[lab]
 			elif (lab in ['a','all']):
-				texts=[a.xaxis.label,a.yaxis.label,a.title,a.legend().get_texts()]
-				
+				texts=[a.xaxis.label,a.yaxis.label,a.title,*a.get_xticklabels(),*a.get_yticklabels()]
+
+				lgnd = a.get_legend()
+				if (lgnd != None): texts = texts + lgnd.get_texts()
+
 				caxInd=argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
 				if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
 					texts.append(a.figure.get_axes()[caxInd].yaxis.label)
@@ -115,6 +128,10 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 					texts.append(a.figure.get_axes()[caxInd].xaxis.label)
 				
 				texts=texts + [child for child in a.get_children()[:-4] if type(child) == Text]
+
+				print(type(texts))
+				print(texts)
+
 			
 			for t in texts: # Actually apply the font changes
 				t.set(**textpar[ii])

@@ -15,7 +15,7 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.5.1.0
+*Current version*: 0.5.1.1
 
 *Planned releases*:
 * Addition of statistics-based equivalents for errorbar and errorbox, rename errorband to statband, add replacement with an error-driven errorband (0.5.1.0). 

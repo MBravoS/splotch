@@ -1,3 +1,7 @@
+0.5.1.1 (04/08/2020):
+-Fixed bug in adjust_text() with retrieving legend text
+-Made it possible to specify several shorthand text references as a single string (e.g. ['x','y','k'] --> 'xyk')
+
 0.5.1.0 (03/08/2020):
 -Implemented solutions for issues #11, #12, #31, #37, #40, #48 and #52
 -Cleaned up some commented-out lines used for de-bugging at some point
