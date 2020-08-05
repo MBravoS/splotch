@@ -18,5 +18,5 @@ The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io
 *Current version*: 0.5.1.1
 
 *Planned releases*:
-* Addition of statistics-based equivalents for errorbar and errorbox, rename errorband to statband, add replacement with an error-driven errorband (0.5.1.0). 
-* Addition of legend customisation function (0.5.2.0).
+* Addition of statistics-based equivalents for errorbar and errorbox, rename errorband to statband, add replacement with an error-driven errorband (0.5.2.0). 
+* Addition of legend customisation function (0.5.3.0).
