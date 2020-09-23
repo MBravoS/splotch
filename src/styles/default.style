@@ -75,7 +75,7 @@
 #lines.markersize:      6           # marker size, in points
 #lines.dash_joinstyle:  round       # {miter, round, bevel}
 #lines.dash_capstyle:   butt        # {butt, round, projecting}
-#lines.solid_joinstyle: round       # {miter, round, bevel}
+#lines.solid_joinstyle: round       # {miter, round, bevel}gr
 #lines.solid_capstyle:  projecting  # {butt, round, projecting}
 #lines.antialiased: True            # render lines in antialiased (no jaggies)
 
@@ -719,33 +719,24 @@
 ## ***************************************************************************
 ## * CONTOUR PLOTS                                                           *
 ## ***************************************************************************
-cont_filled       : False
-sigcont_percent   : 68.27,95.45
-sigcont_cmap      : viridis
-sigcont_clim      : 0.33,0.67
-sigcont_linestyle : solid,dashed,dotted
-sigcont_output    : False
-
-
-## ***************************************************************************
-## * GRIDS                                                                   *
-## ***************************************************************************
-grid              : False
-grid_which        : major
-grid_axis         : both
+#cont_filled:    False
+#cont_cmap:      viridis
+#cont_linestyle: 'solid','dashed','dotted'
+#contp_percent:  68.27,95.45
+#contp_output:   False
 
 
 ## ***************************************************************************
 ## * HISTOGRAM PLOTS                                                         *
 ## ***************************************************************************
-hist1D_output     : False
-hist1D_histtype   : step
-hist1D_yaxis_log  : False
-hist2D_caxis_log  : False
-hist2D_output     : False
+#hist1D_output:    False
+#hist1D_histtype:  step
+#hist1D_yaxis_log: False
+#hist2D_output:    False
+#hist2D_caxis_log: False
 
 
 ## ***************************************************************************
 ## * IMAGES                                                                  *
 ## ***************************************************************************
-img_caxis_log     : False
+#img_caxis_log: False

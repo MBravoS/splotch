@@ -699,6 +699,152 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		old_axes=axes_handler(old_axes)
 
 ####################################
+# Hexagonal 2D histogram
+####################################
+def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
+			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
+			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
+	
+	"""2D histogram function.
+	
+	Parameters
+	----------
+	x : array-like
+		Position of data points in the x axis.
+	y : array-like
+		Position of data points in the y axis.
+	bins : int or list, optional
+		Gives the number of bins
+	binlim : array-like, optional
+		Defines the limits for the bins. It must have one dimension and contain four elements,
+		with the expected order being (left, right, bottom, top).
+	dens : bool or list, optional
+		If false the histogram returns raw counts.
+	scale : float or list, optional
+		Scaling of the data counts.
+	c : array-like, optional
+		If a valid argument is given in cstat, defines the value used for the binned statistics.
+	cstat : str or function, optional
+		Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
+		('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or a function that takes a 1D array and
+		outputs an integer or float.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	clim : list, optional
+		Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).
+	nmin : int, optional (default: 0)
+		The minimum number of points required in a bin in order to be plotted.
+	xinvert : bool, optional
+		If True, inverts the x-axis.
+	yinvert : bool, optional
+		If True, inverts the y-axis.
+	cbar_invert : bool, optional
+		If True, inverts the direction of the colour bar (not the colour map).
+	xlog : bool, optional
+		If True, the scale of the x-axis is logarithmic.
+	ylog : bool, optional
+		If True, the scale of the x-axis is logarithmic.
+	clog : bool, optional
+		If True, the colour map is changed from linear to logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	clabel : str, optional
+		Setting `clabel` triggers the generation of a colourbar with axis label given by its value.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	output : boolean, optional
+		If True, returns the edges and values of the histogram.
+	plot_kw : dict, optional
+		Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
+		Parameters will be overwritten if also given implicitly as a **kwarg.
+	**kwargs : pcolormesh properties, optional
+		kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
+		https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html
+	
+	Returns
+	-------
+	n : array
+		The values of the histogram. Only provided if output is True.
+	x_edges : array
+		The bin edges for the x axis. Only provided if output is True.
+	y_edges : array
+		The bin edges for the y axis. Only provided if output is True.
+	"""
+	
+	from numpy import nan, nanmin, nanmax, nanmedian, nanmax, nanstd, size, zeros, shape
+	from matplotlib.colors import LogNorm
+	from matplotlib.pyplot import hexbin, colorbar
+	from .base_func import axes_handler,plot_finalizer
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	if type(bins) not in [list,tuple]:
+		if bins is None:
+			bins=max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
+		bins=[bins,int(bins/(3**0.5))]
+	
+	if clog is None:
+		from .defaults import Params
+		clog=Params.hist2D_caxis_log
+	
+	if size([x,y])==0: # Zero-sized arrays given
+		if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
+		if (cstat != None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
+	plot_par.update(kwargs)
+	if binlim:
+		plot_par['extent']=binlim
+	#plot_par[]=dens
+	#plot_par[]=scale
+	if c is not None:
+		plot_par['C']=c
+	if cstat:
+		cstat_func={'min':nanmin,'mean':nanmax,'median':nanmedian,'max':nanmax,'std':nanstd}
+		if cstat in cstat_func.keys():
+			plot_par['reduce_C_function']=cstat_func[cstat]
+		else:
+			plot_par['reduce_C_function']=cstat
+	if clim:
+		plot_par['vmin']=clim[0]
+		plot_par['vmax']=clim[1]
+	if nmin:
+		plot_par['mincnt']=nmin
+	if xlog:
+		plot_par['xscale']='log'
+	if ylog:
+		plot_par['yscale']='log'
+	if clog:
+		plot_par['bins']='log'
+		if 'mincnt' not in plot_par.keys():
+			plot_par['mincnt']=1
+	
+	hist_return=hexbin(x,y,gridsize=bins,**plot_par)
+	
+	if clabel is not None:
+		cbar=colorbar()
+		cbar.set_label(clabel)
+		if cbar_invert:
+			cbar.ax.invert_yaxis()
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+	if output:
+		return(hist_return.get_array(),hist_return.get_offsets())
+
+####################################
 # 2D histogram and binned statistics
 ####################################
 def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 

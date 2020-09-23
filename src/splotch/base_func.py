@@ -232,6 +232,15 @@ def dict_splicer(plot_dict,Ld,Lx):
 	return(dict_list)
 
 ####################################
+# Density/scaled counts for hexbin
+####################################
+def hexarea(value,norm):
+	return(value/norm)
+
+def hexscaled(value,scale):
+	return(1.0*value/scale)
+
+####################################
 # General check for numeric values
 ####################################
 def is_numeric(array):
@@ -370,6 +379,7 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	None
 	"""
 	from .defaults import Params
+	from matplotlib import rcParams
 	from matplotlib.pyplot import gca,grid,xscale,yscale
 	from matplotlib.pyplot import title as plt_title, xlabel as plt_xlabel, xlim as plt_xlim, ylabel as plt_ylabel, ylim as plt_ylim
 	
@@ -397,9 +407,8 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	if yinvert:
 		if not gca().yaxis_inverted():
 			gca().invert_yaxis()
-	if grid_control is None:
-		grid_control=Params.grid
-	grid(b=grid_control,which=Params.grid_which,axis=Params.grid_axis)
+	if grid_control and not rcParams['axes.grid']:
+		grid(b=grid_control,which=rcParams['axes.grid_which'],axis=rcParams['axes.grid.axis'])
 
 ####################################
 # Modified fill_between for hist

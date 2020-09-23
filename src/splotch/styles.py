@@ -28,7 +28,7 @@ def use_style(path):
 	begin=None
 	with open(path, 'r') as file:
 		for num, line in enumerate(file.readlines()):
-			if ("##### splotch configuration" in line.lower()):
+			if ("#### splotch configuration" in line.lower()):
 				begin=num
 				
 	spltFile=open(path, 'r')
