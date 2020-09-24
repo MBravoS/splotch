@@ -701,7 +701,8 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 ####################################
 # Hexagonal 2D histogram
 ####################################
-def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
+def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
+			c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
 			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
 			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
 	
@@ -718,10 +719,6 @@ def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,c=None,cstat=None,xlim
 	binlim : array-like, optional
 		Defines the limits for the bins. It must have one dimension and contain four elements,
 		with the expected order being (left, right, bottom, top).
-	dens : bool or list, optional
-		If false the histogram returns raw counts.
-	scale : float or list, optional
-		Scaling of the data counts.
 	c : array-like, optional
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	cstat : str or function, optional
@@ -780,6 +777,10 @@ def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,c=None,cstat=None,xlim
 	y_edges : array
 		The bin edges for the y axis. Only provided if output is True.
 	"""
+	#dens : bool or list, optional
+	#	If false the histogram returns raw counts.
+	#scale : float or list, optional
+	#	Scaling of the data counts.
 	
 	from numpy import nan, nanmin, nanmax, nanmedian, nanmax, nanstd, size, zeros, shape
 	from matplotlib.colors import LogNorm

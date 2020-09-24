@@ -1,3 +1,7 @@
+0.5.2.0 (24/09/2020):
+-Updated reference style sheet to that from  matplotlib 3.3.2.
+-Added a first working version of hexbin.
+
 0.5.1.1 (04/08/2020):
 -Fixed bug in adjust_text() with retrieving legend text
 -Made it possible to specify several shorthand text references as a single string (e.g. ['x','y','k'] --> 'xyk')

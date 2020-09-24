@@ -234,11 +234,11 @@ def dict_splicer(plot_dict,Ld,Lx):
 ####################################
 # Density/scaled counts for hexbin
 ####################################
-def hexarea(value,norm):
-	return(value/norm)
-
-def hexscaled(value,scale):
-	return(1.0*value/scale)
+#def hexarea(value,norm):
+#	return(value/norm)
+#
+#def hexscaled(value,scale):
+#	return(1.0*value/scale)
 
 ####################################
 # General check for numeric values
