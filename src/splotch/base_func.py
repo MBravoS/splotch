@@ -407,7 +407,6 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	if yinvert:
 		if not gca().yaxis_inverted():
 			gca().invert_yaxis()
-	print(grid_control,rcParams['axes.grid'])
 	if grid_control is not None:
 		grid(b=grid_control,which=rcParams['axes.grid.which'],axis=rcParams['axes.grid.axis'])
 	else:
