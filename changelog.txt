@@ -1,3 +1,6 @@
+0.5.2.1 (25/09/2020):
+-Fixed issue with grid behaviour
+
 0.5.2.0 (24/09/2020):
 -Updated reference style sheet to that from  matplotlib 3.3.2.
 -Added a first working version of hexbin.

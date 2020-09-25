@@ -407,8 +407,11 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
 	if yinvert:
 		if not gca().yaxis_inverted():
 			gca().invert_yaxis()
-	if grid_control and not rcParams['axes.grid']:
-		grid(b=grid_control,which=rcParams['axes.grid_which'],axis=rcParams['axes.grid.axis'])
+	print(grid_control,rcParams['axes.grid'])
+	if grid_control is not None:
+		grid(b=grid_control,which=rcParams['axes.grid.which'],axis=rcParams['axes.grid.axis'])
+	else:
+		grid(b=rcParams['axes.grid'],which=rcParams['axes.grid.which'],axis=rcParams['axes.grid.axis'])
 
 ####################################
 # Modified fill_between for hist
