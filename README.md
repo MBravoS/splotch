@@ -18,5 +18,9 @@ The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io
 *Current version*: 0.5.2.2
 
 *Planned releases*:
-* Addition of statistics-based equivalents for errorbar and errorbox, rename errorband to statband, add replacement with an error-driven errorband (0.5.3.0). 
-* Addition of legend customisation function (0.5.4.0).
+* Completion of hexbin to the same functionality offered by hist2D (0.5.3.0).
+* Addition of statistics-based equivalents for errorbar and errorbox, rename errorband to statband, add replacement with an error-driven errorband (0.5.4.0).
+* Addition on unique colour maps (0.6.0.0)
+* Addition of legend customisation function (0.7.0.0).
+* Re-work for PEP coding style compliance (using PyLint) (0.8.0.0).
+* Improved documentation and first version release (1.0.0.0).
