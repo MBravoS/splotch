@@ -637,9 +637,9 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		Only provided if output is True.
 	"""
 	
-	from numpy import cumsum as np_cumsum, sum as np_sum, shape
+	from numpy import cumsum as np_cumsum, sum as np_sum, max as np_max, min as np_min
 	from scipy.stats import binned_statistic
-	from numpy import array, ndarray, diff, dtype, histogram, inf, nan, nanmax, nanmean, nanstd, ones, where
+	from numpy import array, ndarray, diff, dtype, histogram, inf, nan, nanmax, nanmean, nanstd, ones, where, shape
 	from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
 	from .base_func import axes_handler,bin_axis,dict_splicer,plot_finalizer,step_filler
 	from warnings import warn
@@ -703,6 +703,7 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		warnings.warn('Received kwarg width, this will be ignored in the histogram',UserWarning)
 		if hist_type!='bar':
 			temp=plot_par.pop('width')
+	
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
@@ -757,6 +758,11 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		n_return.append(temp_y)
 	if any(label):
 		legend(loc=lab_loc)
+
+	if ylim == None: # Adjust ylims if None given.
+		if not ylog and all([val == None for val in v]): # These automatic limits do not apply when ylog=True or statistics are used.
+			ylim = [0, max(np_max(y)*(1+rcParams['axes.ymargin']), gca().get_ylim()[1])]
+
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)

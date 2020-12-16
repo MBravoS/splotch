@@ -1,3 +1,7 @@
+0.5.2.3 (16/12/2020):
+-Fixed splt.hist() to ensure lower y limit starts at zero.
+-Auto ylim does not override current upper limits and does not apply when ylog=True or v statistics are used.
+
 0.5.2.2 (16/12/2020):
 -Fixed issue with single numpy.ndarray being passed to bins in plots_1d.hist() 
 
