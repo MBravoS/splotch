@@ -653,17 +653,17 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 
 	if ax is not None:
 		old_axes=axes_handler(ax)
-	if type(data) not in [list, tuple, ndarray] or (len(shape(data)) == 1 and array(data).dtype is not dtype('O')):
+	if type(data) not in [list, tuple, ndarray] or (len(shape(data))==1 and array(data).dtype is not dtype('O')):
 		data=[data]
 	L=len(data)
 	if type(bin_type) not in [list, tuple]:
 		bin_type=[bin_type]*L
-	if type(bins) not in [list, tuple, ndarray]:
+	if type(bins) not in [list, tuple, ndarray] or (len(shape(bin_type))==1):
 		if bins is not None:
 			bins=[bins]*L
 		else:
 			bins=[int((len(d))**0.4) for d in data]
-	if type(weights) not in [list, tuple, ndarray] or (len(shape(weights)) == 1):
+	if type(weights) not in [list, tuple, ndarray] or (len(shape(weights))==1):
 		weights=[weights]*L
 	if type(dens) not in [list, tuple]:
 		dens=[dens]*L
