@@ -3,7 +3,7 @@ from setuptools import setup
 from setuptools.command.install import install
 
 setup(name='splotch',
-		version='0.5.3.0',
+		version='0.5.4.0',
 		description='Simple PLOTs, Contours and Histograms is a small package with wrapper functions designed to simplify plotting calls from matplotlib.',
 		url='https://github.com/MBravoS/splot',
 		author='Matías A. Bravo Santa Cruz',

@@ -1,3 +1,8 @@
+0.5.4.0 (17/12/2020):
+-Renamed plots_2d.errorband() to plots_2d.statband().
+-Added plots_2d.statband() equivalents with boxes and bars.
+-Added plots_2d.errorbar() equivalent with bands.
+
 0.5.3.0 (17/12/2020):
 -Added all plots_2d.hist2D() to plots_2d.hexbin()
 

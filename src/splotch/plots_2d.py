@@ -279,15 +279,13 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
 		return(X,Y,Z.T,array(level))
 
 ####################################
-# Errorbands
+# Error bands
 ####################################
-def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_high='std',line=False,xlim=None,ylim=None,
+def errorband(x,y,yerr,line=False,xlim=None,ylim=None,
 				xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
 				label=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
 	
-	"""Errorbar plotting function.
-	
-	This is a wrapper for pyplot.errorbar().
+	"""Error line and band plotting function.
 	
 	Parameters
 	----------
@@ -295,24 +293,8 @@ def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hi
 		If list it is assumed that each elemement is array-like.
 	y : array-like or list
 		If list it is assumed that each elemement is array-like.
-	bin_type : {'number','width','edges','equal'}, optional
-		Defines how is understood the value given in bins: 'number' for the desired number of bins, 'width' for the width
-		of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements (or as close
-		as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if float and 'edges'
-		if ndarray.
-	bins : int, float, array-like or list, optional
-		Gives the values for the bins, according to bin_type.
-	stat_low / shat_high : str, int, float or function, optional
-		Defines how to calculate the lower/upper limits of the error band. When passing a string it must be either one of the options
-		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
-		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
-		interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
-		characteristics required by scipy.stats.binned_statistic().
-	stat_mid : str, int, float or function, optional
-		Defines how to calculate the midpoint reference of the error band. This middle point is used to position the band when either of the band
-		bounds is the standard deviation, or a multiple of that. When passing a string it must be either one of the options
-		for scipy.stats.binned_statistic() When passing an integer or float is interpreted as being the percentile for the limit.
-		When passing a function it must have the input and ouput characteristics required by scipy.stats.binned_statistic().
+	yerr : array-like or list, optional
+		Defines the length of the errobars in the y-axis. If list it is assumed that each elemement is array-like.
 	line : boolean, optional
 		If True, draw a line that follows the statistic defined in line_stat.
 	xlim : tuple-like, optional
@@ -358,24 +340,20 @@ def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hi
 	import numpy as np
 	from numbers import Number
 	import scipy.stats as stats
-	from numpy import percentile
+	from numpy import array,percentile
 	from functools import partial
 	import matplotlib.colors as clr
 	import matplotlib.pyplot as plt
 	from matplotlib.pyplot import gca
 	from warnings import warn
-
 	
 	# Handle deprecated variables
-	deprecated = {'plabel':'label','band_stat_low':'stat_low','band_stat_high':'stat_high','line_stat':'stat_mid'}
+	deprecated = {'plabel':'label'}
 	for dep in deprecated:
 		if dep in kwargs:
 			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
 			if (dep=='plabel'): label = kwargs.pop(dep)
-			if (dep=='band_stat_low'): stat_low = kwargs.pop(dep)
-			if (dep=='band_stat_high'): stat_high = kwargs.pop(dep)
-			if (dep=='line_stat'): stat_mid = kwargs.pop(dep)
-
+	
 	if ax is not None:
 		old_axes=axes_handler(ax)
 	else:
@@ -384,8 +362,6 @@ def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hi
 	if ylog is None:
 		from splotch.defaults import Params
 		ylog=Params.hist1D_yaxis_log
-	if bins is None:
-		bins=int((len(x))**0.4)
 	if 'linewidth' not in band_kw.keys():
 		band_kw['linewidth']=0
 	if 'alpha' not in band_kw.keys():
@@ -395,35 +371,11 @@ def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hi
 	#band_par={**plot_kw, **kwargs} # For Python > 3.5
 	band_kw.update(kwargs)
 	
-	band_stat=[stat_low,stat_high]
-	band_multi=np.ones(2)
-	for i in range(len(band_stat)):
-		if isinstance(band_stat[i],Number):
-			band_stat[i]=partial(percentile,q=band_stat[i])
-		elif 'std' in band_stat[i] and len(band_stat[i].replace('std',''))>0:
-			band_multi[i]=float(band_stat[i].replace('std',''))
-			band_stat[i]='std'
-	
-	if isinstance(stat_mid,Number):
-		stat_mid=partial(percentile,q=stat_mid)
-	
-	temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
-	temp_y=stats.binned_statistic(temp_x,y,statistic=stat_mid,bins=bins_hist)[0]
-	if band_stat[0]==band_stat[1]:
-		band_low,band_high=[stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]]*2
+	if len(array(yerr).shape)==2:
+		plt.fill_between(x,y-yerr[0],y+yerr[1],label=label,**band_kw)
 	else:
-		band_low=stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]
-		band_high=stats.binned_statistic(temp_x,y,statistic=band_stat[1],bins=bins_hist)[0]
-	if band_stat[0]=='std':
-		band_low=temp_y-band_multi[0]*band_low
-	if band_stat[1]=='std':
-		band_high=temp_y+band_multi[1]*band_high
-	if ylog:
-		temp_y=np.where(temp_y==0,np.nan,temp_y)
-	x=stats.binned_statistic(temp_x,x,statistic=stat_mid,bins=bins_hist)[0]
-	y=temp_y
+		plt.fill_between(x,y-yerr,y+yerr,label=label,**band_kw)
 	
-	plt.fill_between(x,band_low,band_high,label=label,**band_kw)
 	if line:
 		plt.plot(x,y,**line_kw)
 	if label is not None:
@@ -434,7 +386,7 @@ def errorband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hi
 		old_axes=axes_handler(old_axes)
 
 ####################################
-# Errorbars
+# Error bars
 ####################################
 def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
 				title=None,xlabel=None,ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
@@ -490,12 +442,12 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	-------
 	None
 	"""
-
+	
 	from .base_func import axes_handler,dict_splicer,plot_finalizer
 	
 	from matplotlib.pyplot import errorbar, legend, gca
 	from warnings import warn
-
+	
 	# Handle deprecated variables
 	deprecated = {'plabel':'label'}
 	for dep in deprecated:
@@ -537,7 +489,7 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		old_axes=axes_handler(old_axes)
 
 ####################################
-# Errorboxes
+# Error boxes
 ####################################
 def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,box_type='ellipse',
 			title=None,xlabel=None,ylabel=None,label=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
@@ -602,9 +554,9 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	from numpy import shape, full, array
 	from matplotlib.collections import PatchCollection
 	from matplotlib.patches import Ellipse, Rectangle, Patch
-
+	
 	from warnings import warn
-
+	
 	# Handle deprecated variables
 	deprecated = {'plabel':'label','boxtype':'box_type'}
 	for dep in deprecated:
@@ -630,7 +582,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 	boxdict = {'rec':Rectangle,'ell':Ellipse}
 	if (box_type.lower()[:3] not in ['rec','ell']):
 		raise ValueError(f"box_type '{box_type}' not recognised.")
-
+	
 	L=len(x)
 	if type(label) is not list:
 		label=[label for i in range(L)]
@@ -686,7 +638,7 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 		for j, (xx, yy, xe, ye) in enumerate(zip(x[i], y[i], xerr[i].T, yerr[i].T)):
 			errorboxes.append( boxdict[box_type.lower()[:3]]((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
 		
-
+	
 		# Create and add patch collection with specified colour/alpha
 		pc=PatchCollection(errorboxes, **plot_par[i])
 		boxhandles.append(Patch(**plot_par[i]))
@@ -1413,6 +1365,157 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 		cbar.set_label(clabel)
 		if cbar_invert:
 			cbar.ax.invert_yaxis()
-
 	
 	return sector_ax
+
+####################################
+# Statistics bands
+####################################
+def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_high='std',line=False,xlim=None,ylim=None,
+				xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
+				label=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
+	
+	"""Statistics line and band plotting function.
+	
+	Parameters
+	----------
+	x : array-like or list
+		If list it is assumed that each elemement is array-like.
+	y : array-like or list
+		If list it is assumed that each elemement is array-like.
+	bin_type : {'number','width','edges','equal'}, optional
+		Defines how is understood the value given in bins: 'number' for the desired number of bins, 'width' for the width
+		of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements (or as close
+		as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if float and 'edges'
+		if ndarray.
+	bins : int, float, array-like or list, optional
+		Gives the values for the bins, according to bin_type.
+	stat_low / shat_high : str, int, float or function, optional
+		Defines how to calculate the lower/upper limits of the error band. When passing a string it must be either one of the options
+		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
+		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
+		interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
+		characteristics required by scipy.stats.binned_statistic().
+	stat_mid : str, int, float or function, optional
+		Defines how to calculate the midpoint reference of the error band. This middle point is used to position the band when either of the band
+		bounds is the standard deviation, or a multiple of that. When passing a string it must be either one of the options
+		for scipy.stats.binned_statistic() When passing an integer or float is interpreted as being the percentile for the limit.
+		When passing a function it must have the input and ouput characteristics required by scipy.stats.binned_statistic().
+	line : boolean, optional
+		If True, draw a line that follows the statistic defined in line_stat.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If True, inverts the x-axis.
+	yinvert : bool or list, optional
+		If True, inverts the y-axis.
+	xlog : bool or list, optional
+		If True, the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True, the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	label : str, optional
+		Sets the label for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+		A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
+	
+	Returns
+	-------
+	None
+	"""
+	
+	from splotch.base_func import axes_handler,bin_axis,plot_finalizer
+	
+	import numpy as np
+	from numbers import Number
+	import scipy.stats as stats
+	from numpy import percentile
+	from functools import partial
+	import matplotlib.colors as clr
+	import matplotlib.pyplot as plt
+	from matplotlib.pyplot import gca
+	from warnings import warn
+	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label','band_stat_low':'stat_low','band_stat_high':'stat_high','line_stat':'stat_mid'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
+			if (dep=='band_stat_low'): stat_low = kwargs.pop(dep)
+			if (dep=='band_stat_high'): stat_high = kwargs.pop(dep)
+			if (dep=='line_stat'): stat_mid = kwargs.pop(dep)
+
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
+	if ylog is None:
+		from splotch.defaults import Params
+		ylog=Params.hist1D_yaxis_log
+	if bins is None:
+		bins=int((len(x))**0.4)
+	if 'linewidth' not in band_kw.keys():
+		band_kw['linewidth']=0
+	if 'alpha' not in band_kw.keys():
+		band_kw['alpha']=0.4
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#band_par={**plot_kw, **kwargs} # For Python > 3.5
+	band_kw.update(kwargs)
+	
+	band_stat=[stat_low,stat_high]
+	band_multi=np.ones(2)
+	for i in range(len(band_stat)):
+		if isinstance(band_stat[i],Number):
+			band_stat[i]=partial(percentile,q=band_stat[i])
+		elif 'std' in band_stat[i] and len(band_stat[i].replace('std',''))>0:
+			band_multi[i]=float(band_stat[i].replace('std',''))
+			band_stat[i]='std'
+	
+	if isinstance(stat_mid,Number):
+		stat_mid=partial(percentile,q=stat_mid)
+	
+	temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
+	temp_y=stats.binned_statistic(temp_x,y,statistic=stat_mid,bins=bins_hist)[0]
+	if band_stat[0]==band_stat[1]:
+		band_low,band_high=[stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]]*2
+	else:
+		band_low=stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]
+		band_high=stats.binned_statistic(temp_x,y,statistic=band_stat[1],bins=bins_hist)[0]
+	if band_stat[0]=='std':
+		band_low=temp_y-band_multi[0]*band_low
+	if band_stat[1]=='std':
+		band_high=temp_y+band_multi[1]*band_high
+	if ylog:
+		temp_y=np.where(temp_y==0,np.nan,temp_y)
+	x=stats.binned_statistic(temp_x,x,statistic=stat_mid,bins=bins_hist)[0]
+	y=temp_y
+	
+	plt.fill_between(x,band_low,band_high,label=label,**band_kw)
+	if line:
+		plt.plot(x,y,**line_kw)
+	if label is not None:
+		plt.legend(loc=lab_loc)
+	
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
