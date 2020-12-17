@@ -701,12 +701,12 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
 ####################################
 # Hexagonal 2D histogram
 ####################################
-def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
+def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,
 			c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
 			xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
 			ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
 	
-	"""2D histogram function.
+	"""Hexagonal 2D bins function.
 	
 	Parameters
 	----------
@@ -719,6 +719,8 @@ def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
 	binlim : array-like, optional
 		Defines the limits for the bins. It must have one dimension and contain four elements,
 		with the expected order being (left, right, bottom, top).
+	dens : bool or list, optional
+		If false the histogram returns raw counts.
 	c : array-like, optional
 		If a valid argument is given in cstat, defines the value used for the binned statistics.
 	cstat : str or function, optional
@@ -762,11 +764,11 @@ def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
 	output : boolean, optional
 		If True, returns the edges and values of the histogram.
 	plot_kw : dict, optional
-		Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
+		Explicit dictionary of kwargs to be parsed to matplotlib hexbin function.
 		Parameters will be overwritten if also given implicitly as a **kwarg.
 	**kwargs : pcolormesh properties, optional
 		kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
-		https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html
+		https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hexbin.html
 	
 	Returns
 	-------
@@ -782,7 +784,7 @@ def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
 	#scale : float or list, optional
 	#	Scaling of the data counts.
 	
-	from numpy import nan, nanmin, nanmax, nanmedian, nanmax, nanstd, size, zeros, shape
+	from numpy import diff, nan, nanmin, nanmax, nanmedian, nanmax, nanstd, unique, size, zeros, shape
 	from matplotlib.colors import LogNorm
 	from matplotlib.pyplot import hexbin, colorbar
 	from .base_func import axes_handler,plot_finalizer
@@ -794,9 +796,12 @@ def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
 			bins=max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
 		bins=[bins,int(bins/(3**0.5))]
 	
-	if clog is None:
+	if None in (clog,output):
 		from .defaults import Params
-		clog=Params.hist2D_caxis_log
+		if clog is None:
+			clog=Params.hist2D_caxis_log
+		if output is None:
+			output=Params.hist2D_output
 	
 	if size([x,y])==0: # Zero-sized arrays given
 		if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
@@ -831,6 +836,26 @@ def hexbin(x,y,bins=None,binlim=None,#dens=True,scale=None,
 		plot_par['bins']='log'
 		if 'mincnt' not in plot_par.keys():
 			plot_par['mincnt']=1
+	
+	if dens and c is None:
+		# This is nasty, but seems to be the quickest way to do this without fully rewriting hexbin here
+		hist_return=hexbin(x,y,gridsize=bins)
+		hist_return.remove()
+		offsets=hist_return.get_offsets()
+		offsets_x=unique(offsets[:,0])
+		offsets_y=unique(offsets[:,1])
+		hex_area=diff(offsets_x)[0]*2*diff(offsets_y)[0]
+		
+		def density_scaling(bin_data):
+			bin_dens=1.0*len(bin_data)/(hex_area)
+			if scale:
+				bin_dens/=1.0*scale
+			else:
+				bin_dens/=len(x)
+			return(bin_dens)
+		
+		plot_par['C']=y
+		plot_par['reduce_C_function']=density_scaling
 	
 	hist_return=hexbin(x,y,gridsize=bins,**plot_par)
 	
@@ -914,7 +939,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 	output : boolean, optional
 		If True, returns the edges and values of the histogram.
 	plot_kw : dict, optional
-		Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
+		Explicit dictionary of kwargs to be parsed to matplotlib pcolormesh function.
 		Parameters will be overwritten if also given implicitly as a **kwarg.
 	**kwargs : pcolormesh properties, optional
 		kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
@@ -1137,7 +1162,7 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
 	**kwargs : Collection properties, optional
 		kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
 		A list of available `Collection` properties can be found here:
-		https://matplotlib.org/3.1.0/api/collections_api.html#matplotlib.collections.Collection
+		https://matplotlib.org/api/collections_api.html#matplotlib.collections.Collection
 	
 	Returns
 	-------

@@ -15,7 +15,7 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.5.2.3
+*Current version*: 0.5.3.0
 
 *Planned releases*:
 * Completion of hexbin to the same functionality offered by hist2D (0.5.3.0).
