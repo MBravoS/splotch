@@ -1390,7 +1390,7 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 		if ndarray.
 	bins : int, float, array-like or list, optional
 		Gives the values for the bins, according to bin_type.
-	stat_low / shat_high : str, int, float or function, optional
+	stat_low / stat_high : str, int, float or function, optional
 		Defines how to calculate the lower/upper limits of the error band. When passing a string it must be either one of the options
 		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
 		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
@@ -1399,7 +1399,7 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 	stat_mid : str, int, float or function, optional
 		Defines how to calculate the midpoint reference of the error band. This middle point is used to position the band when either of the band
 		bounds is the standard deviation, or a multiple of that. When passing a string it must be either one of the options
-		for scipy.stats.binned_statistic() When passing an integer or float is interpreted as being the percentile for the limit.
+		for scipy.stats.binned_statistic(). When passing an integer or float is interpreted as being the percentile for the limit.
 		When passing a function it must have the input and ouput characteristics required by scipy.stats.binned_statistic().
 	line : boolean, optional
 		If True, draw a line that follows the statistic defined in line_stat.
@@ -1513,6 +1513,164 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 	plt.fill_between(x,band_low,band_high,label=label,**band_kw)
 	if line:
 		plt.plot(x,y,**line_kw)
+	if label is not None:
+		plt.legend(loc=lab_loc)
+	
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+
+####################################
+# Statistics bars
+####################################
+def statbar(x,y,bin_type=None,bins=None,stat_cen='mean',bar_x=True,stat_y='std',line=False,xlim=None,ylim=None,
+				xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
+				label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
+	
+	"""Statistics line and bar plotting function.
+	
+	Parameters
+	----------
+	x : array-like or list
+		If list it is assumed that each elemement is array-like.
+	y : array-like or list
+		If list it is assumed that each elemement is array-like.
+	bin_type : {'number','width','edges','equal'}, optional
+		Defines how is understood the value given in bins: 'number' for the desired number of bins, 'width' for the width
+		of the bins, 'edges' for the edges of bins, and 'equal' for making bins with equal number of elements (or as close
+		as possible). If not given it is inferred from the data type of bins: 'number' if int, 'width' if float and 'edges'
+		if ndarray.
+	bins : int, float, array-like or list, optional
+		Gives the values for the bins, according to bin_type.
+	stat_cen : str, int, float, function, or 2-element array-like of any of the previous type, optional
+		Defines how to calculate the position of centre of each errorbar. When passing an integer or float is
+		interpreted as being the percentile for the limit. When passing a function it must have the input and
+		ouput characteristics required by scipy.stats.binned_statistic().
+	bar_x : bool, optional
+		If False turns off the display of the bin widths with bars.
+	stat_y : str, int, float, function, or 2-element array-like of any of the previous type, optional
+		Defines how to calculate the y error bars. When passing a string it must be either one of the options
+		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
+		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
+		interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
+		characteristics required by scipy.stats.binned_statistic().
+	line : boolean, optional
+		If True, draw a line that follows the statistic defined in line_stat.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If True, inverts the x-axis.
+	yinvert : bool or list, optional
+		If True, inverts the y-axis.
+	xlog : bool or list, optional
+		If True, the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True, the scale of the x-axis is logarithmic.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	label : str, optional
+		Sets the label for the plot.
+	lab_loc : int, optional
+		Defines the position of the legend
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+		A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
+	
+	Returns
+	-------
+	None
+	"""
+	
+	from splotch.base_func import axes_handler,bin_axis,plot_finalizer
+	
+	import numpy as np
+	from numbers import Number
+	import scipy.stats as stats
+	from numpy import percentile
+	from functools import partial
+	import matplotlib.colors as clr
+	import matplotlib.pyplot as plt
+	from matplotlib.pyplot import gca, errorbar, rcParams
+	from warnings import warn
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
+	if ylog is None:
+		from splotch.defaults import Params
+		ylog=Params.hist1D_yaxis_log
+	if bins is None:
+		bins=int((len(x))**0.4)
+	
+	if type(stat_y)!=str:
+		try:
+			iter(stat_y)
+		except TypeError:
+			stat_y=[stat_y,stat_y]
+	else:
+		stat_y=[stat_y,stat_y]
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	#plot_par={**plot_kw, **kwargs} # For Python > 3.5
+	plot_par=plot_kw.copy()
+	plot_par.update(kwargs)
+	if 'linewidth' not in plot_par.keys():
+		plot_par['linewidth']=0
+	if 'elinewidth' not in plot_par.keys():
+		plot_par['elinewidth']=rcParams['lines.linewidth']
+	
+	bar_multi=np.ones(2)
+	for i in range(len(stat_y)):
+		if isinstance(stat_y[i],Number):
+			stat_y[i]=partial(percentile,q=stat_y[i])
+		elif 'std' in stat_y[i] and len(stat_y[i].replace('std',''))>0:
+			bar_multi[i]=float(stat_y[i].replace('std',''))
+			stat_y[i]='std'
+	
+	if isinstance(stat_cen,Number):
+		stat_cen=partial(percentile,q=stat_cen)
+	
+	temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
+	temp_y=stats.binned_statistic(temp_x,y,statistic=stat_cen,bins=bins_hist)[0]
+	if stat_y[0]==stat_y[1]:
+		bar_low,bar_high=[stats.binned_statistic(temp_x,y,statistic=stat_y[0],bins=bins_hist)[0]]*2
+	else:
+		bar_low=stats.binned_statistic(temp_x,y,statistic=stat_y[0],bins=bins_hist)[0]
+		bar_high=stats.binned_statistic(temp_x,y,statistic=stat_y[1],bins=bins_hist)[0]
+	if stat_y[0]=='std':
+		bar_low=bar_multi[0]*bar_low
+	else:
+		bar_low=temp_y-bar_low
+	if stat_y[0]=='std':
+		bar_high=bar_multi[0]*bar_high
+	else:
+		bar_high-=temp_y
+	if ylog:
+		temp_y=np.where(temp_y==0,np.nan,temp_y)
+	x=stats.binned_statistic(temp_x,x,statistic=stat_cen,bins=bins_hist)[0]
+	y=temp_y
+	if bar_x:
+		bar_x=[x-bins_plot[:-1],bins_plot[1:]-x]
+	
+	if bar_x:
+		errorbar(x,y,xerr=bar_x,yerr=[bar_low,bar_high],**plot_par)
+	else:
+		errorbar(x,y,yerr=[bar_low,bar_high],**plot_par)
 	if label is not None:
 		plt.legend(loc=lab_loc)
 	
