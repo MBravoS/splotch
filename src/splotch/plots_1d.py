@@ -758,11 +758,11 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
 		n_return.append(temp_y)
 	if any(label):
 		legend(loc=lab_loc)
-
+	
 	if ylim == None: # Adjust ylims if None given.
-		if not ylog and all([val == None for val in v]): # These automatic limits do not apply when ylog=True or statistics are used.
+		if not ylog and all([val is None for val in v]): # These automatic limits do not apply when ylog=True or statistics are used.
 			ylim = [0, max(np_max(y)*(1+rcParams['axes.ymargin']), gca().get_ylim()[1])]
-
+	
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)

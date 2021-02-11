@@ -1,3 +1,6 @@
+0.5.4.1 (11/02/2021):
+-Fixed bug with automatic y-axis limits in plots_1d.hist()
+
 0.5.4.0 (17/12/2020):
 -Renamed plots_2d.errorband() to plots_2d.statband().
 -Added plots_2d.statband() equivalents with boxes and bars.
