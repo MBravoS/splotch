@@ -1,3 +1,8 @@
+0.5.4.2 (24/02/2021):
+-Fixed bug in splotch.statband() where functions could not be parsed into stat_low/high.
+-Added from_mid variable that gives user control over where the statistic should be calculated from
+-Removed deprecation warnings in splotch.statband()
+
 0.5.4.1 (11/02/2021):
 -Fixed bug with automatic y-axis limits in plots_1d.hist()
 

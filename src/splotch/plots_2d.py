@@ -1371,7 +1371,7 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 ####################################
 # Statistics bands
 ####################################
-def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_high='std',line=False,xlim=None,ylim=None,
+def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_high='std',from_mid=None,line=False,xlim=None,ylim=None,
 				xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
 				label=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
 	
@@ -1390,17 +1390,18 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 		if ndarray.
 	bins : int, float, array-like or list, optional
 		Gives the values for the bins, according to bin_type.
-	stat_low / stat_high : str, int, float or function, optional
-		Defines how to calculate the lower/upper limits of the error band. When passing a string it must be either one of the options
-		for scipy.stats.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
-		interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
-		interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
-		characteristics required by scipy.stats.binned_statistic().
 	stat_mid : str, int, float or function, optional
-		Defines how to calculate the midpoint reference of the error band. This middle point is used to position the band when either of the band
-		bounds is the standard deviation, or a multiple of that. When passing a string it must be either one of the options
-		for scipy.stats.binned_statistic(). When passing an integer or float is interpreted as being the percentile for the limit.
-		When passing a function it must have the input and ouput characteristics required by scipy.stats.binned_statistic().
+		Defines how to calculate the midpoint of the statistics band. When passing a string it must be either one of the options
+		for scipy.stats.binned_statistic(), i.e. 'mean', 'std', 'median', 'count', 'sum', 'min', 'max' or a user-defined function.
+		If given as an integer or float, the number represents the value for the percentile to calculate in each bin.
+		A function can be given which takes (only) a 1D array of values and returns a numerical statistic.
+	stat_low / stat_high : str, int, float or function, optional
+		Defines how to calculate the lower/upper limits for the statistic band. Can be given as one of the recognised strings above or as
+		a string combining 'std' with a number, i.e. '[n]std', where [n] is the number of standard deviations away from the line of `stat_mid`.
+		Can also be given as a number (integer or float) or function as described for stat_mid.
+	from_mid : boolean, optional
+		If True, the lower/upper bounds of the band are determined as the separation from the stat_mid line: i.e. stat_mid +/- stat_[low/high],
+		otherwise, they are set to the values returned by stat_[low/high]. Defaults to True if stat_[low/high] are standard deviations.
 	line : boolean, optional
 		If True, draw a line that follows the statistic defined in line_stat.
 	xlim : tuple-like, optional
@@ -1452,16 +1453,6 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 	import matplotlib.pyplot as plt
 	from matplotlib.pyplot import gca
 	from warnings import warn
-	
-	# Handle deprecated variables
-	deprecated = {'plabel':'label','band_stat_low':'stat_low','band_stat_high':'stat_high','line_stat':'stat_mid'}
-	for dep in deprecated:
-		if dep in kwargs:
-			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-			if (dep=='plabel'): label = kwargs.pop(dep)
-			if (dep=='band_stat_low'): stat_low = kwargs.pop(dep)
-			if (dep=='band_stat_high'): stat_high = kwargs.pop(dep)
-			if (dep=='line_stat'): stat_mid = kwargs.pop(dep)
 
 	if ax is not None:
 		old_axes=axes_handler(ax)
@@ -1482,17 +1473,36 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 	#band_par={**plot_kw, **kwargs} # For Python > 3.5
 	band_kw.update(kwargs)
 	
-	band_stat=[stat_low,stat_high]
+	# Check stat_low/stat_high arguments
+	band_stat=np.array([None,None])
 	band_multi=np.ones(2)
-	for i in range(len(band_stat)):
-		if isinstance(band_stat[i],Number):
-			band_stat[i]=partial(percentile,q=band_stat[i])
-		elif 'std' in band_stat[i] and len(band_stat[i].replace('std',''))>0:
-			band_multi[i]=float(band_stat[i].replace('std',''))
-			band_stat[i]='std'
+	for i, stat in enumerate([stat_low,stat_high]): # loop over low/high statistic
+		if isinstance(stat,Number): # stat given as a percentile number
+			band_stat[i] = partial(percentile,q=stat) # Set as the percentile function with kwargs fixed.
+		elif callable(stat): # stat given as a function
+			band_stat[i] = stat
+		elif isinstance(stat,str) and 'std' in stat: # stat given as a string with 'std'
+			band_stat[i] = 'std'
+			multi = list(filter(None,stat.split('std'))) # The multiplier for std, if any.
+			if len(multi) == 0: # No multiplier given
+				band_multi[i] = 1.0
+			elif len(multi) == 1: # Multiplier was given
+				band_multi[i] = multi[0]
+			else: 
+				raise ValueError(f"Statistic '{stat}' not valid. Should be given as '[n]std', where [n] is a number.")
+		else:
+			raise ValueError(f"Statistic of type '{type(stat)}' was not recognised. Must be either a Number, function or string in the format '[n]std'.")
 	
+	# Check stat_mid argument
 	if isinstance(stat_mid,Number):
 		stat_mid=partial(percentile,q=stat_mid)
+
+	# Assign 'from_mid' if not explicitly set
+	if from_mid is None:
+		if (band_stat[0] in ['std',np.std,np.nanstd] and (band_stat[1] in ['std',np.std,np.nanstd])): # Band stats a type of standard deviation
+			from_mid = True
+		else:
+			from_mid = False
 	
 	temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
 	temp_y=stats.binned_statistic(temp_x,y,statistic=stat_mid,bins=bins_hist)[0]
@@ -1501,16 +1511,19 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 	else:
 		band_low=stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]
 		band_high=stats.binned_statistic(temp_x,y,statistic=band_stat[1],bins=bins_hist)[0]
-	if band_stat[0]=='std':
-		band_low=temp_y-band_multi[0]*band_low
-	if band_stat[1]=='std':
-		band_high=temp_y+band_multi[1]*band_high
+
+	if from_mid == True: # Band intervals should be taken as the difference from the mid line
+		band_low  = temp_y-band_multi[0]*band_low
+		band_high = temp_y+band_multi[1]*band_high
+	
 	if ylog:
 		temp_y=np.where(temp_y==0,np.nan,temp_y)
+
 	x=stats.binned_statistic(temp_x,x,statistic=stat_mid,bins=bins_hist)[0]
 	y=temp_y
 	
 	plt.fill_between(x,band_low,band_high,label=label,**band_kw)
+
 	if line:
 		plt.plot(x,y,**line_kw)
 	if label is not None:
