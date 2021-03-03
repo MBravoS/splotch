@@ -20,3 +20,8 @@ class Params:
 	hist2D_caxis_log=False
 	#Images
 	img_caxis_log=False
+	img_cmap='Greys_r'
+	grid_color = 'white'
+	grid_alpha = 1.0
+	grid_ls = '--'
+	grid_lw = 1.0

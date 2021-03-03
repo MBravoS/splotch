@@ -965,7 +965,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
 ####################################
 # Image from 2D array
 ####################################
-def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=False,yinvert=False,cbar_invert=False,clog=None,
+def image(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=False,yinvert=False,cbar_invert=False,clog=None,
 		title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
 	
 	"""2D pixel-based image plotting function.
@@ -1054,6 +1054,294 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
 	plot_finalizer(False,False,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 	if ax is not None:
 		old_axes=axes_handler(old_axes)
+
+####################################
+# Image from 2D array
+####################################
+def imageWCS(data,header=None,wcs=None,ext=None,slice=None,interval=None,stretch=None,norm=None,cmap=None,
+			 lnglabel=None,latlabel=None,lngformat=None,latformat=None,fig=None,
+			 grid=True,grid_kw=None,kwargs={}):
+	""" World-Coordinate System image plotting function.
+	
+	Creates a WCS-projected plot of an image with a corresponding coordinate grid overlaid. This is particularly useful for astronomical imaging data
+	based on the standard FITS file format, however, it can be used for any imaging data with a defined world-coordinate system.
+	This is a convenience wrapper around many of the useful functions created by the Astropy project (https://www.astropy.org) and
+	Matplotlib's pyplot.imshow() function: https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow
+	
+	Params
+	------
+	data : 2D numpy or array-like object, or HDUlist or HDU.
+		The input data can be:
+			- A <a class="reference external" href="https://docs.astropy.org/en/stable/io/fits/api/hdulists.html#astropy.io.fits.HDUList" title="(in Astropy v4.0.1)"> object
+			- An image HDU object, such as a PrimaryHDU, ImageHDU or CompImageHDU
+			- An numpy ndarray or two-dimensional array-like object. Requires a header also be specified separately.
+	header : list-like or string, optional
+		The full FITS header should be given either as one complete string or a list of header keywords as strings created
+		by astropy.io.fits.open(...).header.
+	wcs : Astropy WCS object or dictionary
+		The World Coordinate System for the image. Only required if data is an array-like object and header not given. 
+		Must contain the following FITS keywords:
+	ext : int or str
+		If data is a HDUList and contains extensions (usually indicated by 'EXTEND'=T in PrimaryHDU), then 'ext' specifies which
+		extension to use. This can either be in the form of an integer or a string referring to a specific 'EXTNAME'.
+	slice : integer, tuple-like or range object
+		if data contains a 3-dimensional array, slice can be used to specify which sections of the data to display.
+		This should be specified as either:
+			- A single integer indicating the specific channel to slice.
+			- A tuple of two integers specifying the starting and ending slices.
+			- A range object.
+	interval : tuple-like, str or astropy.visialization.BaseTransform.BaseInterval object
+		The interval refers to the lower and upper limits of values to be mapped onto the range [0:1]. This can either be given
+		as a list-like object with two elements for the minimum and maximum values or as a valid astropy BaseInterval object listed below:
+		- PercentileInterval(percentile[, n_samples]): Retains a specified fractional percentage of pixels, up to a maximum [n_samples].
+			Can also be evoked by a string 'percentile[n]', where [n] is the fraction of pixels kept.
+		- AsymmetricPercentileInterval(...[, n_samples]): Same as PercentileInterval(), but can be assymetric.
+		- ManualInterval([vmin, vmax]): Manually sets the lower and upper intervals.
+			Can also be evoked as a tuple in the format (min, max).
+		- MinMaxInterval(): Sets the intervals based on the minimum and maximum values in the data.
+			Can also be evoked by the string 'minmax'.
+		- ZScaleInterval([nsamples, contrast, ...]): Based on IRAF's zscale intervals.
+			Can also be evoked by the string 'zscale'.
+	stretch : str, func or astropy.visualization.BaseTransform.BaseStretch object
+		Stretch refers to the linear or non-linear function that is applied to the values in the range [0:1]. This can be given
+		as a function or any astropy BaseStretch object listed below:
+		- AsinhStretch([a]): Inverse hyperbolic sine function stretch.
+		- ContrastBiasStretch(contrast,bias): A stretch that takes into account contrast and bias. Increases the difference between min and max values.
+		- HistEqStretch(data[, values]): Histrogram equalisation stretch. Modifies values of all pixels such that the histogram is 'flattened'.
+		- LinearStretch([slope, intercept]): A linear stretch defined by a slope and intercept.
+		- LogStretch([a]): Logarithmic stretch.
+		- PowerStretch(a): Power-law stretch, where y = x^a
+		- PowerDistStretch([a]): An alternative power stretch, where y = (a^x-1)/(a-1).
+		- SinhStretch(): Hyperbolic sine function stretch.
+		- SqrtStretch(): Square root stretch.
+		- SquaredStretch(): Equivalent to PowerStretch(2)
+		
+		In addition, the following can be referred to by thir string name: 'asinh', 'linear', 'log', 'sinh', 'squared'
+	norm : Normalize object
+		A Normalize instance used to scale scalar data to the [0,1] range before mapping the colors using cmap. This can be explicitly assigned
+		here or by specifying the `interval` and `stretch` parameters instead. By default, a linear scaling mapping is used between [0,1].
+	cmap : str or Colormap, optional.
+		The colormap used to display the image, given as a Colormap instance or registered colormap name.
+		Defaults to Params.img_cmap.
+	lnglabel : str, optional
+		Sets the label of the longitude axis.
+	latlabel : str, optional
+		Sets the label of the latitude axis.
+	lngformat, latformat : str, optional
+		Sets the major formatter for the tick labels for the longitude and latitude coordinates. These are given by any
+		format string accepted by astropy.visualisation, for example:
+		
+		format:		result:
+		-------------------------
+		'dd'		   '15d'
+		'dd:mm'		'15d24m'
+		'hh:mm:ss'	 '1h01m34s'
+		'd.ddd'		'15.392'
+		'%.2f'		 '15.39'
+	
+		For a full list of valid format strings, see: https://docs.astropy.org/en/stable/visualization/wcsaxes/ticks_labels_grid.html  
+	fig : pyplot.Figure, optional
+		Use the specified figure instance to plot, defaults to the current figure.
+	grid : boolean, optional
+		If not given, defaults to the value defined in splotch.Params.
+	grid_kw : dict, optional
+		Passes the given dictionary as keyword arguments to the grid function. Valid keyword arguments include all Line2D properties. 
+	**kwargs : dict, optional
+		kwargs are used to specify matplotlib specific `Artist` properties to be parsed into pyplot.imshow(...).
+		A list of possible properties can be found here:
+		https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow
+	"""
+
+	from .defaults import Params
+	import logging as log
+	
+	from matplotlib.pyplot import subplots
+	from numpy import ndarray
+	from astropy.io import fits
+	from astropy.wcs import WCS, WCSBase
+	from astropy import visualization
+	
+
+	
+	# If no cmap given, revert to defaults
+	if cmap is None:
+		cmap = Params.img_cmap
+	
+	# Check keyword arguments
+	if 'origin' not in list(kwargs.keys()): kwargs['origin'] = 'lower' # Set origin to lower by default if not already specified.
+	
+	# Assign default Grid Keyword Arguments
+	if grid_kw is None: grid_kw = dict()
+	grid_keys = list(grid_kw.keys())
+	if 'color' not in grid_keys: grid_kw['color'] = Params.grid_color
+	if 'alpha' not in grid_keys: grid_kw['alpha'] = Params.grid_alpha
+	if ('linestyle' not in grid_keys and 'ls' not in grid_keys): grid_kw['ls'] = Params.grid_ls
+	if ('linewidth' not in grid_keys and 'ls' not in grid_keys): grid_kw['linewidth'] = Params.grid_lw
+	
+	# Validate slice parameter
+	if slice is not None:
+		if not isinstance(slice,(int,tuple,range)):
+			log.error(f"slice must be given as int, tuple or range. Instead received '{type(slice)}'.")
+	
+	## Valdiate interval parameter
+	if interval is not None:
+		if issubclass(type(interval),visualization.BaseInterval): # Is intervals an Astropy Interval object or function?
+			pass
+		elif isinstance(interval,(ndarray,list,tuple)):
+			if len(interval) == 2:
+				interval = visualization.ManualInterval(vmin=interval[0],vmax=interval[1]) 
+			else:
+				log.error(f"Intervals contained {len(interval)} elements. Must contain two elements for vmin and vmax.")
+				return None
+		elif isinstance(interval, str):
+			if interval == 'zscale':
+				interval = visualization.ZScaleInterval()
+			elif interval == 'minmax':
+				interval = visualization.MinMaxInterval()
+			elif 'percentile' in interval:
+				perc = list(filter(None,stat.split('std'))) # The percentile numbers
+				if len(perc) == 0: # No percentile given, assume 95%
+					interval = visualization.PercentileInterval(95)
+				elif len(perc) == 1: # Percentile was given
+					interval = visualization.PercentileInterval(float(perc[0]))
+				else:
+					raise ValueError(f"Percentile interval must be given in the format interval='percentile[n]', where [n] is the fraction of pixels to be kept.")
+		else:
+			log.error(f"Interval must either be an Astropy Interval object or tuple-like with two elements. Instead receieved '{type(interval)}'")
+			return None
+
+	## Validate stretch parameter
+	stretchRef = {'asinh':visualization.AsinhStretch(),
+				  'linear':visualization.LinearStretch(),
+				  'log':visualization.LogStretch(),
+				  'sinh':visualization.SinhStretch(),
+				  'squared':visualization.SquaredStretch()}
+
+	if stretch is not None:
+		if issubclass(type(stretch),visualization.BaseStretch) or callable(stretch): # Is stretch an Astropy Stretch object or function?
+			pass
+		elif isinstance(stretch,str):
+			if stretch in stretchRef.keys():
+				stretch = stretchRef[stretch] # get the astropy Stretch Object.
+			else:
+				log.error(f"Stretch '{stretch}' was not recognised as an Astropy Stretch class. Must be one of {', '.join(stretchRef.keys())}.")
+				return None
+		else:
+			log.error(f"Stretch must either be an Astropy Stretch object or callable function. Instead receieved '{type(stretch)}'")
+			return None
+	else:
+		stretch = visualization.LinearStretch() # Assume linear stretch if none given
+
+	## Attempt to read FITS data
+	if data is not None:
+		if (isinstance(data, fits.hdu.hdulist.HDUList)):
+			log.debug('`data` given as: HDU List')
+			
+			if ext is not None: # The extension was specified
+				if (data[ext].header['NAXIS'] > 0 and data[ext].data is not None): # This HDU contains image data
+					header = data[ext].header
+					img = data[ext].data
+				else:
+					log.error(f"The '{ext}' extension does not contain image data, 'NAXIS'=0.")
+			else: # Find the first valid HDU. If file has extensions, search these before using PrimaryHDU.
+				header0 = data[0].header # The header of the Primary HDU
+				
+				if len(data) > 1 and (('EXTEND' in header0.keys() and header0['EXTEND'] is True) or data[0].data is None): # Check whether hdulist has extensions
+					# Find the first HDU (if any) with at least one axis
+					for ii in range(1,header0['NEXTEND']+1 if 'NEXTEND' in header0.keys() else len(data)):
+						if (data[ii].header['NAXIS'] > 0 and data[ii].data is not None): # This HDU contains image data
+							header = data[ii].header
+							img = data[ii].data
+							break
+					else: # Did not find a valid HDU with multiple axes
+						raise ValueError("Unable to find a valid HDU, with keyword 'NAXIS' > 0.")
+				else:
+					if (header0['NAXIS'] > 0): # The Primary HDU contains image data
+						header = header0
+						img = data[0].data
+					else: # Did not find a valid HDU with multiple axes
+						raise ValueError("Unable to find a valid HDU, with keyword 'NAXIS' > 0.")
+			
+		elif (isinstance(data, (fits.hdu.image.PrimaryHDU,fits.hdu.image.ImageHDU,fits.hdu.image.ExtensionHDU))):
+			log.debug('`data` given as: Primary/Image/Extension HDU')
+			img = data.data
+			if header is None:
+				header = data.header
+			else:
+				log.debug(f"Using header specified by user, instead of the header present in specified HDU.")
+			
+		elif (isinstance(data, (ndarray, list))):
+			log.debug('`data` given as: Numpy Array / List')
+			img = data
+		else:
+			raise ValueError("'data' was not given in the correct format. Must be one of: astropy HDUList, PrimaryHDU, ImageHDU, CompImageHDU or numpy/array-like object.")
+
+
+	# Obtain a World Coordinate System (WCS)
+	if wcs is None: # Attempt to create WCS from header object
+		if header is not None:
+			wcs = WCS(header)
+		else:
+			log.error("Cannot create valid World Coordinate System as no header or wcs was specified.")
+	elif isinstance(wcs,dict): # Extract relevant WCS keywords from dictionary
+		wcs = WCS(wcs)
+	elif issubclass(type(wcs),WCSBase): # Already a WCS object
+		pass
+	else:
+		raise TypeError(f"The 'wcs' provided must either be an Astropy.wcs.WCS object or dictionary. Instead got {type(wcs)}")
+	
+	## Slice cube data at specific channel given by `slice`
+	if (slice is not None):
+		if header is not None and header['NAXIS'] < 3:
+			log.warning("Slicing data with less than 3 axes.")
+		if (isinstance(slice,int)):
+			img = img[slice,:,:]
+		elif (isinstance(slice,tuple)):
+			img = img[range(slice[0],slice[1]),:,:]
+		elif (isinstance(slice,range)):
+			img = img[slice,:,:]
+	
+	# If stretch and/or intervals given instead of norm explicitly
+	if norm is None and (interval is not None or stretch is not None): 
+		norm = visualization.ImageNormalize(img, interval=interval,stretch=stretch) # Create normalisation from intervals and/or stretch
+	
+	## Create the figure object
+	if fig is None:
+		fig, ax = subplots(subplot_kw=dict(projection=wcs, slices=(slice, 'y', 'x') if slice is not None else slice) )
+	else:
+		ax = fig.add_subplot(projection=wcs)
+		
+	ax.matshow(img,cmap=cmap,norm=norm,**kwargs)
+	
+	# Set grid on or off
+	ax.coords.grid(grid,**grid_kw)
+
+	# Correctly assign the longitude and latitude axes
+	lngax = ax.coords[wcs.wcs.lng]
+	latax = ax.coords[wcs.wcs.lat]
+	
+	# Check if axes need to flipped
+	flip_axes = False
+	if wcs.wcs.has_cd() is True:
+		cdelta = wcs.wcs.cd
+		if (abs(cdelta[0][0]) < abs(cdelta[0][1]) and abs(cdelta[1][1]) < abs(cdelta[1][0])):
+			flip_axes = True
+	
+	if flip_axes == True: # if the axes appear to be flipped with respect to the physical image axes.
+		for coord, pos in zip([lngax,latax], ['l','b']):
+			coord.set_ticks_position(pos)
+			coord.set_ticklabel_position(pos)
+			coord.set_axislabel_position(pos)
+
+	lngax.set_axislabel(lnglabel)
+	latax.set_axislabel(latlabel)
+	
+	# Set Coordinate tick formatters
+	if lngformat is not None: lngax.set_major_formatter(lngformat)
+	if latformat is not None: latax.set_major_formatter(latformat)
+	
+	return ax
+
 
 ####################################
 # Scatter plots
@@ -1317,11 +1605,11 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
 	# Bottom theta axis
 	ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1]-rlim[0])/3 else True)
 	ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90+2)%4])
-    
-	# Visible radius axis    
+	
+	# Visible radius axis	
 	ax.axis["left"].major_ticklabels.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
 	ax.axis["left"].label.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
-    
+	
 	# Labels
 	ax.axis["left"].label.set_text(rlabel)
 	ax.axis["top"].label.set_text(thetalabel)
@@ -1487,7 +1775,7 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
 			if len(multi) == 0: # No multiplier given
 				band_multi[i] = 1.0
 			elif len(multi) == 1: # Multiplier was given
-				band_multi[i] = multi[0]
+				band_multi[i] = float(multi[0])
 			else: 
 				raise ValueError(f"Statistic '{stat}' not valid. Should be given as '[n]std', where [n] is a number.")
 		else:
