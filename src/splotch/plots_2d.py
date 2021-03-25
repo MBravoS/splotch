@@ -1215,6 +1215,7 @@ def imageWCS(data,header=None,wcs=None,ext=None,slice=None,interval=None,stretch
 				  'linear':visualization.LinearStretch(),
 				  'log':visualization.LogStretch(),
 				  'sinh':visualization.SinhStretch(),
+				  'sqrt':visualization.SqrtStretch(),
 				  'squared':visualization.SquaredStretch()}
 
 	if stretch is not None:
