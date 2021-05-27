@@ -1,3 +1,6 @@
+0.5.4.3 (27/05/2021):
+-Fixed wrong colour map scale in hexbin when xlog/ylog=True and dens=True.
+
 0.5.4.2 (24/02/2021):
 -Fixed bug in splotch.statband() where functions could not be parsed into stat_low/high.
 -Added from_mid variable that gives user control over where the statistic should be calculated from
