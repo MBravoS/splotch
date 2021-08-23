@@ -1,3 +1,10 @@
+0.5.4.4 (23/08/2021):
+-Made some adjustments to splotch.curve() by adding the following functionality:
+  > curve() can now take an 'orientation' parameter which sets the independent variable to either the x or y axis.
+  > labels are now only added to the plot calls, rather than trying to add a legend at the same time.
+  > Fixed bug when expression given with substitution variables, but subs not also given.
+  > Changed behaviour of auto-boundaries
+
 0.5.4.3 (27/05/2021):
 -Fixed wrong colour map scale in hexbin when xlog/ylog=True and dens=True.
 
