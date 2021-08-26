@@ -678,7 +678,8 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 		Number of rows/columns of the subplot grid.
 	va, ha : str, optional, default: 'top', 'left'
 		The vertical alignment (va) and horizontal alignment (ha) sets the alignment of grids in the vertical and
-		horizontal directions. 
+		horizontal directions. Options for `va` are 'top', 'bottom' or 'centre' and options for `ha` are 'left',
+		'right' and 'centre'.
 		ha: 'left'		ha: 'centre'	ha: 'right'
 		va: 'top'		va: 'top'		va: 'top'
 		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
@@ -760,6 +761,14 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 	gridRef=[[0,0], [1,1], [1,2], [1,3], [2,2], [2,3], [2,3], [2,4], [2,4], [3,3], [2,5], [3,4], [3,4], 
 			   [4,4], [3,5], [3,5], [4,4], [3,6], [3,6], [4,5], [4,5], [3,7], [5,5], [5,5], [4,6], [5,5]]
 	
+	# Validate ha and va:
+	ha = 'centre' if ha == 'center' else ha
+	va = 'centre' if va == 'center' else va
+	if ha not in ['left','right','centre']:
+		raise ValueError(f"'{ha}' was not recognised for `ha`, must be one of 'left', 'right' or 'centre'")
+	if va not in ['top','bottom','centre']:
+		raise ValueError(f"'{va}' was not recognised for `va`, must be one of 'top', 'bottom' or 'centre'")
+
 	if (isinstance(sharex, bool)):
 		sharex="all" if sharex else "none"
 	if (isinstance(sharey, bool)):
@@ -783,7 +792,7 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
 			else:
 				nrows=int(ceil(naxes/ncols))
 	
-	# How many axes away from filling the gridspec evenly and completely
+	# Number of axes away from filling the gridspec evenly and completely
 	delta=(nrows*ncols) - naxes
 	
 	# Assert that ha/va != center if widths/heights given

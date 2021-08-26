@@ -1,3 +1,6 @@
+0.5.4.5 (26/08/2021):
+-Fixed bug in splotch.subplots() that allowed any string to be parsed into parameters va and ha, with no warning or exception.
+
 0.5.4.4 (23/08/2021):
 -Made some adjustments to splotch.curve() by adding the following functionality:
   > curve() can now take an 'orientation' parameter which sets the independent variable to either the x or y axis.
