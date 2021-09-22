@@ -317,7 +317,7 @@ def simpler_dict_splicer(plot_dict,Ld,Lx):
 	Ld : int
 		Number of plots to be made.
 	Lx : list
-		Contains the lenght of the data array of each plot to be made.
+		Contains the length of the data array of each plot to be made.
 	
 	Returns
 	-------

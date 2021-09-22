@@ -475,7 +475,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     elif (isinstance(expr, Expr)):
         pass
     else:
-        raise TypeError(f"`expr` must be of type `str` or sympy.Expr, instead got {type(expr)}.")
+        raise TypeError(f"`expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr)}.")
     
     if not isfunc: # expr is a Sympy expression
         symbols=expr.free_symbols # Get all of the Symbols in the expression
