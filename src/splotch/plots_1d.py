@@ -26,8 +26,8 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 		Sets label(s) for line(s) and plots legend.
 	lab_loc : int, optional
 		Defines the position of the legend. Defaults as lab_loc=0.
-	ax : pyplot.Axes, optional
-		Use the given axes to make the plot, defaults to the current axes.
+	ax : pyplot.Axes or list-like, optional
+		Specifies the axes on which to plot the lines, defaults to the current axes.
 	plot_kw : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
 	**kwargs: Line2D properties, optional
@@ -38,12 +38,14 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 	Returns
 	-------
 	lines
-		A list of Line2D objects representing the plotted data.
+		A list of Line2D objects representing the plotted lines. If more than one subplot and/or line is plotted,
+		the resulting list will be multi-dimensional with the dimensions corresponding to the axes/lines.
 	
 	"""
 	
 	from matplotlib.pyplot import plot, legend, gca
-	from .base_func import axes_handler,plot_finalizer,dict_splicer,is_numeric
+	from splotch.base_func import axes_handler,plot_finalizer,dict_splicer,is_numeric
+	from numpy import ndarray, shape, array, squeeze
 	from warnings import warn
 	
 	# Handle deprecated variables
@@ -53,12 +55,20 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
 			if (dep=='plabel'): label = kwargs.pop(dep)
 	
+	# Set the current axis
 	if ax is not None:
-		old_axes=axes_handler(ax)
+		if isinstance(ax, (list, tuple, ndarray)):
+			if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
+				ax = array(ax).flatten()
+			old_ax=axes_handler(ax[0])
+		else:
+			old_ax=axes_handler(ax)
+			ax = [ax]
 	else:
-		ax=gca()
-		old_axes=ax
+		old_ax=ax
+		ax=[gca()]
 	
+	# Validate input parameters
 	if not (any([is_numeric(var) for var in [x,y,a,b]])): # If nothing has been specified
 		raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'a' or 'b'")
 	
@@ -115,33 +125,30 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
 	plot_par=dict_splicer(plot_par,L,[1]*L)
 	
-	lines=[] # Initialising list which contains each line
-	if (x is not None):
-		for ii, xx in enumerate(x):
-			l=ax.axvline(x=xx,**plot_par[ii],label=label[ii])
-			lines.append(l)
-	if (y is not None):
-		for ii, yy in enumerate(y):
-			l=ax.axhline(y=yy,**plot_par[ii],label=label[ii])
-			lines.append(l)
-	if (a is not None):
-		for ii, pars in enumerate(zip(a,b)):
-			aa=pars[0]; bb=pars[1]
-			
-			xLims=ax.get_xlim()
-			yLims=ax.get_ylim()
-			
-			lines.append(plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii]))
-			
-			ax.set_xlim(xLims)
-			ax.set_ylim(yLims)
-			
-	if any(label):
-		legend(loc=lab_loc)
-	if ax is not None:
-		old_axes=axes_handler(old_axes)
+	lines=[[] for kk in range(len(ax))] # Initialise list which contains each Line2D object
+	for jj in range(len(ax)): # Loop over all axes
+		if (x is not None):
+			for ii, xx in enumerate(x):
+				lines[jj].append(ax[jj].axvline(x=xx,**plot_par[ii],label=label[ii]))
+		if (y is not None):
+			for ii, yy in enumerate(y):
+				lines[jj].append(ax[jj].axhline(y=yy,**plot_par[ii],label=label[ii]))
+		if (a is not None):
+			for ii, (aa,bb) in enumerate(zip(a,b)):
+				xLims=ax[jj].get_xlim()
+				yLims=ax[jj].get_ylim()
+				
+				lines[jj].append(ax[jj].plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii])[0])
+				ax[jj].set_xlim(xLims)
+				ax[jj].set_ylim(yLims)
+				
+		if any(label):
+			ax[jj].legend(loc=lab_loc)
+	
+	if ax is not None: # Reset the previously set axis
+		old_ax=axes_handler(old_ax)
 
-	return lines[0] if len(lines) == 1 else lines
+	return squeeze(lines).tolist() # Reduce the dimensionality of the lines, if needed
 
 ####################################
 # Broken axis plot
@@ -341,238 +348,238 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 # Curves from mathematical expressions #
 ########################################
 def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, bounds=None, num=101, 
-          xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None, 
-          title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
-    """Plot Mathematical Expressions
-    
-    Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
-    Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all 
-    others are substitution variables, which can take a variable number of values producing the corresponding number
-    of curves.
-    
-    Parameters
-    ----------
-    expr : str, sympy.Expr, callable() or list-like
-        An expression parsed either as a string, sympy expression or callable (function or lambda)
-        which will be evaluated by the function in the range of `bounds`.
-    var : str or sympy symbol, default: 'x'
-        The independent variable on which to evaluate the expression (i.e. the variable on the x-axis).
-        This defaults to the first non-numeric element of the expression or otherwise simply assumes
-        this to be 'x' (if `orientation='horizotnal'`, else 'y').
-    subs : dict, optional
-        If `expr` contains more symbols than the independent variable `var`, this dictionary will
-        substitute numerical values for all additonal symbols given. `subs` is required if additional
-        symbols are specified in the expression.
-    permute : bool, optional (default: False)
-        If `subs` contains more than one substitution variable with multiple values, setting `permute=True`
-        will generate curves for each permutation of values given.
-        For example, `splotch.curve('a*x^2 + b',subs = {'a'=[1,2],'b'=[3,4,5]})` will create six curves.
-    orientation : str, optional (default: 'horizontal')
-        The orientation of the independent axis, i.e. whether the independent variable is defined along
-        the x-axis ('horizontal') or the y-axis ('vertical') of the plot.
-        splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical'). 
-    bounds : list-like, optional
-        The range over which the function will be plotted. If not given, these default to
-        the current bounds of the plot.
-    num : int, optional (default: 101)
-        The number of values along the independent variable on which to evaulate `expr`.
-    xlim : tuple-like, optional
-        Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
-    ylim : tuple-like, optional
-        Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
-    xinvert : bool or list, optional
-        If true inverts the x-axis.
-    yinvert : bool or list, optional
-        If true inverts the y-axis.
-    xlog : bool or list, optional
-        If True the scale of the x-axis is logarithmic.
-    ylog : bool or list, optional
-        If True the scale of the x-axis is logarithmic.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
-    title : str, optional
-        Sets the title of the plot
-    xlabel : str, optional
-        Sets the label of the x-axis.
-    ylabel : str, optional
-        Sets the label of the y-axis.
-    label : bool, str or list-like, optional (default: True)
-        Sets the label(s) of the curve(s) for the legend. `label` can be one of:
-            - `True`:
-                Creates a label for every curve defined by `subs`. The label will list all values
-                `subs` that produced the curve. If a parameter in `subs` has only one value
-                (i.e. constant amongst all curves), it will not appear in the label.
-            - `str`:
-                If a single string is given, only one label will be shown and all curves will
-                be shown as the label handle.
-            - list-like (length must equal to number of curves):
-                A label given to each curve that is produced.
-            - `False` or `None`:
-                No label will be assigned and a legend will not be shown.
-    uselatex : bool, optional (default: True)
-        If `label==True`, sets whether to use LaTeX when creating the labels for legend.
-    ax : pyplot.Axes, optional
-        Use the given axes to make the plot, defaults to the current axes.
-    plot_kw : dict, optional
-        Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D
-        properties. It is recommended that kwargs be parsed implicitly through **kwargs
-        for readability.
-    **kwargs: Line2D properties, optional
-        kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
-        antialiasing, etc. A list of available `Line2D` properties can be found here: 
-        https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
-    Returns
-    -------
-    curves : list of (or single) pyplot.Line2D object(s)
-        A list of Line2D objects created for each curved create by `subs`.
-    expr : Sympy.Expr
-        If expr was given as a string, this returns the sympy expression created from `sympy.sympify()`.
-        Otherwise, simply returns the `expr` that was given.
-    
-    """
-    
-    from splotch.base_func import axes_handler,dict_splicer,plot_finalizer,simpler_dict_splicer
-    
-    from sympy import symbols, sympify, Expr, latex
-    from sympy.utilities.lambdify import lambdify
-    from numpy import linspace, logspace, log10, empty, array, meshgrid, prod
-    from collections import Iterable
-    
-    from matplotlib.pyplot import plot, legend, gca
-    from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
-    from matplotlib import rcParams
-    from matplotlib.legend import Legend
+		  xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None, 
+		  title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
+	"""Plot Mathematical Expressions
+	
+	Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
+	Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all 
+	others are substitution variables, which can take a variable number of values producing the corresponding number
+	of curves.
+	
+	Parameters
+	----------
+	expr : str, sympy.Expr, callable() or list-like
+		An expression parsed either as a string, sympy expression or callable (function or lambda)
+		which will be evaluated by the function in the range of `bounds`.
+	var : str or sympy symbol, default: 'x'
+		The independent variable on which to evaluate the expression (i.e. the variable on the x-axis).
+		This defaults to the first non-numeric element of the expression or otherwise simply assumes
+		this to be 'x' (if `orientation='horizotnal'`, else 'y').
+	subs : dict, optional
+		If `expr` contains more symbols than the independent variable `var`, this dictionary will
+		substitute numerical values for all additonal symbols given. `subs` is required if additional
+		symbols are specified in the expression.
+	permute : bool, optional (default: False)
+		If `subs` contains more than one substitution variable with multiple values, setting `permute=True`
+		will generate curves for each permutation of values given.
+		For example, `splotch.curve('a*x^2 + b',subs = {'a'=[1,2],'b'=[3,4,5]})` will create six curves.
+	orientation : str, optional (default: 'horizontal')
+		The orientation of the independent axis, i.e. whether the independent variable is defined along
+		the x-axis ('horizontal') or the y-axis ('vertical') of the plot.
+		splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical'). 
+	bounds : list-like, optional
+		The range over which the function will be plotted. If not given, these default to
+		the current bounds of the plot.
+	num : int, optional (default: 101)
+		The number of values along the independent variable on which to evaulate `expr`.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	label : bool, str or list-like, optional (default: True)
+		Sets the label(s) of the curve(s) for the legend. `label` can be one of:
+			- `True`:
+				Creates a label for every curve defined by `subs`. The label will list all values
+				`subs` that produced the curve. If a parameter in `subs` has only one value
+				(i.e. constant amongst all curves), it will not appear in the label.
+			- `str`:
+				If a single string is given, only one label will be shown and all curves will
+				be shown as the label handle.
+			- list-like (length must equal to number of curves):
+				A label given to each curve that is produced.
+			- `False` or `None`:
+				No label will be assigned and a legend will not be shown.
+	uselatex : bool, optional (default: True)
+		If `label==True`, sets whether to use LaTeX when creating the labels for legend.
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D
+		properties. It is recommended that kwargs be parsed implicitly through **kwargs
+		for readability.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
+		antialiasing, etc. A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
+	
+	Returns
+	-------
+	curves : list of (or single) pyplot.Line2D object(s)
+		A list of Line2D objects created for each curved create by `subs`.
+	expr : Sympy.Expr
+		If expr was given as a string, this returns the sympy expression created from `sympy.sympify()`.
+		Otherwise, simply returns the `expr` that was given.
+	
+	"""
+	
+	from splotch.base_func import axes_handler,dict_splicer,plot_finalizer,simpler_dict_splicer
+	
+	from sympy import symbols, sympify, Expr, latex
+	from sympy.utilities.lambdify import lambdify
+	from numpy import linspace, logspace, log10, empty, array, meshgrid, prod
+	from collections import Iterable
+	
+	from matplotlib.pyplot import plot, legend, gca
+	from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
+	from matplotlib import rcParams
+	from matplotlib.legend import Legend
 
-    from warnings import warn
-    
-    # Handle deprecated variables
-    deprecated = {'plabel':'label'}
-    for dep in deprecated:
-        if dep in kwargs:
-            warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep=='plabel'): label = kwargs.pop(dep)
-    
-    if ax is not None:
-        old_axes=axes_handler(ax)
-    else:
-        ax=gca()
-        old_axes=ax
-        
-    # Assign xlim/ylim to current lims if none given
-    if xlim == None: xlim = ax.get_xlim()
-    if ylim == None: ylim = ax.get_ylim()
-    # Assign bounds if none given  
-    if (bounds == None):
-        bounds = xlim if orientation=='horizontal' else ylim
-    
-    # Parse expression
-    isfunc=False
-    if (isinstance(expr, str)):
-        expr=sympify(expr)
-    elif (callable(expr)):
-        isfunc=True
-    elif (isinstance(expr, Expr)):
-        pass
-    else:
-        raise TypeError(f"`expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr)}.")
-    
-    if not isfunc: # expr is a Sympy expression
-        symbols=expr.free_symbols # Get all of the Symbols in the expression
-        symbolkeys=[str(symb) for symb in symbols] # convert these to strings, instead of sympy.Symbols
-        
-        if (var != None): # Validate the independent variable
-            if (var not in symbolkeys):
-                raise ValueError(f"Independent variable '{var}' was not found in expr='{expr}'")
-        else: # Assume independent variable is 'x', otherwise, assume the first symbol.
-            if orientation == 'horizontal':
-                var='x' if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
-            else: # first test for 'y' as an independent variable, then default to x.
-                if 'y' in symbolkeys:
-                    var = 'y'
-                else:
-                    var='x' if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
-            
-        symbolkeys.remove(var) # remove the independent variable, var from the symbols
-        
-        # Validate the substitution variable names
-        if subs is None: subs = dict()
-        if (var in list(subs)):
-            raise ValueError(f"Independent variable '{var}' should not be in subs")
-        for key in list(subs): 
-            if (key not in symbolkeys):
-                raise KeyError(f"Substitution variable '{key}' does not exist in 'expr'")
-        
-        # Check for missing substitution variables
-        missing = set(symbolkeys) - set(subs)
-        if len(missing) > 0:
-            raise TypeError(f"`expr` missing {len(missing)} required substitution variable{'s' if len(missing) > 1 else ''}: {list(missing)}")
-    
-    # The lengths of each substitute value list, len=1 if just a single value
-    lens=[len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
-    if (permute == True):
-        L = prod(lens)
-        perms=array(meshgrid(*subs.values())).reshape(len(subs),-1)
-        permsubs={}
-        for ii, key in enumerate(list(subs)):
-            permsubs[key]=perms[ii]
-        subsarr=simpler_dict_splicer(permsubs,L,[1]*L)
-    else:
-        L=max(lens) if len(lens) > 0 else 1
-        subsarr=simpler_dict_splicer(subs,L,[1]*L)
-    
-    # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    plot_par={**plot_kw, **kwargs}
-    
-    # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
+	from warnings import warn
+	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
+		
+	# Assign xlim/ylim to current lims if none given
+	if xlim == None: xlim = ax.get_xlim()
+	if ylim == None: ylim = ax.get_ylim()
+	# Assign bounds if none given  
+	if (bounds == None):
+		bounds = xlim if orientation=='horizontal' else ylim
+	
+	# Parse expression
+	isfunc=False
+	if (isinstance(expr, str)):
+		expr=sympify(expr)
+	elif (callable(expr)):
+		isfunc=True
+	elif (isinstance(expr, Expr)):
+		pass
+	else:
+		raise TypeError(f"`expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr)}.")
+	
+	if not isfunc: # expr is a Sympy expression
+		symbols=expr.free_symbols # Get all of the Symbols in the expression
+		symbolkeys=[str(symb) for symb in symbols] # convert these to strings, instead of sympy.Symbols
+		
+		if (var != None): # Validate the independent variable
+			if (var not in symbolkeys):
+				raise ValueError(f"Independent variable '{var}' was not found in expr='{expr}'")
+		else: # Assume independent variable is 'x', otherwise, assume the first symbol.
+			if orientation == 'horizontal':
+				var='x' if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
+			else: # first test for 'y' as an independent variable, then default to x.
+				if 'y' in symbolkeys:
+					var = 'y'
+				else:
+					var='x' if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
+			
+		symbolkeys.remove(var) # remove the independent variable, var from the symbols
+		
+		# Validate the substitution variable names
+		if subs is None: subs = dict()
+		if (var in list(subs)):
+			raise ValueError(f"Independent variable '{var}' should not be in subs")
+		for key in list(subs): 
+			if (key not in symbolkeys):
+				raise KeyError(f"Substitution variable '{key}' does not exist in 'expr'")
+		
+		# Check for missing substitution variables
+		missing = set(symbolkeys) - set(subs)
+		if len(missing) > 0:
+			raise TypeError(f"`expr` missing {len(missing)} required substitution variable{'s' if len(missing) > 1 else ''}: {list(missing)}")
+	
+	# The lengths of each substitute value list, len=1 if just a single value
+	lens=[len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
+	if (permute == True):
+		L = prod(lens)
+		perms=array(meshgrid(*subs.values())).reshape(len(subs),-1)
+		permsubs={}
+		for ii, key in enumerate(list(subs)):
+			permsubs[key]=perms[ii]
+		subsarr=simpler_dict_splicer(permsubs,L,[1]*L)
+	else:
+		L=max(lens) if len(lens) > 0 else 1
+		subsarr=simpler_dict_splicer(subs,L,[1]*L)
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	plot_par={**plot_kw, **kwargs}
+	
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par=dict_splicer(plot_par,L,[1]*L)
 
-    # Create the legend object
-    if bool(label) == False: # label was `None` or `False`
-        labellist = [None]*L
-    elif label == True: # Auto-generate labels
-        if subsarr == [{}]:
-            labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
-        else:
-            labellist = []
-            exprstr = f"${latex(expr)}$" if uselatex else str(expr)
-            for ii in range(L): # Make a label for each of sub values
-                if uselatex:
-                    labellist.append(f"{exprstr} (" + "; ".join( [f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
-                else:
-                    labellist.append(f"{exprstr} (" + "; ".join( [f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
-    elif isinstance(label,str): # A single string
-        labellist = [label]*L
-    else:
-        try: # Test whether the parameter is iterable
-            _ = (k for k in label)
-            if (len(label) != L):
-                raise TypeError(f"Number of labels ({len(label)}) does not match the number of curves ({L}).")
-            else:
-                labellist = label
-        except TypeError: # was not an iterable
-            raise TypeError(f"`label` of type {type(label)} is not recognised.")
-                                 
-    # Plot the curves
-    vararr=logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
-    curves=[None]*L
-    for ii in range(L):
-        if (isfunc):
-            curvearr=expr(vararr, **subsarr[ii])
-        else:
-            func=lambdify(var, expr.subs(subsarr[ii]), 'numpy') # returns a numpy-ready function
-            curvearr=func(vararr)
-            
-        curves[ii]=plot(vararr if orientation=='horizontal' else curvearr,
-                        curvearr if orientation=='horizontal' else vararr,
-                        label=labellist[ii],**plot_par[ii])[0]
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
-    
-    if ax is not None:
-        old_axes=axes_handler(old_axes)
-    
-    return(curves[0] if len(curves)==1 else curves, expr)
+	# Create the legend object
+	if bool(label) == False: # label was `None` or `False`
+		labellist = [None]*L
+	elif label == True: # Auto-generate labels
+		if subsarr == [{}]:
+			labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
+		else:
+			labellist = []
+			exprstr = f"${latex(expr)}$" if uselatex else str(expr)
+			for ii in range(L): # Make a label for each of sub values
+				if uselatex:
+					labellist.append(f"{exprstr} (" + "; ".join( [f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+				else:
+					labellist.append(f"{exprstr} (" + "; ".join( [f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+	elif isinstance(label,str): # A single string
+		labellist = [label]*L
+	else:
+		try: # Test whether the parameter is iterable
+			_ = (k for k in label)
+			if (len(label) != L):
+				raise TypeError(f"Number of labels ({len(label)}) does not match the number of curves ({L}).")
+			else:
+				labellist = label
+		except TypeError: # was not an iterable
+			raise TypeError(f"`label` of type {type(label)} is not recognised.")
+								 
+	# Plot the curves
+	vararr=logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
+	curves=[None]*L
+	for ii in range(L):
+		if (isfunc):
+			curvearr=expr(vararr, **subsarr[ii])
+		else:
+			func=lambdify(var, expr.subs(subsarr[ii]), 'numpy') # returns a numpy-ready function
+			curvearr=func(vararr)
+			
+		curves[ii]=plot(vararr if orientation=='horizontal' else curvearr,
+						curvearr if orientation=='horizontal' else vararr,
+						label=labellist[ii],**plot_par[ii])[0]
+	
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+	
+	return(curves[0] if len(curves)==1 else curves, expr)
 
 ####################################
 # 1D histogram and binned statistics

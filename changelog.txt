@@ -1,3 +1,6 @@
+0.5.5.0 (24/09/2021):
+-Upgraded splotch.axline() so that it can accept a list of axes on which to plot lines.
+
 0.5.4.6 (22/09/2021):
 -Fixed spelling errors
 
