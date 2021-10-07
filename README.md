@@ -15,7 +15,7 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.5.5.0
+*Current version*: 0.5.6.0
 
 *Planned releases*:
 * Removal of existing deprecation warnings (0.5.5.0).

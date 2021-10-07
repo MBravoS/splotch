@@ -581,6 +581,280 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
 	
 	return(curves[0] if len(curves)==1 else curves, expr)
 
+
+##################################################
+# Piecewise curves from mathematical expressions #
+##################################################
+def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=None, intervals=[], permute=False, num=101, 
+				   xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None, 
+				   title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
+	"""Plot Piecewise Mathematical Expressions
+	
+	Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
+	Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all 
+	others are substitution variables. This function can only accept one value per substitution variable.
+	
+	Parameters
+	----------
+	expr : str, sympy.Expr, callable() or list-like
+		An expression parsed either as a string, sympy expression or callable (function or lambda)
+		which will be evaluated by the function in the range of `bounds`. A piece-wise function is defined 
+		by parsing a list of expressions. The piece-wise functionality must also be reflected in `bounds`.
+	var : str or sympy symbol, required.
+		The independent variable on which to evaluate the expression (i.e. the variable on the x-axis).
+	subs : dict, optional
+		If `expr` contains more symbols than the independent variable `var`, this dictionary will
+		substitute numerical values for all additonal symbols given. `subs` is required if additional
+		symbols are specified in the expression.
+	orientation : str, optional (default: 'horizontal')
+		The orientation of the independent axis, i.e. whether the independent variable is defined along
+		the x-axis ('horizontal') or the y-axis ('vertical') of the plot.
+		splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical'). 
+	bounds : list-like, optional
+		The range over which the function will be plotted. If not given, these default to the current bounds 
+		of the axes being plotted onto, given by `ax`.
+	intervals : list-like, required
+		The points at which the curve partitions each of the N expressions given in `expr`. The values must lie
+		lie within `bounds` as these are assumed to be the minimum and maximum points of the intervals.
+	num : int, optional (default: 101)
+		The number of values along the independent variable on which to evaulate `expr`.
+	xlim : tuple-like, optional
+		Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
+	ylim : tuple-like, optional
+		Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
+	xinvert : bool or list, optional
+		If true inverts the x-axis.
+	yinvert : bool or list, optional
+		If true inverts the y-axis.
+	xlog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	ylog : bool or list, optional
+		If True the scale of the x-axis is logarithmic.
+	grid : boolean, optional
+		If not given defaults to the value defined in splotch.Params.
+	title : str, optional
+		Sets the title of the plot
+	xlabel : str, optional
+		Sets the label of the x-axis.
+	ylabel : str, optional
+		Sets the label of the y-axis.
+	label : bool, str or list-like, optional (default: True)
+		Sets the label(s) of the curve(s) for the legend. `label` can be one of:
+			- `True`:
+				Creates a label for every curve defined by `subs`. The label will list all values
+				`subs` that produced the curve. If a parameter in `subs` has only one value
+				(i.e. constant amongst all curves), it will not appear in the label.
+			- `str`:
+				If a single string is given, only one label will be shown and all curves will
+				be shown as the label handle.
+			- list-like (length must equal to number of curves):
+				A label given to each curve that is produced.
+			- `False` or `None`:
+				No label will be assigned and a legend will not be shown.
+	uselatex : bool, optional (default: True)
+		If `label==True`, sets whether to use LaTeX when creating the labels for legend.
+	ax : pyplot.Axes, optional
+		Use the given axes to make the plot, defaults to the current axes.
+	plot_kw : dict, optional
+		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D
+		properties. It is recommended that kwargs be parsed implicitly through **kwargs
+		for readability.
+	**kwargs: Line2D properties, optional
+		kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
+		antialiasing, etc. A list of available `Line2D` properties can be found here: 
+		https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
+	
+	Returns
+	-------
+	curves : list of (or single) pyplot.Line2D object(s)
+		A list of Line2D objects created for each curved create by `subs`.
+	expr : Sympy.Expr
+		If expr was given as a string, this returns the sympy expression created from `sympy.sympify()`.
+		Otherwise, simply returns the `expr` that was given.
+	
+	"""
+	
+	from splotch.base_func import axes_handler,dict_splicer,plot_finalizer,simpler_dict_splicer
+	
+	from sympy import symbols, sympify, Expr, latex
+	from sympy.utilities.lambdify import lambdify
+	from numpy import linspace, logspace, log10, empty, array, meshgrid, prod, piecewise
+	from collections import Iterable
+	
+	from matplotlib.pyplot import plot, legend, gca
+	from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
+	from matplotlib import rcParams
+	from matplotlib.legend import Legend
+
+	from warnings import warn
+	
+	# Handle deprecated variables
+	deprecated = {'plabel':'label'}
+	for dep in deprecated:
+		if dep in kwargs:
+			warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
+			if (dep=='plabel'): label = kwargs.pop(dep)
+	
+	if ax is not None:
+		old_axes=axes_handler(ax)
+	else:
+		ax=gca()
+		old_axes=ax
+		
+	# Assign bounds if none given  
+	if (bounds == None):
+		if orientation == 'horizontal':
+			bounds = xlim if xlim is not None else ax.get_xlim()
+		else:
+			bounds = ylim if ylim is not None else ax.get_ylim()
+		
+	if var is None:
+		raise ValueError("Independent variable `var` must be given for piecewise expressions.")
+	
+	# Check if iterable
+	try: # duck-type check
+		_ = (k for k in expr)
+		if isinstance(expr,str):
+			expr = [expr]
+	except (TypeError):
+		expr = [expr]
+	
+	# Parse expressions
+	isfunc=[False]*len(expr)
+	for ii in range(len(expr)):
+		if (isinstance(expr[ii], str)):
+			expr[ii]=sympify(expr[ii])
+		elif (callable(expr[ii])):
+			isfunc[ii] = True
+		elif (isinstance(expr[ii], Expr)):
+			pass
+		else:
+			raise TypeError(f"Elements of `expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr[ii])}.")
+			
+	if not (all(isfunc) or all([not b for b in isfunc])): # Must either be all expressions or all callables
+		raise TypeError("`expr` cannot mix callable functions with expressions.")
+		
+	
+	# Validate the correct number of intervals and that they are within the bounds
+	if len(intervals) != len(expr)-1: 
+		raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(expr)} expressions.")
+	
+	if len(intervals) > 0:
+		if np.min(intervals) < bounds[0]:
+			raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
+		elif np.max(intervals) > bounds[1]:
+			raise ValueError(f"The maximum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
+
+	# Validate the substitution variable names
+	symbolkeysArr = []
+	if (var in list(subs)):
+		raise ValueError(f"Independent variable '{var}' should not be in subs")
+		
+	if subs is None: subs = dict()
+	if not any(isfunc): # expr contains Sympy expressions
+		symbols = expr[0].free_symbols
+		for ii in range(len(expr)):
+			symbols=expr[ii].free_symbols # Get expression Symbols
+			symbolkeys=[str(symb) for symb in symbols] # convert these to strings, instead of sympy.Symbols
+			
+			if (var != None): # Validate the independent variable
+				if (var not in symbolkeys):
+					raise ValueError(f"Independent variable '{var}' was not found in expr='{expr[0]}'.")
+			
+			# remove the independent variable from the symbols and append to list
+			symbolkeys.remove(var)
+			symbolkeysArr.append(symbolkeys)
+		
+		# Check for missing substitution variables
+		missing = set(symbolkeys) - set(subs)
+		if len(missing) > 0:
+			raise TypeError(f"`expr` missing {len(missing)} required substitution variable{'s' if len(missing) > 1 else ''}: {list(missing)}")
+
+		# Check for any substitution variables that are not in any expressions
+		for key in list(subs): 
+			if not any([key in symb for symb in symbolkeysArr]):
+				raise KeyError(f"Substitution variable '{key}' does not exist in any 'expr'")
+
+	# The lengths of each substitute value list, len=1 if just a single value
+	lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
+	if (permute == True):
+		L = prod(lens)
+		perms=array(meshgrid(*subs.values())).reshape(len(subs),-1)
+		permsubs={}
+		for ii, key in enumerate(list(subs)):
+			permsubs[key]=perms[ii]
+		subsarr=simpler_dict_splicer(permsubs,L,[1]*L)
+	else:
+		L=max(lens) if len(lens) > 0 else 1
+		subsarr=simpler_dict_splicer(subs,L,[1]*L)
+	
+	# Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
+	plot_par={**plot_kw, **kwargs}
+	
+	# Create 'L' number of plot kwarg dictionaries to parse into each plot call
+	plot_par=dict_splicer(plot_par,L,[1]*L)
+
+	# Create the legend object
+	if bool(label) == False: # label was `None` or `False`
+		labellist = None
+	
+	elif label == True: # Auto-generate labels
+		if subsarr == [{}]:
+			labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
+		else:
+			labellist = []
+			exprstr = f"${latex(expr)}$" if uselatex else str(expr)
+			for ii in range(L): # Make a label for each of sub values
+				if uselatex:
+					labellist.append(f"{exprstr} (" + "; ".join( [f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+				else:
+					labellist.append(f"{exprstr} (" + "; ".join( [f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+	
+	elif isinstance(label,str): # A single string
+		labellist = [label]*L
+	
+	else:
+		try: # Test whether the parameter is iterable
+			_ = (k for k in label)
+		except TypeError: # was not an iterable
+			raise TypeError(f"`label` of type {type(label)} is not recognised.")
+			
+		if (len(label) != L):
+			raise TypeError(f"Number of labels ({len(label)}) does not match the number of curves ({L}).")
+		else:
+			labellist = label
+
+	vararr = logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
+	if len(intervals) == 0:
+		condlist = [True]*len(vararr)
+	else:
+		condlist = [vararr <= intervals[0]] # define the partition conditions
+		for ii in range(len(intervals)):
+			if ii == len(intervals) - 1:
+				condlist.append(vararr >= intervals[ii])
+			else:
+				condlist.append((vararr >= intervals[ii]) & (vararr < intervals[ii+1]))
+	
+	curves=[None]*L
+	for ii in range(L):
+		if any(isfunc):
+			curvearr=piecewise(x=vararr, condlist=condlist, funclist=expr, **subsarr[ii])
+		else:
+			funclist = [lambdify(var, e.subs(subsarr[ii]), 'numpy') for e in expr] # returns a numpy-ready function
+			curvearr = piecewise(x=vararr, condlist=condlist, funclist=funclist)
+
+		curves[ii]=plot(vararr if orientation=='horizontal' else curvearr,
+						curvearr if orientation=='horizontal' else vararr,
+						label=labellist[ii],**plot_par[ii])[0]
+
+	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	
+	if ax is not None:
+		old_axes=axes_handler(old_axes)
+	
+	return(curves[0] if len(curves)==1 else curves, expr)
+
+
 ####################################
 # 1D histogram and binned statistics
 ####################################
