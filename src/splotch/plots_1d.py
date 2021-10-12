@@ -740,9 +740,9 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
 		raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(expr)} expressions.")
 	
 	if len(intervals) > 0:
-		if np.min(intervals) < bounds[0]:
+		if min(intervals) < bounds[0]:
 			raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
-		elif np.max(intervals) > bounds[1]:
+		elif max(intervals) > bounds[1]:
 			raise ValueError(f"The maximum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
 
 	# Validate the substitution variable names
