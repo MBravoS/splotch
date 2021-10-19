@@ -1,3 +1,10 @@
+0.5.6.2 (19/10/2021):
+-Fixed following problems with splotch.curve_piecewise
+  > Not able to plot horizontal/vertical lines
+  > Error is var not explicitly given.
+  > expr and intervals does not accept tuples
+  > subs had to be specified for all expressions rather than those they were relevant to
+
 0.5.6.1 (19/10/2021):
 -Modified splotch.curve() so that an independent variable is not strictly required, allowing for constant expressions, i.e. horizontal lines.
 
