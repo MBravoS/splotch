@@ -1,3 +1,6 @@
+0.5.6.1 (19/10/2021):
+-Modified splotch.curve() so that an independent variable is not strictly required, allowing for constant expressions, i.e. horizontal lines.
+
 0.5.6.0 (07/10/2021):
 -Added function curve_piecewise() which works similarly to curve() but can be parsed piecewise expressions.
 
