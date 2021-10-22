@@ -145,10 +145,11 @@ def axline(x=None,y=None,a=None,b=None,label=None,lab_loc=0,ax=None,plot_kw={},*
 		if any(label):
 			ax[jj].legend(loc=lab_loc)
 	
-	if ax is not None: # Reset the previously set axis
+	if old_ax is not None: # Reset the previously set axis
 		old_ax=axes_handler(old_ax)
 
 	return squeeze(lines).tolist() # Reduce the dimensionality of the lines, if needed
+
 
 ####################################
 # Broken axis plot
@@ -327,11 +328,11 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 
 		# Check that there is no duplicate ticks over both axes	
 	if (xbreak):
-			if (ax.get_xticks()[-1] == ax2.get_xticks()[0]):
-				if (xbreak[0] >= (xlims[0] + xlims[1])*0.5):
-					ax.set_xticks(ax.get_xticks()[:-1]) # Remove duplicate tick on left side
-				else:
-					ax2.set_xticks(ax2.get_xticks()[1:]) # Remove duplicate tick on right side
+		if (ax.get_xticks()[-1] == ax2.get_xticks()[0]):
+			if (xbreak[0] >= (xlims[0] + xlims[1])*0.5):
+				ax.set_xticks(ax.get_xticks()[:-1]) # Remove duplicate tick on left side
+			else:
+				ax2.set_xticks(ax2.get_xticks()[1:]) # Remove duplicate tick on right side
 	sca(ax)
 	
 	if any(label):

@@ -1,3 +1,6 @@
+0.5.6.4 (22/10/2021):
+-Fixed axis setting bug in splotch.axline()
+
 0.5.6.3 (22/10/2021):
 -Fixed some bugs with imports in curve_piecewise()
 
