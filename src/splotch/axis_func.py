@@ -200,22 +200,20 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	"""
 	
 	from .base_func import axes_handler, dict_splicer
-	from matplotlib.pyplot import gca
+	from matplotlib.pyplot import gca, colorbar
 	from mpl_toolkits.axes_grid1.inset_locator import inset_axes, zoomed_inset_axes
-	from mpl_toolkits.axes_grid1.colorbar import colorbar
 	import matplotlib.ticker as tckr
 
 	
 	# Validate axis input
 	if ax is not None:
 		try: # check if iterable
-			_=(i for i in ax)
-			old_axes=axes_handler(ax[0])
-			axes=ax
+			_ = (i for i in ax)
+			old_axes = axes_handler(ax[0])
+			axes = ax
 		except (TypeError):
 			old_axes=axes_handler(ax)
-			axes=[ax]
-			
+			axes=[ax]  
 	else:
 		axes=[gca()]
 		old_axes=axes[0]
@@ -233,12 +231,12 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	
 	# Get width/height values of colorbar
 	if (width == None and height == None):
-		width, height=(aspect, 1.0-ins*2*pad) if orientation is 'vertical' else (1.0-ins*2*pad, aspect)
+		width, height=(aspect, 1.0-ins*2*pad) if orientation == 'vertical' else (1.0-ins*2*pad, aspect)
 	else:
 		if height == None:
-			height=width/aspect if orientation is 'vertical' else aspect*width
+			height=width/aspect if orientation == 'vertical' else aspect*width
 		elif width == None:
-			width=aspect*height if orientation is 'vertical' else height/aspect
+			width=aspect*height if orientation == 'vertical' else height/aspect
 	
 	# Vertically-oriented colorbars
 	vertPositions={1:(1+pad-ins*(2*pad+width), 1-height-ins*pad, width, height),
@@ -273,11 +271,11 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	cbars=[] # Initiate empty list of colorbars for output
 	for ii, ax in enumerate(axes):
 		if mappable == None:
-			mappables=[child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
+			mappables = [child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
 			if len(mappables) == 1:
 				mapper=mappables[0]
 			else:
-				mapper=mappables[0]
+				mapper=mappables
 		else:
 			try: # check if iterable
 				if (len(mappable) == len(axes)):
@@ -288,17 +286,17 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 					raise ValueError("Number of mappables given must be either 1 or equal to the number of axes specified.")
 			except (TypeError):
 				mapper=mappable
-		
+				
 		cax=inset_axes(ax, width='100%', height='100%',
-						 bbox_to_anchor=vertPositions[loc] if orientation is 'vertical' else horPositions[loc],
+						 bbox_to_anchor=vertPositions[loc] if orientation == 'vertical' else horPositions[loc],
 						 bbox_transform=transform if transform != None else ax.transAxes,
 						 borderpad=0)
 
-		cbar=colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
+		cbar = colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
 		cbar.ax.yaxis.set_major_formatter = tckr.ScalarFormatter()
 		
 		# Orient tick axes correctly
-		if (orientation is 'horizontal'):
+		if (orientation == 'horizontal'):
 			cbar.ax.set_xlabel(label)
 			
 			flip=True if loc in [3,4,8] else False # Flip the labels if colorbar on bottom edge
@@ -316,7 +314,7 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 		else:
 			cbar.ax.set_ylabel(label)
 			
-			flip=True if loc in [2,3,7] else False  # Flip the labels if colorbar on left edge
+			flip = True if loc in [2,3,7] else False  # Flip the labels if colorbar on left edge
 			if (inset==True) and loc not in [6,8,9]: flip=not flip # Reverse flipping in the case of a inset colorbar
 			
 			if (flip == True):
