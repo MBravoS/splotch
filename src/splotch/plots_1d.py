@@ -443,7 +443,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     
     from sympy import symbols, sympify, Expr, latex
     from sympy.utilities.lambdify import lambdify
-    from numpy import linspace, logspace, log10, empty, array, meshgrid, prod
+    from numpy import linspace, logspace, log10, empty, array, full_like, meshgrid, prod
     from collections import Iterable
     
     from matplotlib.pyplot import plot, legend, gca
@@ -567,9 +567,9 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
             lamb = lambdify(var, expr.subs(subsarr[ii]), modules='numpy') # returns a numpy-ready function
             
             if expr.subs(subsarr[ii]).is_constant():
-                func = lambda x: np.full_like(x, lamb(x))
+                func = lambda x: full_like(x, lamb(x))
             else:
-                func = lambda x: lamb(np.array(x))
+                func = lambda x: lamb(array(x))
             
             curvearr = func(vararr)
             
@@ -685,13 +685,14 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     
     from sympy import symbols, sympify, Expr, latex
     from sympy.utilities.lambdify import lambdify
-    from numpy import linspace, logspace, log10, empty, array, meshgrid, prod, piecewise
+    from numpy import linspace, logspace, log10, empty, array, full_like, meshgrid, prod, piecewise
     from collections import Iterable
     
     from matplotlib.pyplot import plot, legend, gca
     from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
     from matplotlib import rcParams
     from matplotlib.legend import Legend
+    from matplotlib.collections import LineCollection
 
     from warnings import warn
     
@@ -754,9 +755,9 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         elif len(intervals) != len(expr) - 1: 
             raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(expr)} expressions.")
         else: # If intervals are given, ensure they are within the bounds given.
-            if np.min(intervals) <= bounds[0]:
+            if min(intervals) <= bounds[0]:
                 raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
-            elif np.max(intervals) >= bounds[1]:
+            elif max(intervals) >= bounds[1]:
                 raise ValueError(f"The maximum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
     except (TypeError):
         intervals = [intervals]
@@ -853,15 +854,15 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         lines = []
         start = 0
         for jj in range(len(expr)):
-            end = (np.abs(vararr - intervals[jj])).argmin()
+            end = array(abs(vararr - intervals[jj])).argmin()
             if any(isfunc):
                 lines.append( list( zip(vararr[start:end+1],expr[jj](vararr[start:end+1],**subsarr[ii])) ) )
             else:
                 lamb = lambdify(var, expr[jj].subs(subsarr[ii]), modules='numpy')
                 if expr[jj].subs(subsarr[ii]).is_constant():
-                    func = lambda x: np.full_like(x, lamb(x))
+                    func = lambda x: full_like(x, lamb(x))
                 else:
-                    func = lambda x: lamb(np.array(x))
+                    func = lambda x: lamb(array(x))
                 
                 if orientation == 'horizontal':
                     lines.append( list( zip(vararr[start:end+1],func(vararr[start:end+1])) ) )
