@@ -7,32 +7,31 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
 	Parameters
 	----------
 	which : str, array-like or list
-		Which `Text` instance(s) to apply the text properties to.
-	
-		Valid arguments can be one or many of the following:
-			* 'x'|'xlabel'	 : x-axis label 
-			* 'y'|'ylabel'	 : y-axis label 
-			* 'k'|'tick'	 : ticks
-			* 't'|'title'	 : Title
-			* 's'|'suptitle' : Sup. title
-			* 'l'|'legend'	 : Legend text
-			* 'c'|'colorbar' : Color bar
-			* 'T'|'text' 	 : Text objects
-			* 'a'|'all'		 : All instances of all the above
+		Which ``Text`` instance(s) to apply the text properties to. Valid arguments can be one or many of the following
+
+		==============================  =================================
+		 Arguments                      Description
+		==============================  =================================
+		'x','xlabel'					x-axis label
+		'y', 'ylabel'					y-axis label 
+		'k', 'tick'						Tick labels
+		't', 'title'					Title
+		's', 'suptitle' 				Sup. title
+		'l', 'legend'					Legend text
+		'c', 'colorbar' 				Color bar
+		'T', 'text' 					Text objects
+		'a', 'all'						All instances of all the above
+		==============================  =================================
+
 	ax : pyplot.Axes or list, optional
-		Use the given axes to adjust text, defaults to the current axis.
-		If a list of Axis instances given, the text properties is applied to each.
+		Use the given axes to adjust text, defaults to the current axis. If a list of Axis instances given, the text properties is applied to each.
+
 	text_kw : dict, optional
-		Explicit dictionary of kwargs to be parsed to matplotlib `Text` instance.
-		It is recommended that text keyword arguments be given as **kwargs.
-	**kwargs : Text instance properties
-		kwargs are used to specify properties of `Text` instances
-		A list of valid `Text` kwargs can be found here:
-		[https://matplotlib.org/3.1.0/api/text_api.html#matplotlib.text.Text](https://matplotlib.org/3.1.0/api/text_api.html#matplotlib.text.Text "Matplotlib.text.Text")
-	
-	Returns
-	-------
-	None
+		Explicit dictionary of kwargs to be parsed to matplotlib ``Text`` instance. It is recommended that text keyword arguments be given as \*\*kwargs.
+
+	\*\*kwargs : Text instance properties
+		kwargs are used to specify properties of Text instances. A list of valid Text kwargs can be found in the matplotlib `Text <https://matplotlib.org/stable/api/text_api.html>`_ documentation.
+
 	"""
 	
 	from matplotlib.text import Text
@@ -151,23 +150,29 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 		A list or individual matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described
 		by this colorbar(s). This argument is optional and will seek out any mappables currently
 		present in each axis given if nothing is specified.
+
 	ax : pyplot.Axes, optional
 		Use the given axes to produce the colorbars onto. If multiple axes are given, number of
 		mappable objects given must be either one or equal to the number of axis objects. If no
 		mappables are provided, a mappable will be searched for independently for each axis.
 		Defaults to the current axis.
+
 	label : str, optional
 		The label to be given to the colorbar
+
 	orientation : optional
 		The orientation of the colorbar specified either as 'vertical' | 'horizontal'.
 		Orientation is necessary to decide which axis of the colorbar to place labels. Default: 'vertical'.
+
 	loc : int or tuple-like, optional
 		Specifies the location of the colorbar. Can be a two element tuple-like object in the format
 		of (x0, y0).
+
 	transform : matplotlib.transforms.Transform instance, optional
 		The transformation instance to be used for colorbar location if loc is tuple-like. For example,
 		using ax.transAxes() will specify the colorbar location in the coordinates of the axis; (0,0)
 		is bottom-left and (1,1) is top-right. Default: ax.transAxes.
+
 	inset : boolean, optional
 		Whether to inset the colorbar within the inside of the axis. If loc not tuple-like, this
 		will add padding to both sides of the colorbar to avoid colliding with the axis spine.
@@ -176,7 +181,7 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 		The aspect ratio of the colorbar always taken as the ratio of the long-side to the
 		short-side. Default: 0.05
 	width, height : float, optional
-		The width and height of the colorbar in the coordinate system of specified `transform`,
+		The width and height of the colorbar in the coordinate system of specified transform,
 		which by default is in the coordinates of the axis.
 	pad : float, optional
 		The padding given to the colorbar axis offset from the margin of the axis. If loc is
@@ -188,14 +193,14 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
 	bar_kw : dict, optional
 		Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are colorbar
 		properties.
-	**kwargs : Colorbar properties, optional
+	\*\*kwargs : Colorbar properties, optional
 		Keyword arguments are used to specify matplotlib.pyplot.colorbar specific properties such as
-		extend, spacing, format, drawedges, etc. The list of available properties can be found here: 
-		https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.colorbar.html#matplotlib.pyplot.colorbar
+		extend, spacing, format, drawedges, etc. The list of available properties can be found in the
+		matplotlib `Colorbar <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html>`_ documentation.
 	
 	Returns
 	-------
-	cbar : 
+	cbar
 		The colorbar object.
 	"""
 	
@@ -341,17 +346,13 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	Parameters
 	----------
 	data : array-like
-		The input data frame with each parameter represented by an individual column, the zeroth
-		axis should be the list of samples and the next axis should be the number of dimensions.
-		Accepted data types are: pandas.DataFrame, pandas.Series, numpy.ndarray, astropy.table.Table.
+		The input data frame with each parameter represented by an individual column, the zeroth axis should be the list of samples and the next axis should be the number of dimensions. Accepted data types are: pandas.DataFrame, pandas.Series, numpy.ndarray, astropy.table.Table.
+
 	columns : array-like
-		The column labels (or indices) that specify which columns within 'data' to use. if none
-		specified, every column in 'data' with a numeric datatype will be used. To group columns
-		together, columns can be given as a list of lists, e.g.:
+		The column labels (or indices) that specify which columns within 'data' to use. if none specified, every column in 'data' with a numeric datatype will be used. To group columns together, columns can be given as a list of lists, e.g.:
 			columns=[['A1', 'A2', ...], ['B1', 'B2', ...]]
-		which will create pairs for all parameters in each sublist. Having multiple groups will
-		result in multiple histograms and paired plots per axis. As such, pair_type='hist2D' is not
-		compatible when columns includes multiple groups.
+
+		which will create pairs for all parameters in each sublist. Having multiple groups will result in multiple histograms and paired plots per axis. As such, pair_type='hist2D' is not compatible when columns includes multiple groups.
 	pair_type : str, optional
 		The plotting type for the off-diagonal plots,
 		can be one of:'contour' | 'scatter' | 'hist2D' which correspond to contour plots, scatter
@@ -360,13 +361,13 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	nsamples : float, optional
 		Specifies the number of samples kept out of the total number of samples. This is useful to
 		speed up plotting if not all of the samples need to be shown. Default: 1 (i.e. no subsampling).
-		Default: the full number samples in `data`.
-	sample_type : str, optional
+		Default: the full number samples in ``data``.
+	sample_type : str, optional, Default='end'
 		Sets the method used to thin the full set of samples, can be one of the following:
-			- 'end' : Takes the last `nsamples` samples (Useful for MCMC posteriors where the end is often better).
-			- 'rand' : Randomly selects a set of samples. (Only use if confident all posterior chains are stationary).
-			- 'thin' : Evenly select every m samples until a total of `nsamples` are kept.
-		Default: 'end'
+			* 'end' : Takes the last ``nsamples`` samples (Useful for MCMC posteriors where the end is often better).
+			* 'rand' : Randomly selects a set of samples. (Only use if confident all posterior chains are stationary).
+			* 'thin' : Evenly select every m samples until a total of ``nsamples`` are kept.
+
 	labels : array-like (str), optional
 		A list of axis labels to be assigned to each parameter. Must be of the same length or longer
 		than the number of columns (or column groups).
@@ -382,22 +383,18 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 		subplot width/height.
 	squeeze : bool, optional, default: True
 		As per matplotlib's usage, the following applies:
-			- If True, extra dimensions are squeezed out from the returned array of Axes:
-			  For NxN, subplots with N>1 are returned as a 2D array or as a scalar otherwise.
-			  2D arrays fill out subplots from top-to-bottom and left-to-right.
-			- If False (Default), no squeezing at all is done: the returned Axes object
-			  is always a 2D array containing Axes instances, even if it ends
-			  up being 1x1. For cornerplots with only one set of diagonals, empty axes
-			  will be filled by None.
+			* If True, extra dimensions are squeezed out from the returned array of Axes: For NxN, subplots with N>1 are returned as a 2D array or as a scalar otherwise. 2D arrays fill out subplots from top-to-bottom and left-to-right.
+			* If False (Default), no squeezing at all is done: the returned Axes object is always a 2D array containing Axes instances, even if it ends up being 1x1. For cornerplots with only one set of diagonals, empty axes will be filled by None.
+
 	contour_kw, scatter_kw, hist2D_kw : dict, optional
 		Dictionary of keyword arguments to be parsed into the pair plotting functions. The particular
 		keyword dictionary used is dependent on the 'pair_type' chosen. If 'columns' contains
 		multiple groups, kw arguments in lists are assumed to correspond to each group.
 	hist_kw : dict, optional
 		Dictionary of keyword arguments to be parsed into the 1D histograms plots on the diagonals.
-	**kwargs : Subplot instance properties
-		kwargs are used to specify properties of `subplots` instances
-		A list of valid `axis` kwargs can be found here:
+	\*\*kwargs : Subplot instance properties
+		kwargs are used to specify properties of ``subplots`` instances
+		A list of valid ``axis`` kwargs can be found here:
 		[https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")	
 	"""
 	from splotch.base_func import is_numeric, dict_splicer
@@ -654,86 +651,63 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
 	else:
 		return(fig, axes)
 
+
 def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,
 			 widths=None,heights=None,sharex='none',sharey='none',squeeze=True,
 			 figsize=None,axes_kw={},**kwargs):
 	""" Adds a set of subplots to figure
-	
 	This is a more-generalised wrapper around matplotlib.pyplot.subplot function to allow for irregularly divided grids.
 	
 	Parameters
 	----------
-	naxes : int, optional, default: 1
-		The number of axes objects to create.
-		The resulting grid formed from specifying naxes is decided by ncols and nrows. The options are:
-			- ncols and/or nrows not None:
-				Makes sure that naxes can be correctly mapped into the specified grid.
-				If one of nrows or ncols not given, the smallest possible grid will be made.
-			- both ncols and nrows are None:
-				Decides the best possible grid for this number of axes. Currently, this decision is hard-coded
-				with plans for it to become an automatic decision later.
+	naxes : int, optional, default=1
+		The number of axes objects to create. The resulting grid formed from specifying naxes is decided by ncols and nrows. The options are:
+			* ncols and/or nrows not None:
+				Makes sure that naxes can be correctly mapped into the specified grid. If one of nrows or ncols not given, the smallest possible grid will be made.
+			* both ncols and nrows are None:
+				Decides the best possible grid for this number of axes. Currently, this decision is hard-coded with plans for it to become an automatic decision later.
+	
 	nrows, ncols : int, optional
 		Number of rows/columns of the subplot grid.
+	
 	va, ha : str, optional, default: 'top', 'left'
-		The vertical alignment (va) and horizontal alignment (ha) sets the alignment of grids in the vertical and
-		horizontal directions. Options for `va` are 'top', 'bottom' or 'centre' and options for `ha` are 'left',
-		'right' and 'centre'.
-		ha: 'left'		ha: 'centre'	ha: 'right'
-		va: 'top'		va: 'top'		va: 'top'
-		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
-		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
-		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
-		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
-		ha: 'left'		ha: 'centre'	ha: 'right'
-		va: 'centre'	va: 'centre'	va: 'centre'
-		 ▯ ▯ ▯							   ▯ ▯ ▯
-		 ▯ ▯ ▯ ▯		   Not			 ▯ ▯ ▯ ▯
-		 ▯ ▯ ▯ ▯		  Valid			 ▯ ▯ ▯ ▯
-		 ▯ ▯ ▯							   ▯ ▯ ▯
-		ha: 'left'		ha: 'centre'	ha: 'right'
-		va: 'bottom'	va: 'bottom'	va: 'bottom'
-		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
-		 ▯ ▯ ▯			  ▯ ▯ ▯			   ▯ ▯ ▯
-		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
-		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯		 ▯ ▯ ▯ ▯
-	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
-		Not implemented.
-	wspace / hspace : float, optional
+		The vertical alignment (va) and horizontal alignment (ha) sets the alignment of grids in the vertical and horizontal directions. Options for ``va`` are 'top', 'bottom' or 'centre' and options for ``ha`` are 'left', 'right' and 'centre'.
+	
+	wspace, hspace : float, optional
 		The horzontal/vertical spacing between figure subplots, expressed as a fraction of the subplot width/height.
-	width / heights : array-like, optional
+	
+	width, heights : array-like, optional
 		The width/height ratios of the subplot columns/rows expressed as an array of length ncols/nrows.
+	
 	sharex, sharey : bool or {'none', 'all', 'row', 'col'}, default: False
 		As per matplotlib's usage, controls sharing of properties among x (`sharex`) or y (`sharey`)
 		axes:
-			- True or 'all': x-/y-axis will be shared among all subplots.
-			- False or 'none': each subplot x-/y-axis will be independent (default).
-			- 'row': each subplot row will share an x-/y-axis
-			- 'col': each subplot column will share an x-/y-axis
-		When subplots have a shared x-axis along a column, only the x tick
-		labels of the last complete row of the subplot are created. Similarly, 
-		when subplots have a shared y-axis along a row, only the y tick labels of the
-		first complete column subplot are created. To later turn other subplots'
-		ticklabels on, use `~matplotlib.axes.Axes.tick_params`.
+			* True or 'all': x-/y-axis will be shared among all subplots.
+			* False or 'none': each subplot x-/y-axis will be independent (default).
+			* 'row': each subplot row will share an x-/y-axis
+			* 'col': each subplot column will share an x-/y-axis
+		When subplots have a shared x-axis along a column, only the x tick labels of the last complete row of the subplot are created. Similarly, when subplots have a shared y-axis along a row, only the y tick labels of the first complete column subplot are created. To later turn other subplots' ticklabels on, use `~matplotlib.axes.Axes.tick_params`.
+	
 	squeeze : bool, optional, default: True
 		As per matplotlib's usage, the following applies:
-			- If True, extra dimensions are squeezed out from the returned
-			  array of Axes:
+			* If True, extra dimensions are squeezed out from the returned array of Axes:
 				- if only one subplot is constructed (nrows=ncols=1), the
 				  resulting single Axes object is returned as a scalar.
 				- for Nx1 or 1xM subplots, the returned object is a 1D numpy
 				  object array of Axes objects.
 				- for NxM, subplots with N>1 and M>1 are returned
 				  as a 2D array.
-			- If False, no squeezing at all is done: the returned Axes object
-			  is always a 2D array containing Axes instances, even if it ends
-			  up being 1x1.
+			* If False, no squeezing at all is done: the returned Axes object is always a 2D array containing Axes instances, even if it ends up being 1x1.
+
 		If naxes < ncols*nrows, the only sensible option is to return a 1D numpy array
 	
 	figsize : 2-tuple of floats, default: rcParams["figure.figsize"] * (ncols, nrows)
 		The dimensions of the figure (width, height) in inches. If not specified, the default is to scale
 		the default rcParams figure.figsize by the number of rows or columns.
+
 	axes_kw : dict, optional
 		Explicit dictionary of kwargs to be parsed to matplotlib `subplot` function.
+
 	**kwargs : Subplot instance properties
 		kwargs are used to specify properties of `subplots` instances
 		A list of valid `axis` kwargs can be found here:

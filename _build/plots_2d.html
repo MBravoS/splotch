@@ -1,0 +1,780 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>2-Dimensional plotting functions &#8212; splotch 0.5.6.6 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Axis functions" href="axis_func.html" />
+    <link rel="prev" title="1-Dimensional plotting functions" href="plots_1d.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="axis_func.html" title="Axis functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plots_1d.html" title="1-Dimensional plotting functions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splotch 0.5.6.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">2-Dimensional plotting functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-src.splotch.plots_2d">
+<span id="dimensional-plotting-functions"></span><h1>2-Dimensional plotting functions<a class="headerlink" href="#module-src.splotch.plots_2d" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.contour">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.contour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Level contour plotting function.</p>
+<p>This is a wrapper for pyplot.contour() and pyplot.contourf().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>z</strong> (<em>array-like</em>) – The height values to draw the contours.</p></li>
+<li><p><strong>x</strong> (<em>array-like, optional</em>) – Position of data points in the x axis.</p></li>
+<li><p><strong>y</strong> (<em>array-like, optional</em>) – Position of data points in the y axis.</p></li>
+<li><p><strong>filled</strong> (<em>boolean, optional</em>) – If True, draws filled contours. If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>ylog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic. If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>output</strong> (<em>boolean, optional</em>) – If True, returns the edges and values of the underlying histogram plus the levels of the contours.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>QuadContourSet properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
+The list of available properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html">https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>bin_edges_x</strong> (<em>array</em>) – The bin edges for the x axis.</p></li>
+<li><p><strong>bin_edges_y</strong> (<em>array</em>) – The bin edges for the y axis.</p></li>
+<li><p><strong>n</strong> (<em>array</em>) – The values of the underlying histogram.</p></li>
+<li><p><strong>l</strong> (<em>array</em>) – The levels for the contours.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.contourp">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">contourp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.contourp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contour function, encircling the highest density regions that contain the given percentages of the sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) – Position of data points in the x axis.</p></li>
+<li><p><strong>y</strong> (<em>array-like</em>) – Position of data points in the y axis.</p></li>
+<li><p><strong>percent</strong> (<em>float or array-like, optional.</em>) – The percentages of the sample that the contours encircle.</p></li>
+<li><p><strong>bin_type</strong> (<em>{‘number’,’width’,’edges’,’equal’}, optional</em>) – Defines how is understood the value given in bins: ‘number’ for givinf the desired number
+of bins, ‘width’ forthe width of the bins, ‘edges’ for the edges of bins, and ‘equal’ for
+making bins with equal number of elements (or as close as possible). If not given it is
+inferred from the data type of bins: ‘number’ if int, ‘width’ if float and ‘edges’ if ndarray.</p></li>
+<li><p><strong>bins</strong> (<em>int, float, array-like, optional</em>) – Gives the values for the bins, according to bin_type.</p></li>
+<li><p><strong>smooth</strong> (<em>float, optional</em>) – The standard deviation for the Gaussian kernel. Default: 0.0 (No smoothing).</p></li>
+<li><p><strong>max_spacing</strong> (<em>boolean, optional</em>) – If True, maximises the separation between colours drawn from the colour map. Default: True.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>plabel</strong> (<em>array-like or boolean, optional</em>) – Specifies label(s) for the contour(s). If False, do not create a legend. If an array of
+strings, sets the labels for each contour. Must be of equal length to number specified by ‘percent’.</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>output</strong> (<em>boolean, optional</em>) – If True, returns the edges and values of the underlying histogram plus the levels of the contours.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>QuadContourSet properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
+The list of available properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html">https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>bin_edges_x</strong> (<em>array</em>) – The bin edges for the x axis.</p></li>
+<li><p><strong>bin_edges_y</strong> (<em>array</em>) – The bin edges for the y axis.</p></li>
+<li><p><strong>n</strong> (<em>array</em>) – The values of the underlying histogram.</p></li>
+<li><p><strong>l</strong> (<em>array</em>) – The levels for the contours.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.errorband">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">errorband</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.errorband" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error line and band plotting function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>y</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>yerr</strong> (<em>array-like or list, optional</em>) – Defines the length of the errobars in the y-axis. If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>line</strong> (<em>boolean, optional</em>) – If True, draw a line that follows the statistic defined in line_stat.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the plot.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Line2D properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+A list of available <cite>Line2D</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D">https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.errorbar">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">errorbar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.errorbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Errorbar plotting function.</p>
+<p>This is a wrapper for pyplot.errorbar().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>y</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>xerr</strong> (<em>array-like or list, optional</em>) – Defines the length of the errobars in the x-axis. If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>yerr</strong> (<em>array-like or list, optional</em>) – Defines the length of the errobars in the y-axis. If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the plot.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Line2D properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+A list of available <cite>Line2D</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D">https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.errorbox">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">errorbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ellipse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.errorbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Errorbox plotting function.</p>
+<p>This is a wrapper around matplotlib PatchCollections with a matplotlib errorbar functionality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>y</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>xerr</strong> (<em>array-like or list, optional</em>) – Defines the length of the errobars in the x-axis. If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>yerr</strong> (<em>array-like or list, optional</em>) – Defines the length of the errobars in the y-axis. If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>box_type</strong> (<em>str</em>) – The type of box to plot, patch types include: ellipse | rectangle (Default: ellipse).</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the plot.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Patches properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Patch properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as facecolor, linestyle, alpha, etc.
+A list of available <cite>Patch</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.patches.Rectangle.html">https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.patches.Rectangle.html</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.hexbin">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">hexbin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cstat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[None,</span> <span class="pre">None]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.hexbin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hexagonal 2D bins function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) – Position of data points in the x axis.</p></li>
+<li><p><strong>y</strong> (<em>array-like</em>) – Position of data points in the y axis.</p></li>
+<li><p><strong>bins</strong> (<em>int or list, optional</em>) – Gives the number of bins</p></li>
+<li><p><strong>binlim</strong> (<em>array-like, optional</em>) – Defines the limits for the bins. It must have one dimension and contain four elements,
+with the expected order being (left, right, bottom, top).</p></li>
+<li><p><strong>dens</strong> (<em>bool or list, optional</em>) – If false the histogram returns raw counts.</p></li>
+<li><p><strong>c</strong> (<em>array-like, optional</em>) – If a valid argument is given in cstat, defines the value used for the binned statistics.</p></li>
+<li><p><strong>cstat</strong> (<em>str or function, optional</em>) – Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
+(‘mean’, ‘median’, ‘count’, ‘sum’, ‘min’ or ‘max’) or a function that takes a 1D array and
+outputs an integer or float.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>clim</strong> (<em>list, optional</em>) – Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>nmin</strong> (<em>int, optional (default: 0)</em>) – The minimum number of points required in a bin in order to be plotted.</p></li>
+<li><p><strong>xinvert</strong> (<em>bool, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>cbar_invert</strong> (<em>bool, optional</em>) – If True, inverts the direction of the colour bar (not the colour map).</p></li>
+<li><p><strong>xlog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>clog</strong> (<em>bool, optional</em>) – If True, the colour map is changed from linear to logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>clabel</strong> (<em>str, optional</em>) – Setting <cite>clabel</cite> triggers the generation of a colourbar with axis label given by its value.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>output</strong> (<em>boolean, optional</em>) – If True, returns the edges and values of the histogram.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Explicit dictionary of kwargs to be parsed to matplotlib hexbin function.
+Parameters will be overwritten if also given implicitly as a <a href="#id1"><span class="problematic" id="id2">**</span></a>kwarg.</p></li>
+<li><p><strong>**kwargs</strong> (<em>pcolormesh properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hexbin.html">https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hexbin.html</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>n</strong> (<em>array</em>) – The values of the histogram. Only provided if output is True.</p></li>
+<li><p><strong>x_edges</strong> (<em>array</em>) – The bin edges for the x axis. Only provided if output is True.</p></li>
+<li><p><strong>y_edges</strong> (<em>array</em>) – The bin edges for the y axis. Only provided if output is True.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.hist2D">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">hist2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cstat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[None,</span> <span class="pre">None]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.hist2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D histogram function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) – Position of data points in the x axis.</p></li>
+<li><p><strong>y</strong> (<em>array-like</em>) – Position of data points in the y axis.</p></li>
+<li><p><strong>bin_type</strong> (<em>{‘number’,’width’,’edges’,’equal’}, optional</em>) – Defines how is understood the value given in bins: ‘number’ for givinf the desired number of
+bins, ‘width’ for the width of the bins, ‘edges’ for the edges of bins, and ‘equal’ for
+making bins with equal number of elements (or as close as possible). If not given it is
+inferred from the data type of bins: ‘number’ if int, ‘width’ if float and ‘edges’ if ndarray.</p></li>
+<li><p><strong>bins</strong> (<em>int, float, array-like or list, optional</em>) – Gives the values for the bins, according to bin_type.</p></li>
+<li><p><strong>dens</strong> (<em>bool or list, optional</em>) – If false the histogram returns raw counts.</p></li>
+<li><p><strong>scale</strong> (<em>float or list, optional</em>) – Scaling of the data counts.</p></li>
+<li><p><strong>c</strong> (<em>array-like, optional</em>) – If a valid argument is given in cstat, defines the value used for the binned statistics.</p></li>
+<li><p><strong>cstat</strong> (<em>str or function, optional</em>) – Must be one of the valid str arguments for the statistics variable in scipy.stats.binned_statistic_2d
+(‘mean’, ‘median’, ‘count’, ‘sum’, ‘min’ or ‘max’) or a function that takes a 1D array and
+outputs an integer or float.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>clim</strong> (<em>list, optional</em>) – Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>nmin</strong> (<em>int, optional (default: 0)</em>) – The minimum number of points required in a bin in order to be plotted.</p></li>
+<li><p><strong>xinvert</strong> (<em>bool, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>cbar_invert</strong> (<em>bool, optional</em>) – If True, inverts the direction of the colour bar (not the colour map).</p></li>
+<li><p><strong>xlog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>clog</strong> (<em>bool, optional</em>) – If True, the colour map is changed from linear to logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>clabel</strong> (<em>str, optional</em>) – Setting <cite>clabel</cite> triggers the generation of a colourbar with axis label given by its value.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>output</strong> (<em>boolean, optional</em>) – If True, returns the edges and values of the histogram.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Explicit dictionary of kwargs to be parsed to matplotlib pcolormesh function.
+Parameters will be overwritten if also given implicitly as a <a href="#id3"><span class="problematic" id="id4">**</span></a>kwarg.</p></li>
+<li><p><strong>**kwargs</strong> (<em>pcolormesh properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html">https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>n</strong> (<em>array</em>) – The values of the histogram. Only provided if output is True.</p></li>
+<li><p><strong>x_edges</strong> (<em>array</em>) – The bin edges for the x axis. Only provided if output is True.</p></li>
+<li><p><strong>y_edges</strong> (<em>array</em>) – The bin edges for the y axis. Only provided if output is True.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.imageWCS">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">imageWCS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wcs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stretch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lnglabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngformat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latformat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.imageWCS" title="Permalink to this definition">¶</a></dt>
+<dd><p>World-Coordinate System image plotting function.</p>
+<p>Creates a WCS-projected plot of an image with a corresponding coordinate grid overlaid. This is particularly useful for astronomical imaging data
+based on the standard FITS file format, however, it can be used for any imaging data with a defined world-coordinate system.
+This is a convenience wrapper around many of the useful functions created by the Astropy project (<a class="reference external" href="https://www.astropy.org">https://www.astropy.org</a>) and
+Matplotlib’s pyplot.imshow() function: <a class="reference external" href="https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow">https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow</a></p>
+<dl>
+<dt>data<span class="classifier">2D numpy or array-like object, or HDUlist or HDU.</span></dt><dd><dl class="simple">
+<dt>The input data can be:</dt><dd><ul class="simple">
+<li><p>A &lt;a class=”reference external” href=”<a class="reference external" href="https://docs.astropy.org/en/stable/io/fits/api/hdulists.html#astropy.io.fits.HDUList">https://docs.astropy.org/en/stable/io/fits/api/hdulists.html#astropy.io.fits.HDUList</a>” title=”(in Astropy v4.0.1)”&gt; object</p></li>
+<li><p>An image HDU object, such as a PrimaryHDU, ImageHDU or CompImageHDU</p></li>
+<li><p>An numpy ndarray or two-dimensional array-like object. Requires a header also be specified separately.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>header<span class="classifier">list-like or string, optional</span></dt><dd><p>The full FITS header should be given either as one complete string or a list of header keywords as strings created
+by astropy.io.fits.open(…).header.</p>
+</dd>
+<dt>wcs<span class="classifier">Astropy WCS object or dictionary</span></dt><dd><p>The World Coordinate System for the image. Only required if data is an array-like object and header not given.
+Must contain the following FITS keywords:</p>
+</dd>
+<dt>ext<span class="classifier">int or str</span></dt><dd><p>If data is a HDUList and contains extensions (usually indicated by ‘EXTEND’=T in PrimaryHDU), then ‘ext’ specifies which
+extension to use. This can either be in the form of an integer or a string referring to a specific ‘EXTNAME’.</p>
+</dd>
+<dt>slice<span class="classifier">integer, tuple-like or range object</span></dt><dd><p>if data contains a 3-dimensional array, slice can be used to specify which sections of the data to display.
+This should be specified as either:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A single integer indicating the specific channel to slice.</p></li>
+<li><p>A tuple of two integers specifying the starting and ending slices.</p></li>
+<li><p>A range object.</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>interval<span class="classifier">tuple-like, str or astropy.visialization.BaseTransform.BaseInterval object</span></dt><dd><p>The interval refers to the lower and upper limits of values to be mapped onto the range [0:1]. This can either be given
+as a list-like object with two elements for the minimum and maximum values or as a valid astropy BaseInterval object listed below:
+- PercentileInterval(percentile[, n_samples]): Retains a specified fractional percentage of pixels, up to a maximum [n_samples].</p>
+<blockquote>
+<div><p>Can also be evoked by a string ‘percentile[n]’, where [n] is the fraction of pixels kept.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>AsymmetricPercentileInterval(…[, n_samples]): Same as PercentileInterval(), but can be assymetric.</p></li>
+<li><dl class="simple">
+<dt>ManualInterval([vmin, vmax]): Manually sets the lower and upper intervals.</dt><dd><p>Can also be evoked as a tuple in the format (min, max).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MinMaxInterval(): Sets the intervals based on the minimum and maximum values in the data.</dt><dd><p>Can also be evoked by the string ‘minmax’.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>ZScaleInterval([nsamples, contrast, …]): Based on IRAF’s zscale intervals.</dt><dd><p>Can also be evoked by the string ‘zscale’.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>stretch<span class="classifier">str, func or astropy.visualization.BaseTransform.BaseStretch object</span></dt><dd><p>Stretch refers to the linear or non-linear function that is applied to the values in the range [0:1]. This can be given
+as a function or any astropy BaseStretch object listed below:
+- AsinhStretch([a]): Inverse hyperbolic sine function stretch.
+- ContrastBiasStretch(contrast,bias): A stretch that takes into account contrast and bias. Increases the difference between min and max values.
+- HistEqStretch(data[, values]): Histrogram equalisation stretch. Modifies values of all pixels such that the histogram is ‘flattened’.
+- LinearStretch([slope, intercept]): A linear stretch defined by a slope and intercept.
+- LogStretch([a]): Logarithmic stretch.
+- PowerStretch(a): Power-law stretch, where y = x^a
+- PowerDistStretch([a]): An alternative power stretch, where y = (a^x-1)/(a-1).
+- SinhStretch(): Hyperbolic sine function stretch.
+- SqrtStretch(): Square root stretch.
+- SquaredStretch(): Equivalent to PowerStretch(2)</p>
+<p>In addition, the following can be referred to by thir string name: ‘asinh’, ‘linear’, ‘log’, ‘sinh’, ‘squared’</p>
+</dd>
+<dt>norm<span class="classifier">Normalize object</span></dt><dd><p>A Normalize instance used to scale scalar data to the [0,1] range before mapping the colors using cmap. This can be explicitly assigned
+here or by specifying the <cite>interval</cite> and <cite>stretch</cite> parameters instead. By default, a linear scaling mapping is used between [0,1].</p>
+</dd>
+<dt>cmap<span class="classifier">str or Colormap, optional.</span></dt><dd><p>The colormap used to display the image, given as a Colormap instance or registered colormap name.
+Defaults to Params.img_cmap.</p>
+</dd>
+<dt>lnglabel<span class="classifier">str, optional</span></dt><dd><p>Sets the label of the longitude axis.</p>
+</dd>
+<dt>latlabel<span class="classifier">str, optional</span></dt><dd><p>Sets the label of the latitude axis.</p>
+</dd>
+<dt>lngformat, latformat<span class="classifier">str, optional</span></dt><dd><p>Sets the major formatter for the tick labels for the longitude and latitude coordinates. These are given by any
+format string accepted by astropy.visualisation, for example:</p>
+<p>‘dd’               ‘15d’
+‘dd:mm’         ‘15d24m’
+‘hh:mm:ss’       ‘1h01m34s’
+‘d.ddd’         ‘15.392’
+‘%.2f’           ‘15.39’</p>
+<p>For a full list of valid format strings, see: <a class="reference external" href="https://docs.astropy.org/en/stable/visualization/wcsaxes/ticks_labels_grid.html">https://docs.astropy.org/en/stable/visualization/wcsaxes/ticks_labels_grid.html</a></p>
+</dd>
+<dt>fig<span class="classifier">pyplot.Figure, optional</span></dt><dd><p>Use the specified figure instance to plot, defaults to the current figure.</p>
+</dd>
+<dt>grid<span class="classifier">boolean, optional</span></dt><dd><p>If not given, defaults to the value defined in splotch.Params.</p>
+</dd>
+<dt>grid_kw<span class="classifier">dict, optional</span></dt><dd><p>Passes the given dictionary as keyword arguments to the grid function. Valid keyword arguments include all Line2D properties.</p>
+</dd>
+<dt><a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs<span class="classifier">dict, optional</span></dt><dd><p>kwargs are used to specify matplotlib specific <cite>Artist</cite> properties to be parsed into pyplot.imshow(…).
+A list of possible properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow">https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.img">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[None,</span> <span class="pre">None]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.img" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D pixel-based image plotting function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im</strong> (<em>array-like</em>) – Value for each pixel in an x-y 2D array, where the first dimension is the x-position and the
+second is the y-position.</p></li>
+<li><p><strong>x</strong> (<em>array-like, optional</em>) – Position of data points in the x axis.</p></li>
+<li><p><strong>y</strong> (<em>array-like, optional</em>) – Position of data points in the y axis.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>clim</strong> (<em>list, optional</em>) – Defines the limits of the colour map ranges, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>clog</strong> (<em>bool, optional</em>) – If True, the colour map is changed from linear to logarithmic.</p></li>
+<li><p><strong>xinvert</strong> (<em>bool, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>cbar_invert</strong> (<em>bool, optional</em>) – If True, inverts the direction of the colour bar (not the colour map).</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>clabel</strong> (<em>str, optional</em>) – Setting <cite>clabel</cite> triggers the generation of a colourbar with axis label given by its value.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Explicit dictionary of kwargs to be parsed to matplotlib pcolormesh function.
+Parameters will be overwritten if also given implicitly as a <a href="#id7"><span class="problematic" id="id8">**</span></a>kwarg.</p></li>
+<li><p><strong>**kwargs</strong> (<em>pcolormesh properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as <cite>cmap</cite>, <cite>marker</cite>, <cite>norm</cite>, etc.
+A list of available <cite>pcolormesh</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html">https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.scatter">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.scatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D pixel-based image plotting function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like or list</em>) – Position of data points in the x-axis.</p></li>
+<li><p><strong>y</strong> (<em>array-like or list</em>) – Position of data points in the y-axis.</p></li>
+<li><p><strong>c</strong> (<em>array-like or list or str, optional</em>) – Value of data points in the z-axis (colour-axis).</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>clim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
+Functions equivalently to the <cite>vmin, vmax</cite> arguments used by <cite>colors.Normalize</cite>. If both are
+given, <cite>clim</cite> takes priority.</p></li>
+<li><p><strong>density</strong> (<em>bool, optional</em>) – If True, color-codes points by their spatial density to nearby points using a Gaussian
+kernel density estimate. If ‘c’ also given, ‘density’ takes precedence. Default: False.</p></li>
+<li><p><strong>xinvert</strong> (<em>bool, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>cbar_invert</strong> (<em>bool, optional</em>) – If True, inverts the direction of the colour bar (not the colour map).</p></li>
+<li><p><strong>xlog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>clabel</strong> (<em>str, optional</em>) – Setting <cite>clabel</cite> triggers the generation of a colourbar with axis label given by its value.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the scatter plot.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
+Parameters will be overwritten if also given implicitly as a <a href="#id9"><span class="problematic" id="id10">**</span></a>kwarg.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Collection properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
+A list of available <cite>Collection</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/api/collections_api.html#matplotlib.collections.Collection">https://matplotlib.org/api/collections_api.html#matplotlib.collections.Collection</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of PathCollection objects representing the plotted data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>paths</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.sector">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">sector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thetalim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">360.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thetalabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thetastep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thetaticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.sector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sector Plot function</p>
+<p>Plots a sector plot (a.k.a “pizza plot”) based on data with one radial axis and an angular axis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>r</strong> (<em>array-like or list</em>) – Radial axis data.</p></li>
+<li><p><strong>theta</strong> (<em>array-like or list</em>) – Angular axis data (degrees).</p></li>
+<li><p><strong>rlim</strong> (<em>tuple-like, optional</em>) – The lower and upper limits for the radial axis (degrees).</p></li>
+<li><p><strong>thetalim</strong> (<em>tuple-like, optional</em>) – The lower and upper limits for the angular axis (degrees).</p></li>
+<li><p><strong>clim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the colour-axis, it must contain two elements (lower and higer limits).
+Functions equivalently to the <cite>vmin, vmax</cite> arguments used by <cite>colors.Normalize</cite>. If both are
+given, <cite>clim</cite> takes priority.</p></li>
+<li><p><strong>rotate</strong> (<em>float, optional</em>) – By how many degrees (clockwise) to rotate the entire plot (valid values in [-180, 180]).</p></li>
+<li><p><strong>rlabel</strong> (<em>str, optional</em>) – Sets the label of the r-axis.</p></li>
+<li><p><strong>thetalabel</strong> (<em>str, optional</em>) – Sets the label of the theta-axis.</p></li>
+<li><p><strong>clabel</strong> (<em>str, optional</em>) – Setting <cite>clabel</cite> triggers the generation of a colourbar with axis label given by its value.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the scatter plot.</p></li>
+<li><p><strong>rstep</strong> (<em>float, optional</em>) – Sets the step size of r ticks.</p></li>
+<li><p><strong>thetastep</strong> (<em>float, optional, default: 15.0</em>) – Sets the step size of theta ticks (degrees).</p></li>
+<li><p><strong>rticks</strong> (<em>‘auto’, or ticker</em>) –</p>
+<ul>
+<li><p>Not implement *</p></li>
+</ul>
+</li>
+<li><p><strong>thetaticks</strong> (<em>‘auto’, or ticker</em>) –</p>
+<ul>
+<li><p>Not implement *</p></li>
+</ul>
+</li>
+<li><p><strong>cbar_invert</strong> (<em>bool, optional</em>) – If True, inverts the direction of the colour bar (not the colour map).</p></li>
+<li><p><strong>fig</strong> (<em>pyplot.Figure, optional</em>) – Use the given figure to make the plot, defaults to the current figure.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
+Parameters will be overwritten if also given implicitly in <a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Collection properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
+A list of available <cite>Collection</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.0/api/collections_api.html#matplotlib.collections.Collection">https://matplotlib.org/3.1.0/api/collections_api.html#matplotlib.collections.Collection</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ax</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>The pyplot.Axes object created for the sector plot.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.statband">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">statband</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_mid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'std'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'std'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_mid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.statband" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statistics line and band plotting function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>y</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>bin_type</strong> (<em>{‘number’,’width’,’edges’,’equal’}, optional</em>) – Defines how is understood the value given in bins: ‘number’ for the desired number of bins, ‘width’ for the width
+of the bins, ‘edges’ for the edges of bins, and ‘equal’ for making bins with equal number of elements (or as close
+as possible). If not given it is inferred from the data type of bins: ‘number’ if int, ‘width’ if float and ‘edges’
+if ndarray.</p></li>
+<li><p><strong>bins</strong> (<em>int, float, array-like or list, optional</em>) – Gives the values for the bins, according to bin_type.</p></li>
+<li><p><strong>stat_mid</strong> (<em>str, int, float or function, optional</em>) – Defines how to calculate the midpoint of the statistics band. When passing a string it must be either one of the options
+for scipy.stats.binned_statistic(), i.e. ‘mean’, ‘std’, ‘median’, ‘count’, ‘sum’, ‘min’, ‘max’ or a user-defined function.
+If given as an integer or float, the number represents the value for the percentile to calculate in each bin.
+A function can be given which takes (only) a 1D array of values and returns a numerical statistic.</p></li>
+<li><p><strong>stat_low / stat_high</strong> (<em>str, int, float or function, optional</em>) – Defines how to calculate the lower/upper limits for the statistic band. Can be given as one of the recognised strings above or as
+a string combining ‘std’ with a number, i.e. ‘[n]std’, where [n] is the number of standard deviations away from the line of <cite>stat_mid</cite>.
+Can also be given as a number (integer or float) or function as described for stat_mid.</p></li>
+<li><p><strong>from_mid</strong> (<em>boolean, optional</em>) – If True, the lower/upper bounds of the band are determined as the separation from the stat_mid line: i.e. stat_mid +/- stat_[low/high],
+otherwise, they are set to the values returned by stat_[low/high]. Defaults to True if stat_[low/high] are standard deviations.</p></li>
+<li><p><strong>line</strong> (<em>boolean, optional</em>) – If True, draw a line that follows the statistic defined in line_stat.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the plot.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Line2D properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+A list of available <cite>Line2D</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D">https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.splotch.plots_2d.statbar">
+<span class="sig-prename descclassname"><span class="pre">src.splotch.plots_2d.</span></span><span class="sig-name descname"><span class="pre">statbar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_cen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'std'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yinvert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.splotch.plots_2d.statbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statistics line and bar plotting function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>y</strong> (<em>array-like or list</em>) – If list it is assumed that each elemement is array-like.</p></li>
+<li><p><strong>bin_type</strong> (<em>{‘number’,’width’,’edges’,’equal’}, optional</em>) – Defines how is understood the value given in bins: ‘number’ for the desired number of bins, ‘width’ for the width
+of the bins, ‘edges’ for the edges of bins, and ‘equal’ for making bins with equal number of elements (or as close
+as possible). If not given it is inferred from the data type of bins: ‘number’ if int, ‘width’ if float and ‘edges’
+if ndarray.</p></li>
+<li><p><strong>bins</strong> (<em>int, float, array-like or list, optional</em>) – Gives the values for the bins, according to bin_type.</p></li>
+<li><p><strong>stat_cen</strong> (<em>str, int, float, function, or 2-element array-like of any of the previous type, optional</em>) – Defines how to calculate the position of centre of each errorbar. When passing an integer or float is
+interpreted as being the percentile for the limit. When passing a function it must have the input and
+ouput characteristics required by scipy.stats.binned_statistic().</p></li>
+<li><p><strong>bar_x</strong> (<em>bool, optional</em>) – If False turns off the display of the bin widths with bars.</p></li>
+<li><p><strong>stat_y</strong> (<em>str, int, float, function, or 2-element array-like of any of the previous type, optional</em>) – Defines how to calculate the y error bars. When passing a string it must be either one of the options
+for scipy.stats.binned_statistic(), or a string that combines ‘std’ with a number (e.g., ‘2.2std’), where to number is
+interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
+interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
+characteristics required by scipy.stats.binned_statistic().</p></li>
+<li><p><strong>line</strong> (<em>boolean, optional</em>) – If True, draw a line that follows the statistic defined in line_stat.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the x-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>ylim</strong> (<em>tuple-like, optional</em>) – Defines the limits of the y-axis, it must contain two elements (lower and higer limits).</p></li>
+<li><p><strong>xinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the x-axis.</p></li>
+<li><p><strong>yinvert</strong> (<em>bool or list, optional</em>) – If True, inverts the y-axis.</p></li>
+<li><p><strong>xlog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>ylog</strong> (<em>bool or list, optional</em>) – If True, the scale of the x-axis is logarithmic.</p></li>
+<li><p><strong>title</strong> (<em>str, optional</em>) – Sets the title of the plot</p></li>
+<li><p><strong>xlabel</strong> (<em>str, optional</em>) – Sets the label of the x-axis.</p></li>
+<li><p><strong>ylabel</strong> (<em>str, optional</em>) – Sets the label of the y-axis.</p></li>
+<li><p><strong>label</strong> (<em>str, optional</em>) – Sets the label for the plot.</p></li>
+<li><p><strong>lab_loc</strong> (<em>int, optional</em>) – Defines the position of the legend</p></li>
+<li><p><strong>ax</strong> (<em>pyplot.Axes, optional</em>) – Use the given axes to make the plot, defaults to the current axes.</p></li>
+<li><p><strong>grid</strong> (<em>boolean, optional</em>) – If not given defaults to the value defined in splotch.Params.</p></li>
+<li><p><strong>plot_kw</strong> (<em>dict, optional</em>) – Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Line2D properties, optional</em>) – kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
+A list of available <cite>Line2D</cite> properties can be found here:
+<a class="reference external" href="https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D">https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D</a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plots_1d.html"
+                        title="previous chapter">1-Dimensional plotting functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="axis_func.html"
+                        title="next chapter">Axis functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/plots_2d.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="axis_func.html" title="Axis functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plots_1d.html" title="1-Dimensional plotting functions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splotch 0.5.6.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">2-Dimensional plotting functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Matías Bravo &amp; Robin Cook.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+    </div>
+  </body>
+</html>

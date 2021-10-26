@@ -34,7 +34,7 @@ def get_version():
 
 		with open(filename, 'r') as file:
 			if ('changelog' in filename):
-				versions.append(file.readline().split(' (')[0])
+				versions.append(file.readline().split(' (')[0].replace('*',''))
 			else:
 				for line in file.readlines():
 					if ('README' in filename and line.startswith("*Current version*")):
@@ -71,7 +71,7 @@ def set_versions(version, message):
 	# Loop through all files
 	for filename in [changelog,readme,setup,conf]:
 		if ('changelog' in filename):
-			string = (f"{version} ({date.today().strftime('%d/%m/%Y')}):\n{message}\n")
+			string = (f"**{version}** ({date.today().strftime('%d/%m/%Y')}):\n\n{message}\n")
 			prepend(filename, string)
 		else:
 			with open(filename, 'r') as file:
@@ -97,6 +97,20 @@ def set_versions(version, message):
 	return (None)
 
 
+def yes_or_no(question):
+	"""Simple Yes/No Function."""
+
+	ans = input(f"{question}: ").strip().lower()
+	if ans[:1] not in ['y', 'n']:
+		print(f'{ans} is invalid, please try again...')
+		return yes_or_no(question)
+
+	if ans == 'y':
+		return 'yes'
+	else:
+		return 'no'
+
+
 parser = ArgumentParser(description="Parse argument for changing versions:\n" 
 									"  * Version (+v/--version): Reserved for largest updates when moving to new versions.\n"
 									"  * Major (+M/--major): When a major update/new feature has been made to the code.\n"
@@ -118,7 +132,7 @@ parser.add_argument('+b','--bug',
 					action='store',dest='bug',nargs='?',type=int,default=False,const=True,
 					help="Increase the minor version number -.-.-.X",metavar="BUG")
 parser.add_argument('-m','--message',
-					action='store',dest='message',type=str,nargs='*',default=[''],
+					action='store',dest='messages',type=str,nargs='*',default=[''],
 					help="The message to be added to changelog.txt. If no --message given, do not add to changelog.txt",metavar="MESSAGE")
 parser.add_argument('-c','--current',
 					action='store_true',dest='current',default=False,
@@ -157,7 +171,6 @@ elif (nArgs == 0):
 else:
 	print("\nERROR: Too many arguments given. Use one of [+v.+M.+m.+b] | -f.\n  -- ABORTING --\n"); exit()
 
-#if ( int("".join(map(str, newVersion))) < int("".join(map(str, currVersion))) ):
 invalid_version=True
 for i in range(len(newVersion)):
 	if int(newVersion[i])>int(currVersion[i]):
@@ -165,18 +178,37 @@ for i in range(len(newVersion)):
 	elif int(newVersion[i])<int(currVersion[i]):
 		break
 if invalid_version:
-	print(f"\nERROR: the new version ({'.'.join(map(str, newVersion))}) specified is older than the current version ({'.'.join(map(str, currVersion))})\n  -- ABORTING --\n"); exit()
+	print(f"WARNING: the new version ({'.'.join(map(str, newVersion))}) specified is older than the current version ({'.'.join(map(str, currVersion))})\n")
+	choice = yes_or_no("Are you sure you want to revert versions (y/n)? ")
+	if choice == 'no':
+		exit()
 
 
 newVersionStr = ".".join([str(kk) for kk in newVersion])
 print(f"INFO: New version is {newVersionStr}")
 
+# Convert listing syntax to '* ' explicitly
+messages = []
+for msg in args.messages:
+	if msg.lstrip()[0] not in ['*','-','>']:
+		messages.append(f'* {msg}')
+	else:
+		if msg.lstrip()[0] == '-':
+			msg = msg.replace('-','*',1)
+		elif msg.lstrip()[0] == '>':
+			msg = msg.replace('>','*',1)
 
-message = '\n'.join(["-"+m if m.lstrip()[0] not in ['-','*','>'] else m for m in args.message])
-print(f"INFO: Prepending the following message to changelog.txt:\n\n{newVersionStr} ({date.today().strftime('%d/%m/%Y')}):\n{message}\n")
+		print(msg, f'[{msg.lstrip()[1]}]')
+		if msg.lstrip()[1] != ' ':
+			msg = msg.replace('*','* ',1)
+		
+		messages.append(msg)
 
-choice = input("Commit to changes (y/n)? ")
-if (choice.lower() == 'n'):
+message = '\n'.join(messages)
+print(f"INFO: Prepending the following message to changelog.txt:\n\n**{newVersionStr}** ({date.today().strftime('%d/%m/%Y')}):\n\n{message}\n")
+
+choice = yes_or_no("Commit to changes (y/n)? ")
+if (choice == 'no'):
 	exit()
 else:
 	set_versions(version=newVersionStr,message=message)

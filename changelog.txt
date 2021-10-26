@@ -1,336 +1,431 @@
-0.5.6.5 (22/10/2021):
--Fixed deprecated usage of mpl_toolkits.axes_grid1.colorbar in splotch.colorbar()
+**0.5.6.6** (26/10/2021):
 
-0.5.6.4 (22/10/2021):
--Fixed axis setting bug in splotch.axline()
+* Made modifications to the sphinx functionality.
+* Changed the splotch ReadTheDocs theme to 'Classic'
+* Modified update_version.py to produce reStructured text for the documentation page.
 
-0.5.6.3 (22/10/2021):
--Fixed some bugs with imports in curve_piecewise()
+**0.5.6.5** (22/10/2021):
 
-0.5.6.2 (19/10/2021):
--Fixed following problems with splotch.curve_piecewise
-  > Not able to plot horizontal/vertical lines
-  > Error is var not explicitly given.
-  > expr and intervals does not accept tuples
-  > subs had to be specified for all expressions rather than those they were relevant to
+* Fixed deprecated usage of mpl_toolkits.axes_grid1.colorbar in splotch.colorbar()
 
-0.5.6.1 (19/10/2021):
--Modified splotch.curve() so that an independent variable is not strictly required, allowing for constant expressions, i.e. horizontal lines.
+**0.5.6.4** (22/10/2021):
 
-0.5.6.0 (07/10/2021):
--Added function curve_piecewise() which works similarly to curve() but can be parsed piecewise expressions.
+* Fixed axis setting bug in splotch.axline().
 
-0.5.5.0 (24/09/2021):
--Upgraded splotch.axline() so that it can accept a list of axes on which to plot lines.
+**0.5.6.3** (22/10/2021):
 
-0.5.4.6 (22/09/2021):
--Fixed spelling errors
+* Fixed some bugs with imports in curve_piecewise()
 
-0.5.4.5 (26/08/2021):
--Fixed bug in splotch.subplots() that allowed any string to be parsed into parameters va and ha, with no warning or exception.
+**0.5.6.2** (19/10/2021):
 
-0.5.4.4 (23/08/2021):
--Made some adjustments to splotch.curve() by adding the following functionality:
-  > curve() can now take an 'orientation' parameter which sets the independent variable to either the x or y axis.
-  > labels are now only added to the plot calls, rather than trying to add a legend at the same time.
-  > Fixed bug when expression given with substitution variables, but subs not also given.
-  > Changed behaviour of auto-boundaries
+* Fixed following problems with splotch.curve_piecewise
 
-0.5.4.3 (27/05/2021):
--Fixed wrong colour map scale in hexbin when xlog/ylog=True and dens=True.
--Added missing 'sqrt' keyword in splotch.imageWCS stretch parameter.
+  * Not able to plot horizontal/vertical lines
+  * Error is var not explicitly given.
+  * expr and intervals does not accept tuples
+  * subs had to be specified for all expressions rather than those they were relevant to.
 
-0.5.4.2 (24/02/2021):
--Fixed bug in splotch.statband() where functions could not be parsed into stat_low/high.
--Added from_mid variable that gives user control over where the statistic should be calculated from
--Removed deprecation warnings in splotch.statband()
+**0.5.6.1** (19/10/2021):
 
-0.5.4.1 (11/02/2021):
--Fixed bug with automatic y-axis limits in plots_1d.hist()
+* Modified splotch.curve() so that an independent variable is not strictly required, allowing for constant expressions, i.e. horizontal lines.
 
-0.5.4.0 (17/12/2020):
--Renamed plots_2d.errorband() to plots_2d.statband().
--Added plots_2d.statband() equivalents with boxes and bars.
--Added plots_2d.errorbar() equivalent with bands.
+**0.5.6.0** (07/10/2021):
 
-0.5.3.0 (17/12/2020):
--Added all plots_2d.hist2D() to plots_2d.hexbin()
+* Added function curve_piecewise() which works similarly to curve() but can be parsed piecewise expressions.
 
-0.5.2.3 (16/12/2020):
--Fixed splt.hist() to ensure lower y limit starts at zero.
--Auto ylim does not override current upper limits and does not apply when ylog=True or v statistics are used.
+**0.5.5.0** (24/09/2021):
 
-0.5.2.2 (16/12/2020):
--Fixed issue with single numpy.ndarray being passed to bins in plots_1d.hist() 
+* Upgraded splotch.axline() so that it can accept a list of axes on which to plot lines.
 
-0.5.2.1 (25/09/2020):
--Fixed issue with grid behaviour
+**0.5.4.6** (22/09/2021):
 
-0.5.2.0 (24/09/2020):
--Updated reference style sheet to that from  matplotlib 3.3.2.
--Added a first working version of hexbin.
+* Fixed spelling errors
 
-0.5.1.1 (04/08/2020):
--Fixed bug in adjust_text() with retrieving legend text
--Made it possible to specify several shorthand text references as a single string (e.g. ['x','y','k'] --> 'xyk')
+**0.5.4.5** (26/08/2021):
 
-0.5.1.0 (03/08/2020):
--Implemented solutions for issues #11, #12, #31, #37, #40, #48 and #52
--Cleaned up some commented-out lines used for de-bugging at some point
--Updated Examples.ipynb to reflect current use of functions
+* Fixed bug in splotch.subplots() that allowed any string to be parsed into parameters va and ha, with no warning or exception.
 
-0.5.0.7 (30/06/2020):
--Fixed bugged deprecation warning in plots_1d.axline()
+**0.5.4.4** (23/08/2021):
 
-0.5.0.6 (30/06/2020):
--Added alpha to plots_2d.contourp() label
+* Made some adjustments to splotch.curve() by adding the following functionality:
 
-0.5.0.5 (29/06/2020):
--Fixed bug in splotch.axline()
+* curve() can now take an 'orientation' parameter which sets the independent variable to either the x or y axis.
+* labels are now only added to the plot calls, rather than trying to add a legend at the same time.
+* Fixed bug when expression given with substitution variables, but subs not also given.
+* Changed behaviour of auto-boundaries
 
-0.5.0.4 (25/06/2020):
--Fixed bug with multiple ticks in splotch.colorbar when using LogNorm() in mappable
+**0.5.4.3** (27/05/2021):
 
-0.5.0.3 (25/06/2020):
--Fixed bug in axline()
+* Fixed wrong colour map scale in hexbin when xlog/ylog=True and dens=True.
+* Added missing 'sqrt' keyword in splotch.imageWCS stretch parameter.
 
-0.5.0.2 (25/06/2020):
--Fixed errorbox() not showing labels in legend
--Change 'boxtype' naming to 'box_type' to be consistent with other functions
+**0.5.4.2** (24/02/2021):
 
-0.5.0.1 (24/06/2020):
--Changed usage of 'plabel' to 'label' to be consistent with matplotlib standards
--'plabel' remains in the contourp() function as the percentages label parameter
+* Fixed bug in splotch.statband() where functions could not be parsed into stat_low/high.
+* Added from_mid variable that gives user control over where the statistic should be calculated from
+* Removed deprecation warnings in splotch.statband()
 
-0.5.0.0 (22/06/2020):
--Removal of legacy function names
--Complete re-work of plots_2d.contourp()
--Improved handling of x-axis values on plots_2d.errorband()
+**0.5.4.1** (11/02/2021):
 
-0.4.6.9 (18/06/2020):
--Fixed bad use of scipy binned_statistics in plots_2d.hist2D()
+* Fixed bug with automatic y-axis limits in plots_1d.hist()
 
-0.4.6.8 (08/04/2020):
--Fixed issue with nmin in plots_1d.hist()
--Renamed "smooth" to "line" in plots_1d.hist()
+**0.5.4.0** (17/12/2020):
 
-0.4.6.7 (08/04/2020):
--Fixed non-working error raising in plots_2d.hist2D()
+* Renamed plots_2d.errorband() to plots_2d.statband().
+* Added plots_2d.statband() equivalents with boxes and bars.
+* Added plots_2d.errorbar() equivalent with bands.
 
-0.4.6.6 (03/04/2020):
--Fixed bug when passing empty arrays into hist2d()
+**0.5.3.0** (17/12/2020):
 
-0.4.6.5 (02/04/2020):
--Added 'density' parameter tp scatter()
--Setting 'density'=True plots the colour of scatter points as their spatial number density to nearby points. This is done using a Gaussian kernel density estimate
--Added scatter example (with 'density' usage) to Examples.ipynb
+* Added all plots_2d.hist2D() to plots_2d.hexbin()
 
-0.4.6.4 (19/03/2020):
--Replaced naming of parameters 'm' and 'c' in axline() with 'a' and 'b' to avoid conflict with colour parameter 'c' as per issue #38
+**0.5.2.3** (16/12/2020):
 
-0.4.6.3 (19/03/2020):
--cornerplot() can now accepts a list of two for 'pair_type' which sets the plotting types for the lower and upper off-diagonal axes
--'pair_kw' is now deprecated and has been replaced by explicitly 'contour_kw', 'scatter_kw' and 'hist2D_kw'
--Fixed bug in cornerplot() where labels would not be correctly assigned automatically if more than one group given
--cornerplot() now correctly shares the x/y axes of subplots according to their columns/rows without linking 1D histogram axes on the diagonal
+* Fixed splt.hist() to ensure lower y limit starts at zero.
+* Auto ylim does not override current upper limits and does not apply when ylog=True or v statistics are used.
 
-0.4.6.2 (18/03/2020):
--Added minimum number of elements per bin to plots_1d.hist(), same functionality as nmin in plots_2d.hist2D()
+**0.5.2.2** (16/12/2020):
 
-0.4.6.1 (10/03/2020):
--Fixed bug in plots_1d.hist() with binned statistics not working for list of data
--Switched plots_2d.contourp() to use matplotlib's colourbar instead of our own
+* Fixed issue with single numpy.ndarray being passed to bins in plots_1d.hist() 
 
-0.4.6.0 (20/02/2020):
-- Made modifications and bugfixes to splt.contourp(), including:
- * Added the 'labels' parameter for labelling contour lines
- * Added the 'smooth' parameter to apply a Gaussian smoothing kernel to the contours. 'smooth' is the sigma of the kernel
- * Renamed parameter clabel --> labels
- * Renamed parameter 's' --> linestyle. 's' was ambiguous and could be confused with the 's' used in scatter for "size"
- * Added alliases for linestyle: 'ls' or 's' and for c: 'color'
- * Fixed problem where 'clabel' applied to contour labels, rather than to colorbar as documentation stated
- * 'clabel' now controls colorbar label and 'labels' controls the labels for the contours
- * Fixed bug where percent, bin_type, bins, s (linstyle) would only accept lists and not other iterables
- * Fixed bug where if the length of s (linestyle) was < 4, code would force linestyle='solid'
- * Fixed bug when clabel[0] == None no legend would be plot in the case where other items in clabel were not None
- * Fixed bug where if no ax was given and a call was made directly to ax, it would crash
- * Adjusted handling of 'color' to accept: strings, floats, arrays. If color is number, now correctly samples the cmap at the correct percent value
- * Adjusted usage of labels. If labels=True, automatically generate labels from 'percent'. If labels is string, display only one label in legend. If labels is an array-like, each element applies to an individual contour line. If labels = False or None, do not display a legend
- * Adjusted retrieval of next colour in cycler to use: "next(ax._get_lines.prop_cycler)['color']" instead of plotting a temporary line
- * Added feature where if length of 'linestyle' or 'color' were less than paercent, they would be cycled until forming a list of corrent length
- * Added feature where colorbar is plot if clabel given
- * Removed displaying of labels as a default behaiviour
- * Removed automatic setting of 'linestyle' to 'solid' if col was not string
- * Removed multiple calls to "output = Params. ..."
- * Removed "if None in (percent, cmap, clim, s, ...)" as this conflicted with numpy arrays
- * Removed 'viridis' default from 'cmap' docstring
+**0.5.2.1** (25/09/2020):
+
+* Fixed issue with grid behaviour
+
+**0.5.2.0** (24/09/2020):
+
+* Updated reference style sheet to that from  matplotlib 3.3.2.
+* Added a first working version of hexbin.
+
+**0.5.1.1** (04/08/2020):
+
+* Fixed bug in adjust_text() with retrieving legend text
+* Made it possible to specify several shorthand text references as a single string (e.g. ['x','y','k'] --> 'xyk')
+
+**0.5.1.0** (03/08/2020):
+
+* Implemented solutions for issues #11, #12, #31, #37, #40, #48 and #52
+* Cleaned up some commented-out lines used for de-bugging at some point
+* Updated Examples.ipynb to reflect current use of functions
+
+**0.5.0.7** (30/06/2020):
+
+* Fixed bugged deprecation warning in plots_1d.axline()
+
+**0.5.0.6** (30/06/2020):
+
+* Added alpha to plots_2d.contourp() label
+
+**0.5.0.5** (29/06/2020):
+
+* Fixed bug in splotch.axline()
+
+**0.5.0.4** (25/06/2020):
+
+* Fixed bug with multiple ticks in splotch.colorbar when using LogNorm() in mappable
+
+**0.5.0.3** (25/06/2020):
+
+* Fixed bug in axline()
+
+**0.5.0.2** (25/06/2020):
+
+* Fixed errorbox() not showing labels in legend
+* Change 'boxtype' naming to 'box_type' to be consistent with other functions
+
+**0.5.0.1** (24/06/2020):
+
+* Changed usage of 'plabel' to 'label' to be consistent with matplotlib standards
+* 'plabel' remains in the contourp() function as the percentages label parameter
+
+**0.5.0.0** (22/06/2020):
+
+* Removal of legacy function names
+* Complete re-work of plots_2d.contourp()
+* Improved handling of x-axis values on plots_2d.errorband()
+
+**0.4.6.9** (18/06/2020):
+
+* Fixed bad use of scipy binned_statistics in plots_2d.hist2D()
+
+**0.4.6.8** (08/04/2020):
+
+* Fixed issue with nmin in plots_1d.hist()
+* Renamed "smooth" to "line" in plots_1d.hist()
+
+**0.4.6.7** (08/04/2020):
+
+* Fixed non-working error raising in plots_2d.hist2D()
+
+**0.4.6.6** (03/04/2020):
+
+* Fixed bug when passing empty arrays into hist2d()
+
+**0.4.6.5** (02/04/2020):
+
+* Added 'density' parameter tp scatter()
+* Setting 'density'=True plots the colour of scatter points as their spatial number density to nearby points. This is done using a Gaussian kernel density estimate
+* Added scatter example (with 'density' usage) to Examples.ipynb
+
+**0.4.6.4** (19/03/2020):
+
+* Replaced naming of parameters 'm' and 'c' in axline() with 'a' and 'b' to avoid conflict with colour parameter 'c' as per issue #38
+
+**0.4.6.3** (19/03/2020):
+
+* cornerplot() can now accepts a list of two for 'pair_type' which sets the plotting types for the lower and upper off-diagonal axes
+* 'pair_kw' is now deprecated and has been replaced by explicitly 'contour_kw', 'scatter_kw' and 'hist2D_kw'
+* Fixed bug in cornerplot() where labels would not be correctly assigned automatically if more than one group given
+* cornerplot() now correctly shares the x/y axes of subplots according to their columns/rows without linking 1D histogram axes on the diagonal
+
+**0.4.6.2** (18/03/2020):
+
+* Added minimum number of elements per bin to plots_1d.hist(), same functionality as nmin in plots_2d.hist2D()
+
+**0.4.6.1** (10/03/2020):
+
+* Fixed bug in plots_1d.hist() with binned statistics not working for list of data
+* Switched plots_2d.contourp() to use matplotlib's colourbar instead of our own
+
+**0.4.6.0** (20/02/2020):
+
+* Made modifications and bugfixes to splt.contourp(), including:
+
+  * Added the 'labels' parameter for labelling contour lines
+  * Added the 'smooth' parameter to apply a Gaussian smoothing kernel to the contours. 'smooth' is the sigma of the kernel
+  * Renamed parameter clabel --> labels
+  * Renamed parameter 's' --> linestyle. 's' was ambiguous and could be confused with the 's' used in scatter for "size"
+  * Added alliases for linestyle: 'ls' or 's' and for c: 'color'
+  * Fixed problem where 'clabel' applied to contour labels, rather than to colorbar as documentation stated
+  * 'clabel' now controls colorbar label and 'labels' controls the labels for the contours
+  * Fixed bug where percent, bin_type, bins, s (linstyle) would only accept lists and not other iterables
+  * Fixed bug where if the length of s (linestyle) was < 4, code would force linestyle='solid'
+  * Fixed bug when clabel[0] == None no legend would be plot in the case where other items in clabel were not None
+  * Fixed bug where if no ax was given and a call was made directly to ax, it would crash
+  * Adjusted handling of 'color' to accept: strings, floats, arrays. If color is number, now correctly samples the cmap at the correct percent value
+  * Adjusted usage of labels. If labels=True, automatically generate labels from 'percent'. If labels is string, display only one label in legend. If labels is an array-like, each element applies to an individual contour line. If labels = False or None, do not display a legend
+  * Adjusted retrieval of next colour in cycler to use: "next(ax._get_lines.prop_cycler)['color']" instead of plotting a temporary line
+  * Added feature where if length of 'linestyle' or 'color' were less than paercent, they would be cycled until forming a list of corrent length
+  * Added feature where colorbar is plot if clabel given
+  * Removed displaying of labels as a default behaiviour
+  * Removed automatic setting of 'linestyle' to 'solid' if col was not string
+  * Removed multiple calls to "output = Params. ..."
+  * Removed "if None in (percent, cmap, clim, s, ...)" as this conflicted with numpy arrays
+  * Removed 'viridis' default from 'cmap' docstring
  
-0.4.5.3 (28/02/2020):
--Added 'fig' parameter to cornerplot() to accept predefined figure objects
+**0.4.5.3** (28/02/2020):
 
-0.4.5.2 (26/02/2020):
--Fixed bug with 'ins' variable in colorbar()
+* Added 'fig' parameter to cornerplot() to accept predefined figure objects
 
-0.4.5.1 (21/02/2020):
--Added weights to hist()
--Fixed bug where input parameters could only be given as lists, not other iterable types
+**0.4.5.2** (26/02/2020):
 
-0.4.5.0 (20/02/2020):
--Added sampling to cornerplot() to subsample the input data into a thinned dataset for faster plotting
--The 'nsamples' and 'sample_type' parameters were added to control the use of this feature
--Removed 'sharex' and 'sharey' parameters as they were superfluous in cornerplot()
+* Fixed bug with 'ins' variable in colorbar()
 
-0.4.4.1 (19/02/2020):
--Fixed bug in cornerplot() when columns given as groups in a numpy array
+**0.4.5.1** (21/02/2020):
 
-0.4.4.0 (18/02/2020):
--cornerplot() now accepts groups of parameters, the 'columns' parameter can be given as a list of lists with each sublist corresponding to a set of parameters to be paired together
--Giving multiple groups will overplot corresponding parameters from each group on the same axis
+* Added weights to hist()
+* Fixed bug where input parameters could only be given as lists, not other iterable types
 
-0.4.3.2 (17/02/2020):
--Fixed axline() issue when parameters parsed as an array rather than single number
+**0.4.5.0** (20/02/2020):
 
-0.4.3.1 (17/02/2020):
--Made changes to cornerplot() to accept pandas and astropy DataFrames
+* Added sampling to cornerplot() to subsample the input data into a thinned dataset for faster plotting
+* The 'nsamples' and 'sample_type' parameters were added to control the use of this feature
+* Removed 'sharex' and 'sharey' parameters as they were superfluous in cornerplot()
 
-0.4.3.0 (17/02/2020):
--Added cornerplot() to axis_func.py
--corner_plot() creates an nxn grid of subplots where the diagonals plot a 1D histogram of each parameter and the off-diagonals plot each combination of parameters
+**0.4.4.1** (19/02/2020):
 
-0.4.2.1 (14/02/2020):
--Fixed issue with 0 given as x,y,m or c in plots_1d.axline()
+* Fixed bug in cornerplot() when columns given as groups in a numpy array
 
-0.4.2.0 (06/12/2019):
--Added error band plots as plots_2d.errorband()
+**0.4.4.0** (18/02/2020):
 
-0.4.1.3 (02/12/2019):
--Colorbar() now accepts multiple arguments for ax which will produce a colorbar for each element of the list
- * If no mappables are given, colorbar() finds an appropriate mappable for each individual axis
- * If one mappable is given, it will be applied to all colorbars
- * If multiple mappables are given, they must match the number of axes also specified
+* cornerplot() now accepts groups of parameters, the 'columns' parameter can be given as a list of lists with each sublist corresponding to a set of parameters to be paired together
+* Giving multiple groups will overplot corresponding parameters from each group on the same axis
 
-0.4.1.2 (29/11/2019):
--Fixed issue with tuple-defined linestyles
--Fixed confusion when using RGB/RGBA tuples when drawing multiple lines.
+**0.4.3.2** (17/02/2020):
 
-0.4.1.1 (27/11/2019):
--Changed sector() to cause rotate to act in a clockwise direction
--scatter() now returns a list of PathCollections
+* Fixed axline() issue when parameters parsed as an array rather than single number
 
-0.4.1.0 (27/11/2019):
--Added colorbar() function to axis_func.py which acts as a utility wrapper around plt.colorbar()
--splt.colorbar() acts on any currently drawn mappables with simplified methods of giving coloarbar location
+**0.4.3.1** (17/02/2020):
 
-0.4.0.6 (19/11/2019):
--Fixed bug in curve() when no substitute variables are specified
+* Made changes to cornerplot() to accept pandas and astropy DataFrames
 
-0.4.0.5 (18/11/2019):
--Updated axline(), brokenplot(), curve() and plot() to return their corresponding Line2D objects
--If multiple lines produced in these functions, instead return a list of Line2D objects
--brokenplot() will always return a list of tuple pairs corresponding to the lines on either side of the axis break
--Updated brokenplot() to now remove any duplicate ticks if they appear
+**0.4.3.0** (17/02/2020):
 
-0.4.0.4 (14/11/2019):
--Fixed issue when specifying colours as RGB/RBGA tuples in base_funct.dict_splicer()
+* Added cornerplot() to axis_func.py
+* corner_plot() creates an nxn grid of subplots where the diagonals plot a 1D histogram of each parameter and the off-diagonals plot each combination of parameters
 
-0.4.0.3 (12/11/2019):
--Fix for type conflict in division in plots_1D.hist() when dens=False and scale is a float
+**0.4.2.1** (14/02/2020):
 
-0.4.0.2 (05/11/2019):
--Added clim, clabel, and cbar_invert to the splotch.sector() function
+* Fixed issue with 0 given as x,y,m or c in plots_1d.axline()
 
-0.4.0.1 (05/11/2019):
--Modified splotch.scatter() to now take clim as an argument, in line with other functions (e.g. hist2d)
--clim functions as a two-value list-like object which parses a minimum and maximum value to colors. Normalize's vmin and vmax, respectively
--If both clim and vmin/vmax are given, clim takes priority
+**0.4.2.0** (06/12/2019):
 
-0.4.0.0 (11/10/2019):
--Updated function names for improved clarity and consistency with matplotlib
--Added cumulative distributions to plots_1d.hist()
+* Added error band plots as plots_2d.errorband()
 
-0.3.10.3 (17/09/2019):
--Fixed issue when passing only one linestyle to plots_2d.sigma_cont()
+**0.4.1.3** (02/12/2019):
 
-0.3.10.2 (11/09/2019):
--Made adjustments to label handling in curve()
--The 'label' parameter accepts arguments of type: bool, str, or list-like iterables and will automatically generate the most appropriate legend for each
--Added permute parameter which gives every combination of subs
--Removed automatic setting of 'rasterized' parameter in dict_splicer()
+* Colorbar() now accepts multiple arguments for ax which will produce a colorbar for each element of the list
+  * If no mappables are given, colorbar() finds an appropriate mappable for each individual axis
+  * If one mappable is given, it will be applied to all colorbars
+  * If multiple mappables are given, they must match the number of axes also specified
 
-0.3.10.1 (10/09/2019):
--Improved 'stepfilled' implementation in plots_1d.hist()
+**0.4.1.2** (29/11/2019):
 
-0.3.10.0 (09/09/2019):
--Added filled options to plots_1d.hist()
+* Fixed issue with tuple-defined linestyles
+* Fixed confusion when using RGB/RGBA tuples when drawing multiple lines.
 
-0.3.9.1 (08/09/2019):
--Removed debug print in styles.use_style()
+**0.4.1.1** (27/11/2019):
 
-0.3.9.0 (08/09/2019):
--Added new level contour, plots_2d.cont()
--Updated styles.use_style() to pass a dictionary from the given file to matplotlib
--Added outputs to plots_2d.sigma_cont()
+* Changed sector() to cause rotate to act in a clockwise direction
+* scatter() now returns a list of PathCollections
 
-0.3.8.0 (04/09/2019):
--Added curve plot for plotting functions directly from expressions
--The curve() function takes an 'expr' parameter which can be a string, function or sympy expression which will evaluate over the range of the plot
+**0.4.1.0** (27/11/2019):
 
-0.3.7.3 (23/08/2019):
--Added sector() and brokenplot() to Examples.ipynb
+* Added colorbar() function to axis_func.py which acts as a utility wrapper around plt.colorbar()
+* splt.colorbar() acts on any currently drawn mappables with simplified methods of giving coloarbar location
 
-0.3.7.2 (23/08/2019):
--brokenplot() now accepts a list for xbreak to define a start and stop for the break
--Added NotImplementedError() exception when trying to use ybreak
+**0.4.0.6** (19/11/2019):
 
-0.3.7.1 (22/08/2019):
--Added some documentation to brokenplot()
+* Fixed bug in curve() when no substitute variables are specified
 
-0.3.7.0 (22/08/2019):
--Added brokenplot() to plots_1d
--Broken plots can be used as per the standard plot function with the addition of a break in the axis
--brokenplot() currently only implemented for xaxis breaks
+**0.4.0.5** (18/11/2019):
 
-0.3.6.3 (21/08/2019):
--incorporated removal of redundant tick labelling for sharex/sharey parameters
+* Updated axline(), brokenplot(), curve() and plot() to return their corresponding Line2D objects
+* If multiple lines produced in these functions, instead return a list of Line2D objects
+* brokenplot() will always return a list of tuple pairs corresponding to the lines on either side of the axis break
+* Updated brokenplot() to now remove any duplicate ticks if they appear
 
-0.3.6.2 (21/08/2019):
--Fixed sharex/sharey to correctly share axes depending on usage: 'none', 'all', 'row', 'col'
+**0.4.0.4** (14/11/2019):
 
-0.3.6.1 (20/08/2019):
--Added squeeze to subplots() as well as full documentation
+* Fixed issue when specifying colours as RGB/RBGA tuples in base_funct.dict_splicer()
 
-0.3.6.0 (20/08/2019):
--Added errbox() function which creates patches using x and y errors and widths and heights
--Added default behaviour of xlim and ylim to 'auto = True' in plot_finaliser
+**0.4.0.3** (12/11/2019):
 
-0.3.5.1 (16/08/2019):
--Fixed conflict between clim and vmin/vmax in plots_2d.hist2D(). Now if both are given, clim will override vmin/vmax
+* Fix for type conflict in division in plots_1D.hist() when dens=False and scale is a float
 
-0.3.5.0 (16/08/2019):
--Added Sector Plots (a.k.a 'Pizza slice' plots)
+**0.4.0.2** (05/11/2019):
 
-0.3.4.2 (16/08/2019):
--Removed unnecessary print statements in hist2D()
+* Added clim, clabel, and cbar_invert to the splotch.sector() function
 
-0.3.4.1 (16/08/2019):
--Fixed bug in nmin argument in hist2d()
+**0.4.0.1** (05/11/2019):
 
-0.3.4.0 (16/08/2019):
--Added nmin to hist2D()
+* Modified splotch.scatter() to now take clim as an argument, in line with other functions (e.g. hist2d)
+* clim functions as a two-value list-like object which parses a minimum and maximum value to colors. Normalize's vmin and vmax, respectively
+* If both clim and vmin/vmax are given, clim takes priority
 
-0.3.3.0 (12/08/2019):
--Completed update_version.py
+**0.4.0.0** (11/10/2019):
 
-0.3.2.0 (12/08/2019):
--Added bars as an option for plots_1d.hist(). Variable "smooth" changed to "hist_type"
+* Updated function names for improved clarity and consistency with matplotlib
+* Added cumulative distributions to plots_1d.hist()
 
-0.3.1.2 (09/08/2019):
--Fixed issue when parsing a Text instance or the full word handles in adjust_text()
--Modified imports plots_1d.py and plots_2d.py to only load functions necessary to the code
+**0.3.10.3** (17/09/2019):
 
-0.3.1.1 (07/08/2019):
--Fixed issue with passing kwargs in plots_2d.sigma_cont()
--Added first working version of new subplot function
+* Fixed issue when passing only one linestyle to plots_2d.sigma_cont()
 
-0.3.1.0 (01/08/2019):
--Addition of axis control function axis_func.adjust_text(), for easier handling of text elements (axis labels, legends, titles and text) in figures
+**0.3.10.2** (11/09/2019):
+
+* Made adjustments to label handling in curve()
+* The 'label' parameter accepts arguments of type: bool, str, or list-like iterables and will automatically generate the most appropriate legend for each
+* Added permute parameter which gives every combination of subs
+* Removed automatic setting of 'rasterized' parameter in dict_splicer()
+
+**0.3.10.1** (10/09/2019):
+
+* Improved 'stepfilled' implementation in plots_1d.hist()
+
+**0.3.10.0** (09/09/2019):
+
+* Added filled options to plots_1d.hist()
+
+**0.3.9.1** (08/09/2019):
+
+* Removed debug print in styles.use_style()
+
+**0.3.9.0** (08/09/2019):
+
+* Added new level contour, plots_2d.cont()
+* Updated styles.use_style() to pass a dictionary from the given file to matplotlib
+* Added outputs to plots_2d.sigma_cont()
+
+**0.3.8.0** (04/09/2019):
+
+* Added curve plot for plotting functions directly from expressions
+* The curve() function takes an 'expr' parameter which can be a string, function or sympy expression which will evaluate over the range of the plot
+
+**0.3.7.3** (23/08/2019):
+
+* Added sector() and brokenplot() to Examples.ipynb
+
+**0.3.7.2** (23/08/2019):
+
+* brokenplot() now accepts a list for xbreak to define a start and stop for the break
+* Added NotImplementedError() exception when trying to use ybreak
+
+**0.3.7.1** (22/08/2019):
+
+* Added some documentation to brokenplot()
+
+**0.3.7.0** (22/08/2019):
+
+* Added brokenplot() to plots_1d
+* Broken plots can be used as per the standard plot function with the addition of a break in the axis
+* brokenplot() currently only implemented for xaxis breaks
+
+**0.3.6.3** (21/08/2019):
+
+* incorporated removal of redundant tick labelling for sharex/sharey parameters
+
+**0.3.6.2** (21/08/2019):
+
+* Fixed sharex/sharey to correctly share axes depending on usage: 'none', 'all', 'row', 'col'
+
+**0.3.6.1** (20/08/2019):
+
+* Added squeeze to subplots() as well as full documentation
+
+**0.3.6.0** (20/08/2019):
+
+* Added errbox() function which creates patches using x and y errors and widths and heights
+* Added default behaviour of xlim and ylim to 'auto = True' in plot_finaliser
+
+**0.3.5.1** (16/08/2019):
+
+* Fixed conflict between clim and vmin/vmax in plots_2d.hist2D(). Now if both are given, clim will override vmin/vmax
+
+**0.3.5.0** (16/08/2019):
+
+* Added Sector Plots (a.k.a 'Pizza slice' plots)
+
+**0.3.4.2** (16/08/2019):
+
+* Removed unnecessary print statements in hist2D()
+
+**0.3.4.1** (16/08/2019):
+
+* Fixed bug in nmin argument in hist2d()
+
+**0.3.4.0** (16/08/2019):
+
+* Added nmin to hist2D()
+
+**0.3.3.0** (12/08/2019):
+
+* Completed update_version.py
+
+**0.3.2.0** (12/08/2019):
+
+* Added bars as an option for plots_1d.hist(). Variable "smooth" changed to "hist_type"
+
+**0.3.1.2** (09/08/2019):
+
+* Fixed issue when parsing a Text instance or the full word handles in adjust_text()
+* Modified imports plots_1d.py and plots_2d.py to only load functions necessary to the code
+
+**0.3.1.1** (07/08/2019):
+
+* Fixed issue with passing kwargs in plots_2d.sigma_cont()
+* Added first working version of new subplot function
+
+**0.3.1.0** (01/08/2019):
+
+* Addition of axis control function axis_func.adjust_text(), for easier handling of text elements (axis labels, legends, titles and text) in figures
