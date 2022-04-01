@@ -83,11 +83,11 @@ def axline(x=None,y=None,a=None,b=None,
 				ax = array(ax).flatten()
 			old_ax=axes_handler(ax[0])
 		else:
+			ax = [ax] # Axis must be a list to be enumerated over
 			old_ax=axes_handler(ax)
-			ax = [ax]
 	else:
-		old_ax=ax
 		ax=[gca()]
+		old_ax=ax[0]
 	
 	# Validate input parameters
 	if not (any([is_numeric(var) for var in [x,y,a,b]])): # If nothing has been specified
@@ -163,7 +163,7 @@ def axline(x=None,y=None,a=None,b=None,
 				lines[jj].append(axis.plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii])[0])
 				axis.set_xlim(xLims)
 				axis.set_ylim(yLims)
-	
+
 		plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
 
 		# Autoscale the axes if needed
@@ -1207,7 +1207,11 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 			if (dep=='plabel'): label = kwargs.pop(dep)
 	
 	if ax is not None:
-		old_axes=axes_handler(ax)
+		old_axis = axes_handler(ax) # Set current axis to ax and return the previous axis to old_axis.
+	else:
+		ax=gca()
+		old_axis=ax
+
 	if type(x) is not list or len(shape(x))==1:
 		x=[x]
 	L=len(x)
@@ -1234,7 +1238,9 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
 	if any(label):
 		legend(loc=lab_loc)
 	plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+	
 	if ax is not None:
-		old_axes=axes_handler(old_axes)
+		old_axes = axes_handler(old_axes)
 	
 	return (lines[0] if len(lines) == 1 else lines)
+

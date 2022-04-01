@@ -174,11 +174,15 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
     from matplotlib import lines, patches, rcParams
     from matplotlib.cm import get_cmap, ScalarMappable
     from matplotlib.colors import Normalize
-    from matplotlib.pyplot import gca, sca, contour, contourf, legend, Normalize, colorbar 
+    from matplotlib.pyplot import gca, sca, contour, contourf, legend, Normalize
     from numpy import array, linspace, round, ndarray, ceil
     from scipy.ndimage.filters import gaussian_filter
+    
+
     from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer,is_numeric
+    from .axis_func import colorbar
     from .defaults import Params
+
     
     # Initialise defaults
     if filled is None:
@@ -1417,10 +1421,12 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
     """
     
     from numpy import array, dtype, shape, vstack
-    from matplotlib.pyplot import scatter, colorbar, legend
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
+    from matplotlib.pyplot import scatter, legend
     from scipy.stats import gaussian_kde
     from warnings import warn
+
+    from .base_func import axes_handler,dict_splicer,plot_finalizer
+    from .axis_func import colorbar
 
     # Handle deprecated variables
     deprecated = {'plabel':'label'}
@@ -1473,15 +1479,16 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
     
     paths=[]
     for i in range(L):
-        p=scatter(x[i],y[i],c=c[i],label=label[i],**plot_par[i])
+        p = scatter(x[i],y[i],c=c[i],label=label[i],**plot_par[i])
         paths.append(p)
     if clabel is not None:
-        cbar=colorbar()
+        cbar = colorbar()
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
     if any(label):
         legend(loc=lab_loc)
+    
     plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
     if ax is not None:
         old_axes=axes_handler(old_axes)

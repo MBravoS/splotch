@@ -28,7 +28,7 @@ def axes_handler(new_axis):
 	"""
 	from matplotlib.pyplot import gca,sca
 	
-	curr_axis=gca()
+	curr_axis = gca() # get current axis if it exists, else create one.
 	sca(new_axis)
 	return(curr_axis)
 

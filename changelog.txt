@@ -1,3 +1,7 @@
+**0.5.7.1** (01/04/2022):
+
+* Just some minor reordering of old axis logic
+
 **0.5.7.0** (27/10/2021):
 
 * Made significant changes to the Example.ipynb notebook documentation
