@@ -1,3 +1,8 @@
+**0.5.7.2** (02/04/2022):
+
+* Passed plots_2d.py through a PEP8 linter to standard formatting
+* Changed type() comparisons to the safer/preferred isinstance() function
+
 **0.5.7.1** (01/04/2022):
 
 * Just some minor reordering of old axis logic

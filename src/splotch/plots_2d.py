@@ -5,13 +5,12 @@
 ####################################
 # Level contours
 ####################################
-def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
-            ylabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-    
+def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, title=None, xlabel=None,
+            ylabel=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Level contour plotting function.
-    
+
     This is a wrapper for pyplot.contour() and pyplot.contourf().
-    
+
     Parameters
     ----------
     z : array-like
@@ -52,9 +51,9 @@ def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinver
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
     **kwargs: QuadContourSet properties, optional
         kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
-        The list of available properties can be found here: 
+        The list of available properties can be found here:
         https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html
-    
+
     Returns
     -------
     bin_edges_x : array
@@ -66,43 +65,42 @@ def contour(z,x=None,y=None,filled=None,xlim=None,ylim=None,xinvert=False,yinver
     l : array
         The levels for the contours.
     """
-    
-    from numpy import shape, linspace
-    from matplotlib.pyplot import contour,contourf, legend
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
-    
+
+    from numpy import linspace  # , shape
+    from matplotlib.pyplot import contour, contourf  # , legend
+    from .base_func import axes_handler, plot_finalizer  # , dict_splicer
+
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     if filled is None:
         from .defaults import Params
-        filled=Params.cont_filled
+        filled = Params.cont_filled
     if x is None:
-        x=linspace(0,1,z.shape[0])
+        x = linspace(0, 1, z.shape[0])
     if y is None:
-        y=linspace(0,1,z.shape[1])
-    
+        y = linspace(0, 1, z.shape[1])
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    
-    plotf={False:contour,True:contourf}
-    plotf[filled](x,y,z,**plot_par)
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    plotf = {False: contour, True: contourf}
+    plotf[filled](x, y, z, **plot_par)
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
 
 ####################################
 # Contours from density histograms
 ####################################
-def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max_spacing=True,xlim=None,ylim=None,xinvert=False,yinvert=False,
-                xlog=False,ylog=False,title=None,plabel=None,xlabel=None,ylabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
-    
+def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0.0, max_spacing=True, xlim=None, ylim=None, xinvert=False, yinvert=False,
+             xlog=False, ylog=False, title=None, plabel=None, xlabel=None, ylabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
     """Contour function, encircling the highest density regions that contain the given percentages of the sample.
-    
+
     Parameters
     ----------
     x : array-like
@@ -155,9 +153,9 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
     **kwargs: QuadContourSet properties, optional
         kwargs are used to specify matplotlib specific properties such as cmap, linewidths, hatches, etc.
-        The list of available properties can be found here: 
+        The list of available properties can be found here:
         https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.contour.html
-    
+
     Returns
     -------
     bin_edges_x : array
@@ -169,73 +167,71 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
     l : array
         The levels for the contours.
     """
-    
+
     from warnings import warn
     from matplotlib import lines, patches, rcParams
     from matplotlib.cm import get_cmap, ScalarMappable
     from matplotlib.colors import Normalize
-    from matplotlib.pyplot import gca, sca, contour, contourf, legend, Normalize
+    from matplotlib.pyplot import gca, sca, contour, contourf, legend  # , Normalize
     from numpy import array, linspace, round, ndarray, ceil
     from scipy.ndimage.filters import gaussian_filter
-    
 
-    from .base_func import axes_handler,basehist2D,percent_finder,plot_finalizer,dict_splicer,is_numeric
+    from .base_func import axes_handler, basehist2D, percent_finder, plot_finalizer, dict_splicer, is_numeric
     from .axis_func import colorbar
     from .defaults import Params
 
-    
     # Initialise defaults
     if filled is None:
-        filled=Params.cont_filled
+        filled = Params.cont_filled
     if percent is None:
-        percent=Params.contp_percent 
+        percent = Params.contp_percent
     if 'cmap' not in kwargs.keys() and 'cmap' not in plot_kw.keys() and 'colors' not in kwargs.keys() and 'colors' not in plot_kw.keys():
-        plot_kw['cmap']=Params.cont_cmap
+        plot_kw['cmap'] = Params.cont_cmap
     if output is None:
-        output=Params.contp_output
-    
-    func_dict={True:contourf,False:contour}
-    
+        output = Params.contp_output
+
+    func_dict = {True: contourf, False: contour}
+
     # Assign current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
         ax = gca()
-        old_axes=ax
-    
-    if type(percent) is not ndarray:
-        percent=array([percent]).flatten()
-    if type(bin_type) not in [list, tuple, ndarray]:
-        bin_type=[bin_type]*2
-    if type(bins) not in [list,tuple]:
+        old_axes = ax
+
+    if not isinstance(percent, ndarray):
+        percent = array([percent]).flatten()
+    if not isinstance(bin_type, (list, tuple, ndarray)):
+        bin_type = [bin_type] * 2
+    if not isinstance(bins, (list, tuple)):
         if bins is None:
-            bins = max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
-        bins=[bins]*2
-    percent=percent[::-1]
-    
+            bins = max([10, int(len(x)**0.4)])  # Defaults to min of 10 bins
+        bins = [bins] * 2
+    percent = percent[::-1]
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par = {**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par = {**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     if filled:
-        plot_par['extend']='max'
-    
-    if not filled and len(percent)<4 and 'colors' not in plot_par.keys(): # if drawing <4 lines with no color specified, get first color of color cycler
-        plot_par['colors']=[next(ax._get_lines.prop_cycler)['color']]*len(percent)
+        plot_par['extend'] = 'max'
+
+    if not filled and len(percent) < 4 and 'colors' not in plot_par.keys():  # if drawing <4 lines with no color specified, get first color of color cycler
+        plot_par['colors'] = [next(ax._get_lines.prop_cycler)['color']] * len(percent)
     if 'colors' in plot_par.keys():
-        if type(plot_par['colors']) is str:
-            plot_par['colors']=[plot_par['colors'] for i in range(len(percent))]
+        if isinstance(plot_par['colors'], str):
+            plot_par['colors'] = [plot_par['colors'] for i in range(len(percent))]
         if 'cmap' in plot_par.keys():
             plot_par.pop('cmap')
     elif max_spacing:
-        if type(plot_par['cmap']) is str:
-            plot_par['cmap']=get_cmap(plot_par['cmap'])
-        plot_par['colors']=[plot_par['cmap'](i) for i in linspace(0,1,len(percent))]
+        if isinstance(plot_par['cmap'], str):
+            plot_par['cmap'] = get_cmap(plot_par['cmap'])
+        plot_par['colors'] = [plot_par['cmap'](i) for i in linspace(0, 1, len(percent))]
         plot_par.pop('cmap')
-    if not filled and len(percent)<4 and 'linestyles' not in plot_par.keys(): # if drawing <4 lines with no color specified, use 'solid', 'dashed' and then 'dotted'
-        plot_par['linestyles']=[['solid','dashed','dotted'][i] for i in range(len(percent))][::-1]
-    
+    if not filled and len(percent) < 4 and 'linestyles' not in plot_par.keys():  # if drawing <4 lines with no color specified, use 'solid', 'dashed' and then 'dotted'
+        plot_par['linestyles'] = [['solid', 'dashed', 'dotted'][i] for i in range(len(percent))][::-1]
+
     # Validate labels array
     if (type(plabel) in [list, tuple, ndarray]):
         if (len(plabel) != len(percent)):
@@ -243,54 +239,55 @@ def contourp(x,y,percent=None,filled=None,bin_type=None,bins=None,smooth=0.0,max
     else:
         if plabel is None:
             if rcParams['text.usetex']:
-                plabel=[f'{round(p,1)}\%' for p in percent]
+                plabel = [f'{round(p,1)}\\%' for p in percent]
             else:
-                plabel=[f'{round(p,1)}%' for p in percent]
-    
-    X,Y,Z=basehist2D(x,y,None,bin_type,bins,None,None,None,xlog,ylog)
-    X=(X[:-1]+X[1:])/2
-    Y=(Y[:-1]+Y[1:])/2
-    
-    level=array([percent_finder(Z,p/100) for p in percent])
-    plot_return=func_dict[filled](X,Y,gaussian_filter(Z.T,sigma=smooth),levels=level,**plot_par)
-    
+                plabel = [f'{round(p,1)}%' for p in percent]
+
+    X, Y, Z = basehist2D(x, y, None, bin_type, bins, None, None, None, xlog, ylog)
+    X = (X[:-1] + X[1:]) / 2
+    Y = (Y[:-1] + Y[1:]) / 2
+
+    level = array([percent_finder(Z, p / 100) for p in percent])
+    plot_return = func_dict[filled](X, Y, gaussian_filter(Z.T, sigma=smooth), levels=level, **plot_par)
+
     if plabel:
-        plot_par['colors']=plot_return.colors
-        if type(plot_par['colors']) is str:
-            plot_par['colors']=[plot_par['colors'] for i in range(len(percent))]
-        plot_par['linestyles']=plot_return.linestyles
-        if type(plot_par['linestyles']) is str:
-            plot_par['linestyles']=[plot_return.linestyles for i in range(len(percent))]
+        plot_par['colors'] = plot_return.colors
+        if isinstance(plot_par['colors'], str):
+            plot_par['colors'] = [plot_par['colors'] for i in range(len(percent))]
+
+        plot_par['linestyles'] = plot_return.linestyles
+        if isinstance(plot_par['linestyles'], str):
+            plot_par['linestyles'] = [plot_return.linestyles for i in range(len(percent))]
         elif plot_par['linestyles'] is None:
-            plot_par['linestyles']=['solid' for i in range(len(percent))]
-        plot_par['alpha']=plot_return.alpha
-        if type(plot_par['alpha']) is float:
-            plot_par['alpha']=[plot_return.alpha for i in range(len(percent))]
+            plot_par['linestyles'] = ['solid' for i in range(len(percent))]
+
+        plot_par['alpha'] = plot_return.alpha
+        if isinstance(plot_par['alpha'], float):
+            plot_par['alpha'] = [plot_return.alpha for i in range(len(percent))]
         elif plot_par['alpha'] is None:
-            plot_par['alpha']=[1.0 for i in range(len(percent))]
+            plot_par['alpha'] = [1.0 for i in range(len(percent))]
+
         if filled:
-            legend([patches.Patch(color=plot_par['colors'][i],alpha=plot_par['alpha'][i])for i in range(len(percent))],
-                    plabel,numpoints=1,loc=lab_loc)
+            legend([patches.Patch(color=plot_par['colors'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
+                   plabel, numpoints=1, loc=lab_loc)
         else:
-            legend([lines.Line2D([0,1],[0,1],color=plot_par['colors'][i],linestyle=plot_par['linestyles'][i],
-                                    alpha=plot_par['alpha'][i]) for i in range(len(percent))],
-                    plabel,numpoints=1,loc=lab_loc)
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+            legend([lines.Line2D([0, 1], [0, 1], color=plot_par['colors'][i], linestyle=plot_par['linestyles'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
+                   plabel, numpoints=1, loc=lab_loc)
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
     if output:
-        return(X,Y,Z.T,array(level))
+        return(X, Y, Z.T, array(level))
 
 ####################################
-# Error bands
+##########  Error bands  ###########
 ####################################
-def errorband(x,y,yerr,line=False,xlim=None,ylim=None,
-                xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
-                label=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
-    
+def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
+              xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,
+              label=None, lab_loc=0, ax=None, grid=None, line_kw={}, band_kw={}, **kwargs):
     """Error line and band plotting function.
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -331,16 +328,16 @@ def errorband(x,y,yerr,line=False,xlim=None,ylim=None,
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-        A list of available `Line2D` properties can be found here: 
+        A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     None
     """
-    
+
     from splotch.base_func import axes_handler,bin_axis,plot_finalizer
-    
+
     import numpy as np
     from numbers import Number
     import scipy.stats as stats
@@ -350,55 +347,55 @@ def errorband(x,y,yerr,line=False,xlim=None,ylim=None,
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import gca
     from warnings import warn
-    
+
     # Handle deprecated variables
-    deprecated = {'plabel':'label'}
+    deprecated = {'plabel': 'label'}
     for dep in deprecated:
         if dep in kwargs:
             warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep=='plabel'): label = kwargs.pop(dep)
-    
+            if (dep == 'plabel'): label = kwargs.pop(dep)
+
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
+
     if ylog is None:
         from splotch.defaults import Params
-        ylog=Params.hist1D_yaxis_log
+        ylog = Params.hist1D_yaxis_log
     if 'linewidth' not in band_kw.keys():
-        band_kw['linewidth']=0
+        band_kw['linewidth'] = 0
     if 'alpha' not in band_kw.keys():
-        band_kw['alpha']=0.4
-    
+        band_kw['alpha'] = 0.4
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #band_par={**plot_kw, **kwargs} # For Python > 3.5
+    # band_par={**plot_kw, **kwargs} # For Python > 3.5
     band_kw.update(kwargs)
-    
-    if len(array(yerr).shape)==2:
-        plt.fill_between(x,y-yerr[0],y+yerr[1],label=label,**band_kw)
+
+    if len(array(yerr).shape) == 2:
+        plt.fill_between(x, y - yerr[0], y + yerr[1], label=label, **band_kw)
     else:
-        plt.fill_between(x,y-yerr,y+yerr,label=label,**band_kw)
-    
+        plt.fill_between(x, y - yerr, y + yerr, label=label, **band_kw)
+
     if line:
-        plt.plot(x,y,**line_kw)
+        plt.plot(x, y, **line_kw)
     if label is not None:
         plt.legend(loc=lab_loc)
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
 
 ####################################
 # Error bars
 ####################################
-def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,
-                title=None,xlabel=None,ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-    
+def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False,
+             title=None, xlabel=None, ylabel=None, label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Errorbar plotting function.
-    
+
     This is a wrapper for pyplot.errorbar().
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -439,69 +436,67 @@ def errorbar(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-        A list of available `Line2D` properties can be found here: 
+        A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     None
     """
-    
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
-    
+
+    from .base_func import axes_handler, dict_splicer, plot_finalizer
+
     from matplotlib.pyplot import errorbar, legend, gca
     from warnings import warn
-    
+
     # Handle deprecated variables
-    deprecated = {'plabel':'label'}
+    deprecated = {'plabel': 'label'}
     for dep in deprecated:
         if dep in kwargs:
             warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep=='plabel'): label = kwargs.pop(dep)
-    
+            if (dep == 'plabel'): label = kwargs.pop(dep)
+
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
-    if type(x) is not list:
-        x=[x]
-    if type(y) is not list:
-        y=[y]
-    if type(xerr) is not list:
-        xerr=[xerr]
-    if type(yerr) is not list:
-        yerr=[yerr]
-    L=len(x)
-    if type(label) is not list:
-        label=[label for i in range(L)]
-    
+        ax = gca()
+        old_axes = ax
+
+    # Convert data to lists if needed
+    if not isinstance(x, list): x = [x]
+    if not isinstance(y, list): y = [y]
+    if not isinstance(xerr, list): xerr = [xerr]
+    if not isinstance(yerr, list): yerr = [yerr]
+
+    L = len(x)
+    if not isinstance(label, list):
+        label = [label for i in range(L)]
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
-    
+    plot_par = dict_splicer(plot_par, L, [1] * L)
+
     for i in range(L):
-        errorbar(x[i],y[i],xerr=xerr[i],yerr=yerr[i],label=label[i],**plot_par[i])
+        errorbar(x[i], y[i], xerr=xerr[i], yerr=yerr[i], label=label[i], **plot_par[i])
     if any(label):
         legend(loc=lab_loc)
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
 
 ####################################
-# Error boxes
+###########  Error boxes  ##########
 ####################################
-def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,box_type='ellipse',
-            title=None,xlabel=None,ylabel=None,label=None,grid=None,lab_loc=0,ax=None,plot_kw={},**kwargs):
-    
+def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, box_type='ellipse',
+             title=None, xlabel=None, ylabel=None, label=None, grid=None, lab_loc=0, ax=None, plot_kw={}, **kwargs):
     """Errorbox plotting function.
-    
+
     This is a wrapper around matplotlib PatchCollections with a matplotlib errorbar functionality.
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -544,126 +539,119 @@ def errorbox(x,y,xerr=None,yerr=None,xlim=None,ylim=None,xinvert=False,yinvert=F
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Patches properties.
     **kwargs: Patch properties, optional
         kwargs are used to specify matplotlib specific properties such as facecolor, linestyle, alpha, etc.
-        A list of available `Patch` properties can be found here: 
+        A list of available `Patch` properties can be found here:
         https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.patches.Rectangle.html
-    
+
     Returns
     -------
     None
     """
-    
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
-    
+
+    from .base_func import axes_handler, dict_splicer, plot_finalizer
+
     from matplotlib.pyplot import errorbar, legend, gca
     from numpy import shape, full, array
     from matplotlib.collections import PatchCollection
     from matplotlib.patches import Ellipse, Rectangle, Patch
-    
+
     from warnings import warn
-    
+
     # Handle deprecated variables
-    deprecated = {'plabel':'label','boxtype':'box_type'}
+    deprecated = {'plabel': 'label', 'boxtype': 'box_type'}
     for dep in deprecated:
         if dep in kwargs:
             warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep=='plabel'): label = kwargs.pop(dep)
-            if (dep=='boxtype'): box_type = kwargs.pop(dep)
-    
+            if (dep == 'plabel'): label = kwargs.pop(dep)
+            if (dep == 'boxtype'): box_type = kwargs.pop(dep)
+
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
-    if type(x) is not list:
-        x=[x]
-    if type(y) is not list:
-        y=[y]
-    if type(xerr) is not list:
-        xerr=[xerr]
-    if type(yerr) is not list:
-        yerr=[yerr]
-    
-    boxdict = {'rec':Rectangle,'ell':Ellipse}
-    if (box_type.lower()[:3] not in ['rec','ell']):
+        ax = gca()
+        old_axes = ax
+    if not isinstance(x, list): x = [x]
+    if not isinstance(y, list): y = [y]
+    if not isinstance(xerr, list): xerr = [xerr]
+    if not isinstance(yerr, list): yerr = [yerr]
+
+    boxdict = {'rec': Rectangle, 'ell': Ellipse}
+    if (box_type.lower()[:3] not in ['rec', 'ell']):
         raise ValueError(f"box_type '{box_type}' not recognised.")
-    
-    L=len(x)
-    if type(label) is not list:
-        label=[label for i in range(L)]
-    
+
+    L = len(x)
+    if not isinstance(label, list):
+        label = [label for i in range(L)]
+
     # Validate format of xerr and yerr
     for i in range(L):
         # x-axis errors
-        if (shape(xerr[i]) == ()): # single error for all points
-            xerr[i]=full((2,len(x[i])), xerr[i])
+        if (shape(xerr[i]) == ()):  # Single error for all points
+            xerr[i] = full((2, len(x[i])), xerr[i])
         else:
             if (len(shape(xerr[i])) == 1):
-                if (shape(xerr[i])[0] == len(x[i])): # single error for each point
-                    xerr[i]=array([xerr[i], xerr[i]])
-                elif (shape(xerr[i])[0] == 2): # separate upper and lower errors for all points
-                    xerr[i]=full((len(x[i]), 2), xerr[i]).T
+                if (shape(xerr[i])[0] == len(x[i])):  # single error for each point
+                    xerr[i] = array([xerr[i], xerr[i]])
+                elif (shape(xerr[i])[0] == 2):  # separate upper and lower errors for all points
+                    xerr[i] = full((len(x[i]), 2), xerr[i]).T
                 else:
                     raise ValueError(f"Invalid shape ({shape(xerr[i])}) for 'xerr' array.")
-            elif (len(shape(xerr[i])) == 2): # separate upper and lower errors for each point
-                xerr[i]=array(xerr[i])
+            elif (len(shape(xerr[i])) == 2):  # separate upper and lower errors for each point
+                xerr[i] = array(xerr[i])
                 if (shape(xerr[i])[0] != 2 or shape(xerr[i])[1] != len(x[i])):
                     raise ValueError(f"Invalid shape ({shape(xerr[i])}) for 'xerr' array.")
-        
+
         # y-axis errors
-        if (shape(yerr[i]) == ()): # single error for all points
-            yerr[i]=full((2,len(y[i])), yerr[i])
+        if (shape(yerr[i]) == ()):  # single error for all points
+            yerr[i] = full((2, len(y[i])), yerr[i])
         else:
             if (len(shape(yerr[i])) == 1):
-                if (shape(yerr[i])[0] == len(y[i])): # single error for each point
-                    yerr[i]=array([yerr[i], yerr[i]])
-                elif (shape(yerr[i])[0] == 2): # separate upper and lower errors for all points
-                    yerr[i]=full((len(y[i]), 2), yerr[i]).T
+                if (shape(yerr[i])[0] == len(y[i])):  # single error for each point
+                    yerr[i] = array([yerr[i], yerr[i]])
+                elif (shape(yerr[i])[0] == 2):  # separate upper and lower errors for all points
+                    yerr[i] = full((len(y[i]), 2), yerr[i]).T
                 else:
                     raise ValueError(f"Invalid shape ({shape(yerr[i])}) for 'yerr' array.")
-            elif (len(shape(yerr[i])) == 2): # separate upper and lower errors for each point
-                yerr[i]=array(yerr[i])
+            elif (len(shape(yerr[i])) == 2):  # separate upper and lower errors for each point
+                yerr[i] = array(yerr[i])
                 if (shape(yerr[i])[0] != 2 or shape(yerr[i])[1] != len(y[i])):
                     raise ValueError(f"Invalid shape ({shape(yerr[i])}) for 'yerr' array.")
-    
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
-    
-    PathColls=[]
+    plot_par = dict_splicer(plot_par, L, [1] * L)
+
     # Loop over data points; create box/ellipse from errors at each point
-    boxdict = {'rec':Rectangle,'ell':Ellipse}
+    boxdict = {'rec': Rectangle, 'ell': Ellipse}
     boxhandles = []
     for i in range(L):
-        errorboxes=[]
+        errorboxes = []
         for j, (xx, yy, xe, ye) in enumerate(zip(x[i], y[i], xerr[i].T, yerr[i].T)):
-            errorboxes.append( boxdict[box_type.lower()[:3]]((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()) )
-        
-    
+            errorboxes.append(boxdict[box_type.lower()[:3]]((xx - xe[0], yy - ye[0]), xe.sum(), ye.sum()))
+
         # Create and add patch collection with specified colour/alpha
-        pc=PatchCollection(errorboxes, **plot_par[i])
+        pc = PatchCollection(errorboxes, **plot_par[i])
         boxhandles.append(Patch(**plot_par[i]))
         ax.add_collection(pc)
-    
+
     if any(label):
-        legend(handles=boxhandles,labels=label,loc=lab_loc)
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+        legend(handles=boxhandles, labels=label, loc=lab_loc)
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
 
 ####################################
 # Hexagonal 2D histogram
 ####################################
-def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,
-            c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
-            xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
-            ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
-    
+def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
+           c=None, cstat=None, xlim=None, ylim=None, clim=[None, None], nmin=0,
+           xinvert=False, yinvert=False, cbar_invert=False, xlog=False, ylog=False, clog=None, title=None, xlabel=None,
+           ylabel=None, clabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
     """Hexagonal 2D bins function.
-    
+
     Parameters
     ----------
     x : array-like
@@ -672,9 +660,10 @@ def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,
         Position of data points in the y axis.
     bins : int or list, optional
         Gives the number of bins
-    binlim : array-like, optional
-        Defines the limits for the bins. It must have one dimension and contain four elements,
-        with the expected order being (left, right, bottom, top).
+    binlims : array-like, optional
+        Defines the limits for the bin range, given as a one-dimensional list containing four elements (left, right, bottom, top).
+        Note, if xlog=True or ylog=True, then the values of binlim must also be logged. The default assigns the limits based on
+        gridsize, x, y, xscale and yscale.
     dens : bool or list, optional
         If false the histogram returns raw counts.
     c : array-like, optional
@@ -725,7 +714,7 @@ def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,
     **kwargs : pcolormesh properties, optional
         kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
         https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hexbin.html
-    
+
     Returns
     -------
     n : array
@@ -735,111 +724,121 @@ def hexbin(x,y,bins=None,binlim=None,dens=True,scale=None,
     y_edges : array
         The bin edges for the y axis. Only provided if output is True.
     """
-    #dens : bool or list, optional
-    #    If false the histogram returns raw counts.
-    #scale : float or list, optional
-    #    Scaling of the data counts.
-    
-    from numpy import diff, log10, nan, nanmin, nanmax, nanmedian, nanmax, nanstd, unique, size, zeros, shape
+
+    from warnings import warn
+    from numpy import diff, log10, nan, nanmin, nanmedian, nanmax, nanstd, unique, size, zeros, shape
     from matplotlib.colors import LogNorm
     from matplotlib.pyplot import hexbin, colorbar
-    from .base_func import axes_handler,plot_finalizer
-    
+    from .base_func import axes_handler, plot_finalizer
+
+    # Handle deprecated variables
+    deprecated = {'binlim': 'binlims'}
+    for dep in deprecated:
+        if dep in kwargs:
+            warn(f"'{dep}' will be deprecated in future verions, instead use '{deprecated[dep]}'.")
+            if (dep == 'binlim'): binlims = kwargs.pop(dep)
+
     if ax is not None:
-        old_axes=axes_handler(ax)
-    if type(bins) not in [list,tuple]:
+        old_axes = axes_handler(ax)
+    if type(bins) not in [list, tuple]:
         if bins is None:
-            bins=max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
-        bins=[bins,int(bins/(3**0.5))]
-    
-    if None in (clog,output):
+            bins = max([10, int(len(x)**0.4)])  # Defaults to min of 10 bins
+        bins = [bins, int(bins / (3**0.5))]
+
+    if None in (clog, output):
         from .defaults import Params
         if clog is None:
-            clog=Params.hist2D_caxis_log
+            clog = Params.hist2D_caxis_log
         if output is None:
-            output=Params.hist2D_output
-    
-    if size([x,y])==0: # Zero-sized arrays given
-        if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
-        if (cstat != None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
-    
-    temp_x=x*1.0
-    temp_y=y*1.0
-    
+            output = Params.hist2D_output
+
+    if size([x, y]) == 0:  # Zero-sized arrays given
+        if (clog is True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
+        if (cstat is not None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
+
+    # Create a temporary duplicate of x and y data
+    temp_x = x * 1.0  # this should probably use: copy.deepcopy(x)
+    temp_y = y * 1.0
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par = {**plot_kw, **kwargs}  # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    if binlim:
-        plot_par['extent']=binlim
-    #plot_par[]=dens
-    #plot_par[]=scale
+    if binlims:
+        plot_par['extent'] = binlims
+
     if c is not None:
-        plot_par['C']=c
+        plot_par['C'] = c
     if cstat:
-        cstat_func={'min':nanmin,'mean':nanmax,'median':nanmedian,'max':nanmax,'std':nanstd}
+        cstat_func = {'min': nanmin, 'mean': nanmax, 'median': nanmedian, 'max': nanmax, 'std': nanstd}
         if cstat in cstat_func.keys():
-            plot_par['reduce_C_function']=cstat_func[cstat]
+            plot_par['reduce_C_function'] = cstat_func[cstat]
         else:
-            plot_par['reduce_C_function']=cstat
+            plot_par['reduce_C_function'] = cstat
+
     if clim:
-        plot_par['vmin']=clim[0]
-        plot_par['vmax']=clim[1]
+        plot_par['vmin'] = clim[0]
+        plot_par['vmax'] = clim[1]
+
     if nmin:
-        plot_par['mincnt']=nmin
+        plot_par['mincnt'] = nmin
+
     if xlog:
-        plot_par['xscale']='log'
-        temp_x=log10(temp_x)
+        plot_par['xscale'] = 'log'
+        temp_x = log10(temp_x)
+
     if ylog:
-        plot_par['yscale']='log'
-        temp_y=log10(temp_y)
+        plot_par['yscale'] = 'log'
+        temp_y = log10(temp_y)
+
     if clog:
-        plot_par['bins']='log'
+        plot_par['bins'] = 'log'
         if 'mincnt' not in plot_par.keys():
-            plot_par['mincnt']=1
-    
+            plot_par['mincnt'] = 1
+
     if dens and c is None:
         # This is nasty, but seems to be the quickest way to do this without fully rewriting hexbin here
-        hist_return=hexbin(temp_x,temp_y,gridsize=bins)
+        hist_return = hexbin(temp_x, temp_y, gridsize=bins)
         hist_return.remove()
-        offsets=hist_return.get_offsets()
-        offsets_x=unique(offsets[:,0])
-        offsets_y=unique(offsets[:,1])
-        hex_area=diff(offsets_x)[0]*2*diff(offsets_y)[0]
-        
+        offsets = hist_return.get_offsets()
+        offsets_x = unique(offsets[:, 0])
+        offsets_y = unique(offsets[:, 1])
+        hex_area = diff(offsets_x)[0] * 2 * diff(offsets_y)[0]
+
         def density_scaling(bin_data):
-            bin_dens=1.0*len(bin_data)/(hex_area)
+            bin_dens = 1.0 * len(bin_data) / (hex_area)
             if scale:
-                bin_dens/=1.0*scale
+                bin_dens /= 1.0 * scale
             else:
-                bin_dens/=len(x)
+                bin_dens /= len(x)
             return(bin_dens)
-        
-        plot_par['C']=y
-        plot_par['reduce_C_function']=density_scaling
-    
-    hist_return=hexbin(x,y,gridsize=bins,**plot_par)
-    
+
+        plot_par['C'] = y
+        plot_par['reduce_C_function'] = density_scaling
+
+    hist_return = hexbin(x, y, gridsize=bins, **plot_par)
+
     if clabel is not None:
-        cbar=colorbar()
+        cbar = colorbar()
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
-    if ax is not None:
-        old_axes=axes_handler(old_axes)
-    if output:
-        return(hist_return.get_array(),hist_return.get_offsets())
 
-####################################
-# 2D histogram and binned statistics
-####################################
-def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xlim=None,ylim=None,clim=[None,None],nmin=0, 
-            xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,clog=None,title=None,xlabel=None,
-            ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,output=None,plot_kw={},**kwargs):
-    
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+
+    if ax is not None:
+        old_axes = axes_handler(old_axes)
+    if output:
+        return(hist_return.get_array(), hist_return.get_offsets())
+
+########################################
+## 2D histogram and binned statistics ##
+########################################
+def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=None, xlim=None, ylim=None, clim=[None, None], nmin=0,
+           xinvert=False, yinvert=False, cbar_invert=False, xlog=False, ylog=False, clog=None, title=None, xlabel=None,
+           ylabel=None, clabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
     """2D histogram function.
-    
+
     Parameters
     ----------
     x : array-like
@@ -905,7 +904,7 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
     **kwargs : pcolormesh properties, optional
         kwargs are used to specify matplotlib specific properties such as cmap, norm, edgecolors etc.
         https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html
-    
+
     Returns
     -------
     n : array
@@ -915,70 +914,73 @@ def hist2D(x,y,bin_type=None,bins=None,dens=True,scale=None,c=None,cstat=None,xl
     y_edges : array
         The bin edges for the y axis. Only provided if output is True.
     """
-    
+
     from numpy import nan, size, zeros, shape
     from matplotlib.colors import LogNorm
     from matplotlib.pyplot import pcolormesh, colorbar
-    from .base_func import axes_handler,basehist2D,plot_finalizer
-    
+    from .base_func import axes_handler, basehist2D, plot_finalizer
+
     if ax is not None:
-        old_axes=axes_handler(ax)
-    if type(bin_type) is not list:
-        bin_type=[bin_type]*2
-    if type(bins) not in [list,tuple]:
+        old_axes = axes_handler(ax)
+    if not isinstance(bin_type, list):
+        bin_type = [bin_type] * 2
+    if type(bins) not in [list, tuple]:
         if bins is None:
-            bins=max([10,int(len(x)**0.4)]) # Defaults to min of 10 bins
-        bins=[bins]*2
-    
-    if None in (clog,output):
+            bins = max([10, int(len(x)**0.4)])  # Defaults to min of 10 bins
+        bins = [bins] * 2
+
+    if None in (clog, output):
         from .defaults import Params
         if clog is None:
-            clog=Params.hist2D_caxis_log
+            clog = Params.hist2D_caxis_log
         if output is None:
-            output=Params.hist2D_output
-    
-    if size([x,y])==0: # Zero-sized arrays given
-        if (clog == True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
-        if (cstat != None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
-    
-    X,Y,Z=basehist2D(x,y,c,bin_type,bins,scale,dens,cstat,xlog,ylog)
-    
+            output = Params.hist2D_output
+
+    if size([x, y]) == 0:  # Zero-sized arrays given
+        if (clog is True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
+        if (cstat is not None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
+
+    X, Y, Z = basehist2D(x, y, c, bin_type, bins, scale, dens, cstat, xlog, ylog)
+
     # Also get counts for number threshold cut
-    if (size([x,y])==0):
-        counts=zeros(shape=shape(Z))
+    if (size([x, y]) == 0):
+        counts = zeros(shape=shape(Z))
     else:
-        _,_,counts = basehist2D(x,y,c,bin_type,bins,None,False,None,xlog,ylog)
-    
+        _, _, counts = basehist2D(x, y, c, bin_type, bins, None, False, None, xlog, ylog)
+
     # Cut bins which do not meet the number count threshold
-    Z[counts<nmin]=nan
-    
+    Z[counts < nmin] = nan
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par = {**plot_kw, **kwargs}  # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
+
     if clog:
-        pcolormesh(X,Y,Z.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=False),**plot_par)
+        pcolormesh(X, Y, Z.T, norm=LogNorm(vmin=clim[0], vmax=clim[1], clip=False), **plot_par)
     else:
-        pcolormesh(X,Y,Z.T,vmin=clim[0],vmax=clim[1],**plot_par)
+        pcolormesh(X, Y, Z.T, vmin=clim[0], vmax=clim[1], **plot_par)
+
     if clabel is not None:
-        cbar=colorbar()
+        cbar = colorbar()
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
     if output:
-        return(Z.T,X,Y)
+        return(Z.T, X, Y)
+
 
 ####################################
-# Image from 2D array
+######  Image from 2D array  #######
 ####################################
-def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=False,yinvert=False,cbar_invert=False,clog=None,
-        title=None,xlabel=None,ylabel=None,clabel=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-    
+def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xinvert=False, yinvert=False, cbar_invert=False, clog=None, 
+        title=None, xlabel=None, ylabel=None, clabel=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
+
     """2D pixel-based image plotting function.
-    
+
     Parameters
     ----------
     im : array-like
@@ -1023,344 +1025,59 @@ def img(im,x=None,y=None,xlim=None,ylim=None,clim=[None,None],cmin=0,xinvert=Fal
         kwargs are used to specify matplotlib specific properties such as `cmap`, `marker`, `norm`, etc.
         A list of available `pcolormesh` properties can be found here:
         https://matplotlib.org/api/_as_gen/matplotlib.pyplot.pcolormesh.html
-    
+
     Returns
     -------
     None
     """
-    
+
     from numpy import arange, meshgrid
     from matplotlib.colors import LogNorm
     from matplotlib.pyplot import pcolormesh, colorbar
-    from .base_func import axes_handler,plot_finalizer
-    
+    from .base_func import axes_handler, plot_finalizer
+
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
+
     if x is None:
-        x=arange(len(im[:,0])+1)
+        x = arange(len(im[:, 0]) + 1)
     if y is None:
-        y=arange(len(im[0,:])+1)
+        y = arange(len(im[0, :]) + 1)
     if clog is None:
         from .defaults import Params
-        clog=Params.img_caxis_log
-    
-    X, Y=meshgrid(x, y)
-    
+        clog = Params.img_caxis_log
+
+    X, Y = meshgrid(x, y)
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
-    plot_par.update(kwargs) 
-    
+    # plot_par = {**plot_kw, **kwargs}  # For Python > 3.5
+    plot_par = plot_kw.copy()
+    plot_par.update(kwargs)
+
     if clog:
-        pcolormesh(X,Y,im.T,norm=LogNorm(vmin=clim[0],vmax=clim[1],clip=True),**plot_par)
+        pcolormesh(X, Y, im.T, norm=LogNorm(vmin=clim[0], vmax=clim[1], clip=True), **plot_par)
     else:
-        pcolormesh(X,Y,im.T,vmin=clim[0],vmax=clim[1],**plot_par)
+        pcolormesh(X, Y, im.T, vmin=clim[0], vmax=clim[1], **plot_par)
+
     if clabel is not None:
-        cbar=colorbar()
+        cbar = colorbar()
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
-    plot_finalizer(False,False,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    plot_finalizer(False, False, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+
     if ax is not None:
-        old_axes=axes_handler(old_axes)
-
-####################################
-# Image from 2D array
-####################################
-def imageWCS(data,header=None,wcs=None,ext=None,slice=None,interval=None,stretch=None,norm=None,cmap=None,
-			 lnglabel=None,latlabel=None,lngformat=None,latformat=None,fig=None,
-			 grid=True,grid_kw=None,kwargs={}):
-	""" World-Coordinate System image plotting function.
-	
-	Creates a WCS-projected plot of an image with a corresponding coordinate grid overlaid. This is particularly useful for astronomical imaging data
-	based on the standard FITS file format, however, it can be used for any imaging data with a defined world-coordinate system.
-	This is a convenience wrapper around many of the useful functions created by the Astropy project (https://www.astropy.org) and
-	Matplotlib's pyplot.imshow() function: https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow
-	
-	Params
-	------
-	data : 2D numpy or array-like object, or HDUlist or HDU.
-		The input data can be:
-			- A <a class="reference external" href="https://docs.astropy.org/en/stable/io/fits/api/hdulists.html#astropy.io.fits.HDUList" title="(in Astropy v4.0.1)"> object
-			- An image HDU object, such as a PrimaryHDU, ImageHDU or CompImageHDU
-			- An numpy ndarray or two-dimensional array-like object. Requires a header also be specified separately.
-	header : list-like or string, optional
-		The full FITS header should be given either as one complete string or a list of header keywords as strings created
-		by astropy.io.fits.open(...).header.
-	wcs : Astropy WCS object or dictionary
-		The World Coordinate System for the image. Only required if data is an array-like object and header not given. 
-		Must contain the following FITS keywords:
-	ext : int or str
-		If data is a HDUList and contains extensions (usually indicated by 'EXTEND'=T in PrimaryHDU), then 'ext' specifies which
-		extension to use. This can either be in the form of an integer or a string referring to a specific 'EXTNAME'.
-	slice : integer, tuple-like or range object
-		if data contains a 3-dimensional array, slice can be used to specify which sections of the data to display.
-		This should be specified as either:
-			- A single integer indicating the specific channel to slice.
-			- A tuple of two integers specifying the starting and ending slices.
-			- A range object.
-	interval : tuple-like, str or astropy.visialization.BaseTransform.BaseInterval object
-		The interval refers to the lower and upper limits of values to be mapped onto the range [0:1]. This can either be given
-		as a list-like object with two elements for the minimum and maximum values or as a valid astropy BaseInterval object listed below:
-		- PercentileInterval(percentile[, n_samples]): Retains a specified fractional percentage of pixels, up to a maximum [n_samples].
-			Can also be evoked by a string 'percentile[n]', where [n] is the fraction of pixels kept.
-		- AsymmetricPercentileInterval(...[, n_samples]): Same as PercentileInterval(), but can be assymetric.
-		- ManualInterval([vmin, vmax]): Manually sets the lower and upper intervals.
-			Can also be evoked as a tuple in the format (min, max).
-		- MinMaxInterval(): Sets the intervals based on the minimum and maximum values in the data.
-			Can also be evoked by the string 'minmax'.
-		- ZScaleInterval([nsamples, contrast, ...]): Based on IRAF's zscale intervals.
-			Can also be evoked by the string 'zscale'.
-	stretch : str, func or astropy.visualization.BaseTransform.BaseStretch object
-		Stretch refers to the linear or non-linear function that is applied to the values in the range [0:1]. This can be given
-		as a function or any astropy BaseStretch object listed below:
-		- AsinhStretch([a]): Inverse hyperbolic sine function stretch.
-		- ContrastBiasStretch(contrast,bias): A stretch that takes into account contrast and bias. Increases the difference between min and max values.
-		- HistEqStretch(data[, values]): Histrogram equalisation stretch. Modifies values of all pixels such that the histogram is 'flattened'.
-		- LinearStretch([slope, intercept]): A linear stretch defined by a slope and intercept.
-		- LogStretch([a]): Logarithmic stretch.
-		- PowerStretch(a): Power-law stretch, where y = x^a
-		- PowerDistStretch([a]): An alternative power stretch, where y = (a^x-1)/(a-1).
-		- SinhStretch(): Hyperbolic sine function stretch.
-		- SqrtStretch(): Square root stretch.
-		- SquaredStretch(): Equivalent to PowerStretch(2)
-		
-		In addition, the following can be referred to by thir string name: 'asinh', 'linear', 'log', 'sinh', 'squared'
-	norm : Normalize object
-		A Normalize instance used to scale scalar data to the [0,1] range before mapping the colors using cmap. This can be explicitly assigned
-		here or by specifying the `interval` and `stretch` parameters instead. By default, a linear scaling mapping is used between [0,1].
-	cmap : str or Colormap, optional.
-		The colormap used to display the image, given as a Colormap instance or registered colormap name.
-		Defaults to Params.img_cmap.
-	lnglabel : str, optional
-		Sets the label of the longitude axis.
-	latlabel : str, optional
-		Sets the label of the latitude axis.
-	lngformat, latformat : str, optional
-		Sets the major formatter for the tick labels for the longitude and latitude coordinates. These are given by any
-		format string accepted by astropy.visualisation, for example:
-		
-		format:		result:
-		-------------------------
-		'dd'		   '15d'
-		'dd:mm'		'15d24m'
-		'hh:mm:ss'	 '1h01m34s'
-		'd.ddd'		'15.392'
-		'%.2f'		 '15.39'
-	
-		For a full list of valid format strings, see: https://docs.astropy.org/en/stable/visualization/wcsaxes/ticks_labels_grid.html  
-	fig : pyplot.Figure, optional
-		Use the specified figure instance to plot, defaults to the current figure.
-	grid : boolean, optional
-		If not given, defaults to the value defined in splotch.Params.
-	grid_kw : dict, optional
-		Passes the given dictionary as keyword arguments to the grid function. Valid keyword arguments include all Line2D properties. 
-	**kwargs : dict, optional
-		kwargs are used to specify matplotlib specific `Artist` properties to be parsed into pyplot.imshow(...).
-		A list of possible properties can be found here:
-		https://matplotlib.org/3.3.4/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow
-	"""
-
-	from .defaults import Params
-	import logging as log
-	
-	from matplotlib.pyplot import subplots
-	from numpy import ndarray
-	from astropy.io import fits
-	from astropy.wcs import WCS, WCSBase
-	from astropy import visualization
-	
-
-	
-	# If no cmap given, revert to defaults
-	if cmap is None:
-		cmap = Params.img_cmap
-	
-	# Check keyword arguments
-	if 'origin' not in list(kwargs.keys()): kwargs['origin'] = 'lower' # Set origin to lower by default if not already specified.
-	
-	# Assign default Grid Keyword Arguments
-	if grid_kw is None: grid_kw = dict()
-	grid_keys = list(grid_kw.keys())
-	if 'color' not in grid_keys: grid_kw['color'] = Params.grid_color
-	if 'alpha' not in grid_keys: grid_kw['alpha'] = Params.grid_alpha
-	if ('linestyle' not in grid_keys and 'ls' not in grid_keys): grid_kw['ls'] = Params.grid_ls
-	if ('linewidth' not in grid_keys and 'ls' not in grid_keys): grid_kw['linewidth'] = Params.grid_lw
-	
-	# Validate slice parameter
-	if slice is not None:
-		if not isinstance(slice,(int,tuple,range)):
-			log.error(f"slice must be given as int, tuple or range. Instead received '{type(slice)}'.")
-	
-	## Valdiate interval parameter
-	if interval is not None:
-		if issubclass(type(interval),visualization.BaseInterval): # Is intervals an Astropy Interval object or function?
-			pass
-		elif isinstance(interval,(ndarray,list,tuple)):
-			if len(interval) == 2:
-				interval = visualization.ManualInterval(vmin=interval[0],vmax=interval[1]) 
-			else:
-				log.error(f"Intervals contained {len(interval)} elements. Must contain two elements for vmin and vmax.")
-				return None
-		elif isinstance(interval, str):
-			if interval == 'zscale':
-				interval = visualization.ZScaleInterval()
-			elif interval == 'minmax':
-				interval = visualization.MinMaxInterval()
-			elif 'percentile' in interval:
-				perc = list(filter(None,stat.split('std'))) # The percentile numbers
-				if len(perc) == 0: # No percentile given, assume 95%
-					interval = visualization.PercentileInterval(95)
-				elif len(perc) == 1: # Percentile was given
-					interval = visualization.PercentileInterval(float(perc[0]))
-				else:
-					raise ValueError(f"Percentile interval must be given in the format interval='percentile[n]', where [n] is the fraction of pixels to be kept.")
-		else:
-			log.error(f"Interval must either be an Astropy Interval object or tuple-like with two elements. Instead receieved '{type(interval)}'")
-			return None
-
-	## Validate stretch parameter
-	stretchRef = {'asinh':visualization.AsinhStretch(),
-				  'linear':visualization.LinearStretch(),
-				  'log':visualization.LogStretch(),
-				  'sinh':visualization.SinhStretch(),
-				  'sqrt':visualization.SqrtStretch(),
-				  'squared':visualization.SquaredStretch()}
-
-	if stretch is not None:
-		if issubclass(type(stretch),visualization.BaseStretch) or callable(stretch): # Is stretch an Astropy Stretch object or function?
-			pass
-		elif isinstance(stretch,str):
-			if stretch in stretchRef.keys():
-				stretch = stretchRef[stretch] # get the astropy Stretch Object.
-			else:
-				log.error(f"Stretch '{stretch}' was not recognised as an Astropy Stretch class. Must be one of {', '.join(stretchRef.keys())}.")
-				return None
-		else:
-			log.error(f"Stretch must either be an Astropy Stretch object or callable function. Instead receieved '{type(stretch)}'")
-			return None
-	else:
-		stretch = visualization.LinearStretch() # Assume linear stretch if none given
-
-	## Attempt to read FITS data
-	if data is not None:
-		if (isinstance(data, fits.hdu.hdulist.HDUList)):
-			log.debug('`data` given as: HDU List')
-			
-			if ext is not None: # The extension was specified
-				if (data[ext].header['NAXIS'] > 0 and data[ext].data is not None): # This HDU contains image data
-					header = data[ext].header
-					img = data[ext].data
-				else:
-					log.error(f"The '{ext}' extension does not contain image data, 'NAXIS'=0.")
-			else: # Find the first valid HDU. If file has extensions, search these before using PrimaryHDU.
-				header0 = data[0].header # The header of the Primary HDU
-				
-				if len(data) > 1 and (('EXTEND' in header0.keys() and header0['EXTEND'] is True) or data[0].data is None): # Check whether hdulist has extensions
-					# Find the first HDU (if any) with at least one axis
-					for ii in range(1,header0['NEXTEND']+1 if 'NEXTEND' in header0.keys() else len(data)):
-						if (data[ii].header['NAXIS'] > 0 and data[ii].data is not None): # This HDU contains image data
-							header = data[ii].header
-							img = data[ii].data
-							break
-					else: # Did not find a valid HDU with multiple axes
-						raise ValueError("Unable to find a valid HDU, with keyword 'NAXIS' > 0.")
-				else:
-					if (header0['NAXIS'] > 0): # The Primary HDU contains image data
-						header = header0
-						img = data[0].data
-					else: # Did not find a valid HDU with multiple axes
-						raise ValueError("Unable to find a valid HDU, with keyword 'NAXIS' > 0.")
-			
-		elif (isinstance(data, (fits.hdu.image.PrimaryHDU,fits.hdu.image.ImageHDU,fits.hdu.image.ExtensionHDU))):
-			log.debug('`data` given as: Primary/Image/Extension HDU')
-			img = data.data
-			if header is None:
-				header = data.header
-			else:
-				log.debug(f"Using header specified by user, instead of the header present in specified HDU.")
-			
-		elif (isinstance(data, (ndarray, list))):
-			log.debug('`data` given as: Numpy Array / List')
-			img = data
-		else:
-			raise ValueError("'data' was not given in the correct format. Must be one of: astropy HDUList, PrimaryHDU, ImageHDU, CompImageHDU or numpy/array-like object.")
-
-
-	# Obtain a World Coordinate System (WCS)
-	if wcs is None: # Attempt to create WCS from header object
-		if header is not None:
-			wcs = WCS(header)
-		else:
-			log.error("Cannot create valid World Coordinate System as no header or wcs was specified.")
-	elif isinstance(wcs,dict): # Extract relevant WCS keywords from dictionary
-		wcs = WCS(wcs)
-	elif issubclass(type(wcs),WCSBase): # Already a WCS object
-		pass
-	else:
-		raise TypeError(f"The 'wcs' provided must either be an Astropy.wcs.WCS object or dictionary. Instead got {type(wcs)}")
-	
-	## Slice cube data at specific channel given by `slice`
-	if (slice is not None):
-		if header is not None and header['NAXIS'] < 3:
-			log.warning("Slicing data with less than 3 axes.")
-		if (isinstance(slice,int)):
-			img = img[slice,:,:]
-		elif (isinstance(slice,tuple)):
-			img = img[range(slice[0],slice[1]),:,:]
-		elif (isinstance(slice,range)):
-			img = img[slice,:,:]
-	
-	# If stretch and/or intervals given instead of norm explicitly
-	if norm is None and (interval is not None or stretch is not None): 
-		norm = visualization.ImageNormalize(img, interval=interval,stretch=stretch) # Create normalisation from intervals and/or stretch
-	
-	## Create the figure object
-	if fig is None:
-		fig, ax = subplots(subplot_kw=dict(projection=wcs, slices=(slice, 'y', 'x') if slice is not None else slice) )
-	else:
-		ax = fig.add_subplot(projection=wcs)
-		
-	ax.matshow(img,cmap=cmap,norm=norm,**kwargs)
-	
-	# Set grid on or off
-	ax.coords.grid(grid,**grid_kw)
-
-	# Correctly assign the longitude and latitude axes
-	lngax = ax.coords[wcs.wcs.lng]
-	latax = ax.coords[wcs.wcs.lat]
-	
-	# Check if axes need to flipped
-	flip_axes = False
-	if wcs.wcs.has_cd() is True:
-		cdelta = wcs.wcs.cd
-		if (abs(cdelta[0][0]) < abs(cdelta[0][1]) and abs(cdelta[1][1]) < abs(cdelta[1][0])):
-			flip_axes = True
-	
-	if flip_axes == True: # if the axes appear to be flipped with respect to the physical image axes.
-		for coord, pos in zip([lngax,latax], ['l','b']):
-			coord.set_ticks_position(pos)
-			coord.set_ticklabel_position(pos)
-			coord.set_axislabel_position(pos)
-
-	lngax.set_axislabel(lnglabel)
-	latax.set_axislabel(latlabel)
-	
-	# Set Coordinate tick formatters
-	if lngformat is not None: lngax.set_major_formatter(lngformat)
-	if latformat is not None: latax.set_major_formatter(latformat)
-	
-	return ax
+        old_axes = axes_handler(old_axes)
 
 
 ####################################
-# Scatter plots
+##########  Scatter plots ##########
 ####################################
-def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False,yinvert=False,cbar_invert=False,xlog=False,ylog=False,title=None,
-            xlabel=None,ylabel=None,clabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-    
+def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinvert=False, yinvert=False, cbar_invert=False, xlog=False, ylog=False, title=None,
+            xlabel=None, ylabel=None, clabel=None, label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """2D pixel-based image plotting function.
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -1413,73 +1130,76 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
         kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
         A list of available `Collection` properties can be found here:
         https://matplotlib.org/api/collections_api.html#matplotlib.collections.Collection
-    
+
     Returns
     -------
     paths
         A list of PathCollection objects representing the plotted data.
     """
-    
+
     from numpy import array, dtype, shape, vstack
     from matplotlib.pyplot import scatter, legend
     from scipy.stats import gaussian_kde
     from warnings import warn
 
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
+    from .base_func import axes_handler, dict_splicer, plot_finalizer
     from .axis_func import colorbar
 
     # Handle deprecated variables
-    deprecated = {'plabel':'label'}
+    deprecated = {'plabel': 'label'}
     for dep in deprecated:
         if dep in kwargs:
             warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep=='plabel'): label = kwargs.pop(dep)
-    
+            if (dep == 'plabel'): label = kwargs.pop(dep)
+
     if ax is not None:
-        old_axes=axes_handler(ax)
-    if type(x) is not list or (len(shape(x))==1 and array(x).dtype is not dtype('O')):
-        x=[x]
-    if type(y) is not list or (len(shape(y))==1 and array(y).dtype is not dtype('O')):
-        y=[y]
-    L=len(x)
-    if type(c) is not list or (len(shape(c))==1 and array(c).dtype is not dtype('O')):
-        c=[c]
-        if type(c[0]) is str or c[0] is None:
-            c=[c[0] for i in range(L)]
-    if type(label) is not list:
-        label=[label for i in range(L)]
-    
+        old_axes = axes_handler(ax)
+    if (not isinstance(x, list)) or (len(shape(x)) == 1 and array(x).dtype is not dtype('O')):
+        x = [x]
+    if (not isinstance(y, list)) or (len(shape(y)) == 1 and array(y).dtype is not dtype('O')):
+        y = [y]
+
+    L = len(x)
+
+    if (not isinstance(c, list)) or (len(shape(c)) == 1 and array(c).dtype is not dtype('O')):
+        c = [c]
+        if isinstance(c[0], str) or c[0] is None:
+            c = [c[0] for i in range(L)]
+    if not isinstance(label, list):
+        label = [label for i in range(L)]
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par = {**plot_kw, **kwargs}  # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Insert clim as vmin, vmax into **kwargs dictionary, if given.
-    if (clim != None):
+    if (clim is not None):
         try:
-            _=(e for e in clim)
+            _ = (e for e in clim)
             if (len(clim) == 2):
-                plot_par['vmin']=clim[0]
-                plot_par['vmax']=clim[1]
+                plot_par['vmin'] = clim[0]
+                plot_par['vmax'] = clim[1]
             else:
                 raise TypeError("`clim` must be of iterable type and have two values only.")
         except (TypeError):
             raise TypeError("`clim` must be of iterable type and have two values only.")
-    
-    if (density == True):
+
+    if (density is True):
         if (all([kk is not None for kk in c])):
             warn("Cannot specify both `c` and `density`, ignoring `c`.")
-        c=[None]*L
+        c = [None] * L
+
         for i in range(L):
-            xy=vstack([x[i],y[i]])
-            c[i]=gaussian_kde(xy)(xy) # Calculate the Gaussian kernel density estimate
-    
+            xy = vstack([x[i], y[i]])
+            c[i] = gaussian_kde(xy)(xy)  # Calculate the Gaussian kernel density estimate
+
     # Create 'L' number of plot kwarg dictionaries to parse into each scatter call
-    plot_par=dict_splicer(plot_par,L,[len(i) for i in x])
-    
-    paths=[]
+    plot_par = dict_splicer(plot_par, L, [len(i) for i in x])
+
+    paths = []
     for i in range(L):
-        p = scatter(x[i],y[i],c=c[i],label=label[i],**plot_par[i])
+        p = scatter(x[i], y[i], c=c[i], label=label[i], **plot_par[i])
         paths.append(p)
     if clabel is not None:
         cbar = colorbar()
@@ -1488,23 +1208,23 @@ def scatter(x,y,c=None,xlim=None,ylim=None,clim=None,density=False,xinvert=False
             cbar.ax.invert_yaxis()
     if any(label):
         legend(loc=lab_loc)
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
-    
+        old_axes = axes_handler(old_axes)
+
     return paths[0] if len(paths) == 1 else paths
 
+
 ####################################
-# Sector plots
+##########  Sector plots ###########
 ####################################
-def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlabel="",thetalabel="",clabel=None,label=None,rstep=None,
-            thetastep=15.0,rticks='auto',thetaticks='auto',cbar_invert=False,fig=None,plot_kw={},**kwargs):
-    
+def sector(r, theta, rlim=(0.0, 1.0), thetalim=(0.0, 360.0), clim=None, rotate=0.0, rlabel="", thetalabel="", clabel=None, label=None, rstep=None,
+           thetastep=15.0, rticks='auto', thetaticks='auto', cbar_invert=False, fig=None, plot_kw={}, **kwargs):
     """ Sector Plot function
-    
+
     Plots a sector plot (a.k.a "pizza plot") based on data with one radial axis and an angular axis
-    
+
     Parameters
     ----------
     r : array-like or list
@@ -1548,136 +1268,134 @@ def sector(r,theta,rlim=(0.0,1.0),thetalim=(0.0,360.0),clim=None,rotate=0.0,rlab
         kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
         A list of available `Collection` properties can be found here:
         https://matplotlib.org/3.1.0/api/collections_api.html#matplotlib.collections.Collection
-    
+
     Returns
     -------
     ax : The pyplot.Axes object created for the sector plot.
     """
-    
+
     from matplotlib.transforms import Affine2D
     from matplotlib.projections.polar import PolarAxes
-    from matplotlib.pyplot import gcf, colorbar, legend 
-    
+    from matplotlib.pyplot import gcf, colorbar, legend
+
     from mpl_toolkits.axisartist import floating_axes
     from mpl_toolkits.axisartist.grid_finder import (FixedLocator, MaxNLocator, DictFormatter)
     import mpl_toolkits.axisartist.angle_helper as angle_helper
-    
+
     from numpy import array, linspace, arange, shape, sqrt, floor, round, degrees, radians, pi
-    
-    if (fig == None):
-        fig=gcf()
-    
+
+    if (fig is None):
+        fig = gcf()
+
     # rotate a bit for better orientation
-    trans_rotate=Affine2D().translate(0.0, 0)
-    
+    trans_rotate = Affine2D().translate(0.0, 0)
+
     # scale degree to radians
-    trans_scale=Affine2D().scale(pi/180.0, 1.)
-    trans=trans_rotate + trans_scale + PolarAxes.PolarTransform()
-    
+    trans_scale = Affine2D().scale(pi / 180.0, 1.0)
+    trans = trans_rotate + trans_scale + PolarAxes.PolarTransform()
+
     # Get theta ticks
-    #if (thetaticks == 'auto'):
-    thetaticks=arange(*radians(array(thetalim)-rotate),step=radians(thetastep))
-    theta_gridloc=FixedLocator(thetaticks[thetaticks/(2*pi) < 1])
-    theta_tickfmtr=DictFormatter(dict(zip(thetaticks,[f"{(round(degrees(tck)+rotate)):g}" for tck in thetaticks])))
-    
-    #tick_fmtr=DictFormatter(dict(angle_ticks))
-    #tick_fmtr=angle_helper.Formatter()
-    
-    if (rstep == None):
-        rstep=0.5
-    
-    r_gridloc=FixedLocator(arange(rlim[0],rlim[1],step=rstep))
-    
-    grid=floating_axes.GridHelperCurveLinear(
+    thetaticks = arange(*radians(array(thetalim) - rotate), step=radians(thetastep))
+    theta_gridloc = FixedLocator(thetaticks[thetaticks / (2 * pi) < 1])
+    theta_tickfmtr = DictFormatter(dict(zip(thetaticks, [f"{(round(degrees(tck)+rotate)):g}" for tck in thetaticks])))
+
+    # tick_fmtr=DictFormatter(dict(angle_ticks))
+    # tick_fmtr=angle_helper.Formatter()
+
+    if (rstep is None):
+        rstep = 0.5
+
+    r_gridloc = FixedLocator(arange(rlim[0], rlim[1], step=rstep))
+
+    grid = floating_axes.GridHelperCurveLinear(
         PolarAxes.PolarTransform(),
-        extremes=(*radians(array(thetalim)-rotate), *rlim),
+        extremes=(*radians(array(thetalim) - rotate), *rlim),
         grid_locator1=theta_gridloc,
         grid_locator2=r_gridloc,
         tick_formatter1=theta_tickfmtr,
         tick_formatter2=None,
     )
-    
-    ax=floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
+
+    ax = floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
     fig.add_subplot(ax)
-    
+
     # tick references
-    thetadir_ref=['top','right','bottom','left']
-    rdir_ref=['bottom','left','top','right']
-    
+    thetadir_ref = ['top', 'right', 'bottom', 'left']
+    rdir_ref = ['bottom', 'left', 'top', 'right']
+
     # adjust axes directions
-    ax.axis["left"].set_axis_direction('bottom') # Radius axis (displayed)
-    ax.axis["right"].set_axis_direction('top') # Radius axis (hidden)
-    ax.axis["top"].set_axis_direction('bottom') # Theta axis (outer)
-    ax.axis["bottom"].set_axis_direction('top') # Theta axis (inner)
-    
+    ax.axis["left"].set_axis_direction('bottom')  # Radius axis (displayed)
+    ax.axis["right"].set_axis_direction('top')  # Radius axis (hidden)
+    ax.axis["top"].set_axis_direction('bottom')  # Theta axis (outer)
+    ax.axis["bottom"].set_axis_direction('top')  # Theta axis (inner)
+
     # Top theta axis
     ax.axis["top"].toggle(ticklabels=True, label=True)
-    ax.axis["top"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
-    ax.axis["top"].label.set_axis_direction(thetadir_ref[(int(rotate)//90)%4])
-    
+    ax.axis["top"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate) // 90) % 4])
+    ax.axis["top"].label.set_axis_direction(thetadir_ref[(int(rotate) // 90) % 4])
+
     # Bottom theta axis
-    ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1]-rlim[0])/3 else True)
-    ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate)//90+2)%4])
-    
-    # Visible radius axis    
-    ax.axis["left"].major_ticklabels.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
-    ax.axis["left"].label.set_axis_direction(rdir_ref[(int(rotate)//90)%4])
-    
+    ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1] - rlim[0]) / 3 else True)
+    ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate) // 90 + 2) % 4])
+
+    # Visible radius axis
+    ax.axis["left"].major_ticklabels.set_axis_direction(rdir_ref[(int(rotate) // 90) % 4])
+    ax.axis["left"].label.set_axis_direction(rdir_ref[(int(rotate) // 90) % 4])
+
     # Labels
     ax.axis["left"].label.set_text(rlabel)
     ax.axis["top"].label.set_text(thetalabel)
-    
+
     # create a parasite axes whose transData in RA, cz
-    sector_ax=ax.get_aux_axes(trans)
-    
+    sector_ax = ax.get_aux_axes(trans)
+
     # This has a side effect that the patch is drawn twice, and possibly over some other
-    # artists. So, we decrease the zorder a bit to prevent this. 
-    sector_ax.patch=ax.patch  
-    sector_ax.patch.zorder=0.9
-    
-    
-    L=shape(theta)[0] if len(shape(theta)) > 1 else 1
-    plot_par=plot_kw.copy()
+    # artists. So, we decrease the zorder a bit to prevent this.
+    sector_ax.patch = ax.patch
+    sector_ax.patch.zorder = 0.9
+
+    L = shape(theta)[0] if len(shape(theta)) > 1 else 1
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Insert clim as vmin, vmax into **kwargs dictionary, if given.
-    if (clim != None):
+    if (clim is not None):
         try:
-            _=(e for e in clim)
+            _ = (e for e in clim)
             if (len(clim) == 2):
-                plot_par['vmin']=clim[0]
-                plot_par['vmax']=clim[1]
+                plot_par['vmin'] = clim[0]
+                plot_par['vmax'] = clim[1]
             else:
                 raise TypeError("`clim` must be of iterable type and have two values only.")
         except (TypeError):
             raise TypeError("`clim` must be of iterable type and have two values only.")
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    #plot_par=dict_splicer(plot_par,L,[1]*L)
-    
+    # plot_par=dict_splicer(plot_par,L,[1]*L)
+
     if (L == 1):
-        sctr=sector_ax.scatter(theta-rotate, r, label=label, **plot_par)
+        sctr = sector_ax.scatter(theta - rotate, r, label=label, **plot_par)
     else:
         for ii in range(L):
-            sctr=sector_ax.scatter(theta[ii]-rotate, r[ii], label=label[ii],**plot_par[ii])
-    
+            sctr = sector_ax.scatter(theta[ii] - rotate, r[ii], label=label[ii], **plot_par[ii])
+
     if clabel is not None:
-        cbar=colorbar(sctr)
+        cbar = colorbar(sctr)
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
-    
+
     return sector_ax
 
+
 ####################################
-# Statistics bands
+########  Statistics bands  ########
 ####################################
-def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_high='std',from_mid=None,line=False,xlim=None,ylim=None,
-                xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
-                label=None,lab_loc=0,ax=None,grid=None,line_kw={},band_kw={},**kwargs):
-    
+def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', stat_high='std', from_mid=None, line=False, xlim=None, ylim=None,
+             xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,
+             label=None, lab_loc=0, ax=None, grid=None, line_kw={}, band_kw={}, **kwargs):
     """Statistics line and band plotting function.
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -1735,16 +1453,16 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-        A list of available `Line2D` properties can be found here: 
+        A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     None
     """
-    
-    from splotch.base_func import axes_handler,bin_axis,plot_finalizer
-    
+
+    from splotch.base_func import axes_handler, bin_axis, plot_finalizer
+
     import numpy as np
     from numbers import Number
     import scipy.stats as stats
@@ -1756,93 +1474,94 @@ def statband(x,y,bin_type=None,bins=None,stat_mid='mean',stat_low='std',stat_hig
     from warnings import warn
 
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
+
     if ylog is None:
         from splotch.defaults import Params
-        ylog=Params.hist1D_yaxis_log
+        ylog = Params.hist1D_yaxis_log
     if bins is None:
-        bins=int((len(x))**0.4)
+        bins = int((len(x))**0.4)
     if 'linewidth' not in band_kw.keys():
-        band_kw['linewidth']=0
+        band_kw['linewidth'] = 0
     if 'alpha' not in band_kw.keys():
-        band_kw['alpha']=0.4
-    
+        band_kw['alpha'] = 0.4
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #band_par={**plot_kw, **kwargs} # For Python > 3.5
+    # band_par={**plot_kw, **kwargs} # For Python > 3.5
     band_kw.update(kwargs)
-    
+
     # Check stat_low/stat_high arguments
-    band_stat=np.array([None,None])
-    band_multi=np.ones(2)
-    for i, stat in enumerate([stat_low,stat_high]): # loop over low/high statistic
-        if isinstance(stat,Number): # stat given as a percentile number
-            band_stat[i] = partial(percentile,q=stat) # Set as the percentile function with kwargs fixed.
-        elif callable(stat): # stat given as a function
+    band_stat = np.array([None, None])
+    band_multi = np.ones(2)
+    for i, stat in enumerate([stat_low, stat_high]):  # loop over low/high statistic
+        if isinstance(stat, Number):  # stat given as a percentile number
+            band_stat[i] = partial(percentile, q=stat)  # Set as the percentile function with kwargs fixed.
+        elif callable(stat):  # stat given as a function
             band_stat[i] = stat
-        elif isinstance(stat,str) and 'std' in stat: # stat given as a string with 'std'
+        elif isinstance(stat, str) and 'std' in stat:  # stat given as a string with 'std'
             band_stat[i] = 'std'
-            multi = list(filter(None,stat.split('std'))) # The multiplier for std, if any.
-            if len(multi) == 0: # No multiplier given
+            multi = list(filter(None, stat.split('std')))  # The multiplier for std, if any.
+            if len(multi) == 0:  # No multiplier given
                 band_multi[i] = 1.0
-            elif len(multi) == 1: # Multiplier was given
+            elif len(multi) == 1:  # Multiplier was given
                 band_multi[i] = multi[0]
-            else: 
+            else:
                 raise ValueError(f"Statistic '{stat}' not valid. Should be given as '[n]std', where [n] is a number.")
         else:
             raise ValueError(f"Statistic of type '{type(stat)}' was not recognised. Must be either a Number, function or string in the format '[n]std'.")
-    
+
     # Check stat_mid argument
-    if isinstance(stat_mid,Number):
-        stat_mid=partial(percentile,q=stat_mid)
+    if isinstance(stat_mid, Number):
+        stat_mid = partial(percentile, q=stat_mid)
 
     # Assign 'from_mid' if not explicitly set
     if from_mid is None:
-        if (band_stat[0] in ['std',np.std,np.nanstd] and (band_stat[1] in ['std',np.std,np.nanstd])): # Band stats a type of standard deviation
+        if (band_stat[0] in ['std', np.std, np.nanstd] and (band_stat[1] in ['std', np.std, np.nanstd])):  # Band stats a type of standard deviation
             from_mid = True
         else:
             from_mid = False
-    
-    temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
-    temp_y=stats.binned_statistic(temp_x,y,statistic=stat_mid,bins=bins_hist)[0]
-    if band_stat[0]==band_stat[1]:
-        band_low,band_high=[stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]]*2
+
+    temp_x, bins_hist, bins_plot = bin_axis(x, bin_type, bins, log=xlog)
+    temp_y = stats.binned_statistic(temp_x, y, statistic=stat_mid, bins=bins_hist)[0]
+    if band_stat[0] == band_stat[1]:
+        band_low, band_high = [stats.binned_statistic(temp_x, y, statistic=band_stat[0], bins=bins_hist)[0]] * 2
     else:
-        band_low=stats.binned_statistic(temp_x,y,statistic=band_stat[0],bins=bins_hist)[0]
-        band_high=stats.binned_statistic(temp_x,y,statistic=band_stat[1],bins=bins_hist)[0]
+        band_low = stats.binned_statistic(temp_x, y, statistic=band_stat[0], bins=bins_hist)[0]
+        band_high = stats.binned_statistic(temp_x, y, statistic=band_stat[1], bins=bins_hist)[0]
 
-    if from_mid == True: # Band intervals should be taken as the difference from the mid line
-        band_low  = temp_y-band_multi[0]*band_low
-        band_high = temp_y+band_multi[1]*band_high
-    
+    if from_mid is True:  # Band intervals should be taken as the difference from the mid line
+        band_low = temp_y - band_multi[0] * band_low
+        band_high = temp_y + band_multi[1] * band_high
+
     if ylog:
-        temp_y=np.where(temp_y==0,np.nan,temp_y)
+        temp_y = np.where(temp_y == 0, np.nan, temp_y)
 
-    x=stats.binned_statistic(temp_x,x,statistic=stat_mid,bins=bins_hist)[0]
-    y=temp_y
-    
-    plt.fill_between(x,band_low,band_high,label=label,**band_kw)
+    x = stats.binned_statistic(temp_x, x, statistic=stat_mid, bins=bins_hist)[0]
+    y = temp_y
+
+    plt.fill_between(x, band_low, band_high, label=label, **band_kw)
 
     if line:
-        plt.plot(x,y,**line_kw)
+        plt.plot(x, y, **line_kw)
     if label is not None:
         plt.legend(loc=lab_loc)
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
+
 
 ####################################
-# Statistics bars
+########  Statistics bars  #########
 ####################################
-def statbar(x,y,bin_type=None,bins=None,stat_cen='mean',bar_x=True,stat_y='std',line=False,xlim=None,ylim=None,
-                xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
-                label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-    
+def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y='std', line=False, xlim=None, ylim=None,
+            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,
+            label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Statistics line and bar plotting function.
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -1900,16 +1619,16 @@ def statbar(x,y,bin_type=None,bins=None,stat_cen='mean',bar_x=True,stat_y='std',
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
-        A list of available `Line2D` properties can be found here: 
+        A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     None
     """
-    
-    from splotch.base_func import axes_handler,bin_axis,plot_finalizer
-    
+
+    from splotch.base_func import axes_handler, bin_axis, plot_finalizer
+
     import numpy as np
     from numbers import Number
     import scipy.stats as stats
@@ -1919,75 +1638,78 @@ def statbar(x,y,bin_type=None,bins=None,stat_cen='mean',bar_x=True,stat_y='std',
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import gca, errorbar, rcParams
     from warnings import warn
-    
+
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
+
     if ylog is None:
         from splotch.defaults import Params
-        ylog=Params.hist1D_yaxis_log
+        ylog = Params.hist1D_yaxis_log
     if bins is None:
-        bins=int((len(x))**0.4)
-    
-    if type(stat_y)!=str:
+        bins = int((len(x))**0.4)
+
+    if not isinstance(stat_y, str):
         try:
             iter(stat_y)
         except TypeError:
-            stat_y=[stat_y,stat_y]
+            stat_y = [stat_y, stat_y]
     else:
-        stat_y=[stat_y,stat_y]
-    
+        stat_y = [stat_y, stat_y]
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par = {**plot_kw, **kwargs}  # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
     if 'linewidth' not in plot_par.keys():
-        plot_par['linewidth']=0
+        plot_par['linewidth'] = 0
     if 'elinewidth' not in plot_par.keys():
-        plot_par['elinewidth']=rcParams['lines.linewidth']
-    
-    bar_multi=np.ones(2)
+        plot_par['elinewidth'] = rcParams['lines.linewidth']
+
+    bar_multi = np.ones(2)
     for i in range(len(stat_y)):
-        if isinstance(stat_y[i],Number):
-            stat_y[i]=partial(percentile,q=stat_y[i])
-        elif 'std' in stat_y[i] and len(stat_y[i].replace('std',''))>0:
-            bar_multi[i]=float(stat_y[i].replace('std',''))
-            stat_y[i]='std'
-    
-    if isinstance(stat_cen,Number):
-        stat_cen=partial(percentile,q=stat_cen)
-    
-    temp_x,bins_hist,bins_plot=bin_axis(x,bin_type,bins,log=xlog)
-    temp_y=stats.binned_statistic(temp_x,y,statistic=stat_cen,bins=bins_hist)[0]
-    if stat_y[0]==stat_y[1]:
-        bar_low,bar_high=[stats.binned_statistic(temp_x,y,statistic=stat_y[0],bins=bins_hist)[0]]*2
+        if isinstance(stat_y[i], Number):
+            stat_y[i] = partial(percentile, q=stat_y[i])
+        elif 'std' in stat_y[i] and len(stat_y[i].replace('std', '')) > 0:
+            bar_multi[i] = float(stat_y[i].replace('std', ''))
+            stat_y[i] = 'std'
+
+    if isinstance(stat_cen, Number):
+        stat_cen = partial(percentile, q=stat_cen)
+
+    temp_x, bins_hist, bins_plot = bin_axis(x, bin_type, bins, log=xlog)
+    temp_y = stats.binned_statistic(temp_x, y, statistic=stat_cen, bins=bins_hist)[0]
+    if stat_y[0] == stat_y[1]:
+        bar_low, bar_high = [stats.binned_statistic(temp_x, y, statistic=stat_y[0], bins=bins_hist)[0]] * 2
     else:
-        bar_low=stats.binned_statistic(temp_x,y,statistic=stat_y[0],bins=bins_hist)[0]
-        bar_high=stats.binned_statistic(temp_x,y,statistic=stat_y[1],bins=bins_hist)[0]
-    if stat_y[0]=='std':
-        bar_low=bar_multi[0]*bar_low
+        bar_low = stats.binned_statistic(temp_x, y, statistic=stat_y[0], bins=bins_hist)[0]
+        bar_high = stats.binned_statistic(temp_x, y, statistic=stat_y[1], bins=bins_hist)[0]
+    if stat_y[0] == 'std':
+        bar_low = bar_multi[0] * bar_low
     else:
-        bar_low=temp_y-bar_low
-    if stat_y[0]=='std':
-        bar_high=bar_multi[0]*bar_high
+        bar_low = temp_y - bar_low
+    if stat_y[0] == 'std':
+        bar_high = bar_multi[0] * bar_high
     else:
-        bar_high-=temp_y
+        bar_high -= temp_y
     if ylog:
-        temp_y=np.where(temp_y==0,np.nan,temp_y)
-    x=stats.binned_statistic(temp_x,x,statistic=stat_cen,bins=bins_hist)[0]
-    y=temp_y
+        temp_y = np.where(temp_y == 0, np.nan, temp_y)
+
+    x = stats.binned_statistic(temp_x, x, statistic=stat_cen, bins=bins_hist)[0]
+    y = temp_y
     if bar_x:
-        bar_x=[x-bins_plot[:-1],bins_plot[1:]-x]
-    
+        bar_x = [x - bins_plot[:-1], bins_plot[1:] - x]
+
     if bar_x:
-        errorbar(x,y,xerr=bar_x,yerr=[bar_low,bar_high],**plot_par)
+        errorbar(x, y, xerr=bar_x, yerr=[bar_low, bar_high], **plot_par)
     else:
-        errorbar(x,y,yerr=[bar_low,bar_high],**plot_par)
+        errorbar(x, y, yerr=[bar_low, bar_high], **plot_par)
+
     if label is not None:
         plt.legend(loc=lab_loc)
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if ax is not None:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
