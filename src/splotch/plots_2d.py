@@ -91,7 +91,7 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
     plotf[filled](x, y, z, **plot_par)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
 ####################################
@@ -275,7 +275,7 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
                    plabel, numpoints=1, loc=lab_loc)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
     if output:
         return(X, Y, Z.T, array(level))
@@ -346,15 +346,7 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
     import matplotlib.colors as clr
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import gca
-    from warnings import warn
-
-    # Handle deprecated variables
-    deprecated = {'plabel': 'label'}
-    for dep in deprecated:
-        if dep in kwargs:
-            warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep == 'plabel'): label = kwargs.pop(dep)
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     else:
@@ -384,7 +376,7 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
         plt.legend(loc=lab_loc)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
 ####################################
@@ -447,15 +439,7 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     from .base_func import axes_handler, dict_splicer, plot_finalizer
 
     from matplotlib.pyplot import errorbar, legend, gca
-    from warnings import warn
-
-    # Handle deprecated variables
-    deprecated = {'plabel': 'label'}
-    for dep in deprecated:
-        if dep in kwargs:
-            warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep == 'plabel'): label = kwargs.pop(dep)
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     else:
@@ -485,7 +469,7 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     if any(label):
         legend(loc=lab_loc)
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
 ####################################
@@ -553,17 +537,7 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     from numpy import shape, full, array
     from matplotlib.collections import PatchCollection
     from matplotlib.patches import Ellipse, Rectangle, Patch
-
-    from warnings import warn
-
-    # Handle deprecated variables
-    deprecated = {'plabel': 'label', 'boxtype': 'box_type'}
-    for dep in deprecated:
-        if dep in kwargs:
-            warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep == 'plabel'): label = kwargs.pop(dep)
-            if (dep == 'boxtype'): box_type = kwargs.pop(dep)
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     else:
@@ -640,7 +614,7 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     if any(label):
         legend(handles=boxhandles, labels=label, loc=lab_loc)
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
 ####################################
@@ -724,20 +698,12 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
     y_edges : array
         The bin edges for the y axis. Only provided if output is True.
     """
-
-    from warnings import warn
+    
     from numpy import diff, log10, nan, nanmin, nanmedian, nanmax, nanstd, unique, size, zeros, shape
     from matplotlib.colors import LogNorm
     from matplotlib.pyplot import hexbin, colorbar
     from .base_func import axes_handler, plot_finalizer
-
-    # Handle deprecated variables
-    deprecated = {'binlim': 'binlims'}
-    for dep in deprecated:
-        if dep in kwargs:
-            warn(f"'{dep}' will be deprecated in future verions, instead use '{deprecated[dep]}'.")
-            if (dep == 'binlim'): binlims = kwargs.pop(dep)
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     if type(bins) not in [list, tuple]:
@@ -826,7 +792,7 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
 
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
     if output:
         return(hist_return.get_array(), hist_return.get_offsets())
@@ -967,7 +933,7 @@ def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=
         if cbar_invert:
             cbar.ax.invert_yaxis()
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
     if output:
         return(Z.T, X, Y)
@@ -1067,7 +1033,7 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
 
     plot_finalizer(False, False, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
 
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
 
@@ -1144,14 +1110,7 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
 
     from .base_func import axes_handler, dict_splicer, plot_finalizer
     from .axis_func import colorbar
-
-    # Handle deprecated variables
-    deprecated = {'plabel': 'label'}
-    for dep in deprecated:
-        if dep in kwargs:
-            warn(f"'{dep}' will be deprecated in future verions, using '{deprecated[dep]}' instead")
-            if (dep == 'plabel'): label = kwargs.pop(dep)
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     if (not isinstance(x, list)) or (len(shape(x)) == 1 and array(x).dtype is not dtype('O')):
@@ -1210,7 +1169,7 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
         legend(loc=lab_loc)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
     return paths[0] if len(paths) == 1 else paths
@@ -1471,8 +1430,7 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
     import matplotlib.colors as clr
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import gca
-    from warnings import warn
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     else:
@@ -1550,7 +1508,7 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
         plt.legend(loc=lab_loc)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
 
@@ -1637,8 +1595,7 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
     import matplotlib.colors as clr
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import gca, errorbar, rcParams
-    from warnings import warn
-
+    
     if ax is not None:
         old_axes = axes_handler(ax)
     else:
@@ -1711,5 +1668,5 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
         plt.legend(loc=lab_loc)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if ax is not None:
+    if old_axes is not ax:
         old_axes = axes_handler(old_axes)

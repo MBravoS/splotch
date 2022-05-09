@@ -15,10 +15,9 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.5.7.2
+*Current version*: 0.5.8.0
 
 *Planned releases*:
-* Removal of existing deprecation warnings (0.5.5.0).
 * Addition on unique colour maps (0.6.0.0)
 * Addition of legend customisation function (0.7.0.0).
 * Re-work for PEP coding style compliance (using PyLint) (0.8.0.0).

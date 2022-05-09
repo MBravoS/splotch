@@ -1,3 +1,7 @@
+**0.5.8.0** (10/05/2022):
+
+* Fixing issue with axes handling and removing old deprecation warnings
+
 **0.5.7.2** (02/04/2022):
 
 * Passed plots_2d.py through a PEP8 linter to standard formatting
