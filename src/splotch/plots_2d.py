@@ -67,7 +67,7 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
     """
 
     from numpy import linspace  # , shape
-    from matplotlib.pyplot import contour, contourf  # , legend
+    from matplotlib.pyplot import gca,contour, contourf  # , legend
     from .base_func import axes_handler, plot_finalizer  # , dict_splicer
     
     # Set the current axis
@@ -702,7 +702,7 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
     
     from numpy import diff, log10, nan, nanmin, nanmedian, nanmax, nanstd, unique, size, zeros, shape
     from matplotlib.colors import LogNorm
-    from matplotlib.pyplot import hexbin, colorbar
+    from matplotlib.pyplot import gca, hexbin, colorbar
     from .base_func import axes_handler, plot_finalizer
     
     # Set the current axis
@@ -889,7 +889,7 @@ def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=
 
     from numpy import nan, size, zeros, shape
     from matplotlib.colors import LogNorm
-    from matplotlib.pyplot import pcolormesh, colorbar
+    from matplotlib.pyplot import gca, pcolormesh, colorbar
     from .base_func import axes_handler, basehist2D, plot_finalizer
     
     # Set the current axis
@@ -1010,7 +1010,7 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
 
     from numpy import arange, meshgrid
     from matplotlib.colors import LogNorm
-    from matplotlib.pyplot import pcolormesh, colorbar
+    from matplotlib.pyplot import gca, pcolormesh, colorbar
     from .base_func import axes_handler, plot_finalizer
     
     # Set the current axis
@@ -1119,7 +1119,7 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
     """
 
     from numpy import array, dtype, shape, vstack
-    from matplotlib.pyplot import scatter, legend
+    from matplotlib.pyplot import gca, scatter, legend
     from scipy.stats import gaussian_kde
     from warnings import warn
 
