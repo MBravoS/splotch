@@ -72,26 +72,11 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
-    
-    if filled is None:
-        from .defaults import Params
-        filled = Params.cont_filled
-    if x is None:
-        x = linspace(0, 1, z.shape[0])
-    if y is None:
-        y = linspace(0, 1, z.shape[1])
-
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par={**plot_kw, **kwargs} # For Python > 3.5
     plot_par = plot_kw.copy()
@@ -206,16 +191,10 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if not isinstance(percent, ndarray):
         percent = array([percent]).flatten()
@@ -367,16 +346,10 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if ylog is None:
         from splotch.defaults import Params
@@ -467,16 +440,10 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     # Convert data to lists if needed
     if not isinstance(x, list): x = [x]
@@ -572,16 +539,10 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if not isinstance(x, list): x = [x]
     if not isinstance(y, list): y = [y]
@@ -746,16 +707,10 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if type(bins) not in [list, tuple]:
         if bins is None:
@@ -939,16 +894,10 @@ def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if not isinstance(bin_type, list):
         bin_type = [bin_type] * 2
@@ -1066,16 +1015,10 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if x is None:
         x = arange(len(im[:, 0]) + 1)
@@ -1185,16 +1128,10 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if (not isinstance(x, list)) or (len(shape(x)) == 1 and array(x).dtype is not dtype('O')):
         x = [x]
@@ -1518,16 +1455,10 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if ylog is None:
         from splotch.defaults import Params
@@ -1696,16 +1627,10 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
     
     # Set the current axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
-                ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
-        else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+        old_axes=axes_handler(ax)
     else:
-        ax=[gca()]
-        old_ax=ax[0]
+        ax=gca()
+        old_axes=ax
     
     if ylog is None:
         from splotch.defaults import Params

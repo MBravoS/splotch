@@ -1,3 +1,7 @@
+**0.5.8.2** (10/05/2022):
+
+* Fixing the issues introduced to axes handling with 0.5.8.1
+
 **0.5.8.1** (10/05/2022):
 
 * Unified axes handling across functions
