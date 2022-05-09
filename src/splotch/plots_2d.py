@@ -1351,7 +1351,7 @@ def sector(r, theta, rlim=(0.0, 1.0), thetalim=(0.0, 360.0), clim=None, rotate=0
 ########  Statistics bands  ########
 ####################################
 def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', stat_high='std', from_mid=None, line=False, xlim=None, ylim=None,
-             xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,
+             xinvert=False, yinvert=False, xlog=False, ylog=None, nmin=0, title=None, xlabel=None, ylabel=None,
              label=None, lab_loc=0, ax=None, grid=None, line_kw={}, band_kw={}, **kwargs):
     """Statistics line and band plotting function.
 
@@ -1394,6 +1394,8 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
         If True, the scale of the x-axis is logarithmic.
     ylog : bool or list, optional
         If True, the scale of the x-axis is logarithmic.
+    nmin : int, optional (default: 0)
+        The minimum number of points required in a bin in order to be plotted.
     title : str, optional
         Sets the title of the plot
     xlabel : str, optional
@@ -1496,10 +1498,16 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
 
     if ylog:
         temp_y = np.where(temp_y == 0, np.nan, temp_y)
-
+    
+    counts = np.histogram(temp_x, bins=bins_hist)[0]
     x = stats.binned_statistic(temp_x, x, statistic=stat_mid, bins=bins_hist)[0]
     y = temp_y
-
+    
+    x = x[counts>nmin]
+    y = y[counts>nmin]
+    band_low = band_low[counts>nmin]
+    band_high = band_high[counts>nmin]
+    
     plt.fill_between(x, band_low, band_high, label=label, **band_kw)
 
     if line:
@@ -1516,7 +1524,7 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
 ########  Statistics bars  #########
 ####################################
 def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y='std', line=False, xlim=None, ylim=None,
-            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,
+            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,#nmin=0,
             label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Statistics line and bar plotting function.
 
