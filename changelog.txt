@@ -1,3 +1,10 @@
+**0.5.10.0** (11/08/2022):
+
+* Made changes to contourp, contour and colorbar
+* Changed plabel --> labels for consistency with other functions
+* Default is to always return QuadContourSet from contour functions. If output=True, this appends the X, Y and Z.T hitogram bins to the return. Returning the result of the matplotlib contour functions is required in order for colorbar to act on a contour function.
+* Made some changes to documentation and did some pep-8 linting
+
 **0.5.9.0** (11/08/2022):
 
 * Made some adjustments to colorbar() for easier usage

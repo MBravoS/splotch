@@ -210,8 +210,9 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
         The colorbar object.
     """
 
-    from .base_func import axes_handler, dict_splicer
+    from splotch.base_func import axes_handler, dict_splicer
     from matplotlib.pyplot import gca, colorbar
+    from matplotlib.contour import ContourSet
     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
     import matplotlib.ticker as tckr
     from numpy import ndarray
@@ -246,8 +247,8 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
         else:
             raise ValueError(f"loc {loc} not recognised.")
     elif isinstance(loc, int):
-        if loc < 0 or loc > 10:
-            raise ValueError(f"loc {loc} must be between 0 - 10.")
+        if loc < 0 or loc > 9:
+            raise ValueError(f"loc {loc} must be between 0 - 9.")
     else:
         raise NotImplementedError("loc must be specified as integer or string. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
 
@@ -277,7 +278,7 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
                      6: (0.5 * (1 - width), 1 + pad - ins * (2 * pad + height), width, height),  # upper center
                      7: (0 - width - labpad - pad + ins * (labpad + 2 * pad + width), 0.5 * (1 - height), width, height),  # center left
                      8: (0.5 * (1 - width), 0 - height - labpad - pad + ins * (labpad + 2 * pad + height), width, height),  # lower center
-                     9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)} # center
+                     9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)}  # center
 
     # horizontally - oriented colorbars
     horPositions = {1: (1 - width - ins * pad, 1 + pad - ins * (2 * pad + height), width, height),
@@ -288,10 +289,10 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
                     6: (0.5 * (1 - width), 1 + pad - ins * (2 * pad + height), width, height),  # upper center
                     7: (0 - width - labpad - pad + ins * (width + labpad + 2 * pad), 0.5 * (1 - height), width, height),  # center left
                     8: (0.5 * (1 - width), 0 - height - labpad - pad + ins * (labpad + 2 * pad + height), width, height),  # lower center
-                    9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)} # center
+                    9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)}  # center
 
     # Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
-    #bar_par={**bar_kw, **kwargs} # For Python > 3.5
+    # bar_par={**bar_kw, **kwargs} # For Python > 3.5
     bar_par = bar_kw.copy()
     bar_par.update(kwargs)
 
@@ -301,11 +302,15 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
     cbars = []  # Initiate empty list of colorbars for output
     for ii, ax in enumerate(axes):
         if mappable is None:
-            if ax.figure._gci() is not None:
-                mapper = ax.figure._gci()
-            else:  # try to automatically find mapable as children of the axis
-                mappables = [child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
-                mapper = mappables[0] if len(mappables) > 1 else mappables
+            # Try to automatically find mapable as children of the axis
+            mappables = [child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
+            if mappables != []:  # A potential mappable was detected
+                mapper = mappables[0] if isinstance(mappables, (tuple, list, ndarray)) else mappables
+            else:
+                if ax.figure._gci() is not None:
+                    mapper = ax.figure._gci()
+                else:
+                    raise ValueError("No potential mappables found in figure.")
         else:
             # check if list-like
             if isinstance(mappable, (list, tuple, ndarray)):
@@ -317,6 +322,9 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
                     raise ValueError("Number of mappables given must be either 1 or equal to the number of axes specified.")
             else:
                 mapper = mappable
+
+            if isinstance(mapper, ContourSet) and not mapper.filled:
+                raise NotImplementedError("Cannot create colorbars for unfilled contours.")
 
         cax = inset_axes(ax, width='100%', height='100%',
                          bbox_to_anchor=vertPositions[loc] if orientation == 'vertical' else horPositions[loc],

@@ -66,36 +66,39 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
         The levels for the contours.
     """
 
-    from numpy import linspace  # , shape
-    from matplotlib.pyplot import gca,contour, contourf  # , legend
-    from .base_func import axes_handler, plot_finalizer  # , dict_splicer
-    
+    from matplotlib.pyplot import gca, contour, contourf
+    from .base_func import axes_handler, plot_finalizer
+
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
-    
+        ax = gca()
+        old_axes = ax
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par={**plot_kw, **kwargs} # For Python > 3.5
     plot_par = plot_kw.copy()
     plot_par.update(kwargs)
 
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-
-    plotf = {False: contour, True: contourf}
-    plotf[filled](x, y, z, **plot_par)
+    if filled:
+        contourset = contourf(x, y, z, **plot_par)
+    else:
+        contourset = contour(x, y, z, **plot_par)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
+    return contourset
+
+
 ####################################
 # Contours from density histograms
 ####################################
 def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0.0, max_spacing=True, xlim=None, ylim=None, xinvert=False, yinvert=False,
-             xlog=False, ylog=False, title=None, plabel=None, xlabel=None, ylabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
+             xlog=False, ylog=False, title=None, labels=None, xlabel=None, ylabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
     """Contour function, encircling the highest density regions that contain the given percentages of the sample.
 
     Parameters
@@ -105,14 +108,17 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     y : array-like
         Position of data points in the y axis.
     percent : float or array-like, optional.
-        The percentages of the sample that the contours encircle.
-    bin_type : {'number','width','edges','equal'}, optional
-        Defines how is understood the value given in bins: 'number' for givinf the desired number
-        of bins, 'width' forthe width of the bins, 'edges' for the edges of bins, and 'equal' for
-        making bins with equal number of elements (or as close as possible). If not given it is
-        inferred from the data type of bins: 'number' if int, 'width' if float and 'edges' if ndarray.
+        The percentages of the sample for the contours to encircle.
+    bin_type : {'number', 'width', 'edges', 'equal'}, optional
+        Defines the format for the value(s) given in `bins`.
+            * 'number' specifies the desired number of bins.
+            * 'width' specifies the width of the bins.
+            * 'edges' for the edges of bins
+            * 'equal' results in bins with an equal number of elements (or as close as possible).
+        If `bin_type` not given, it is inferred from the data type of bins, i.e., 'number' if int,
+        'width' if float and 'edges' if a list-like object.
     bins : int, float, array-like, optional
-        Gives the values for the bins, according to bin_type.
+        Specifies the value(s) for the bins, according to bin_type.
     smooth : float, optional
         The standard deviation for the Gaussian kernel. Default: 0.0 (No smoothing).
     max_spacing : boolean, optional
@@ -131,9 +137,9 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         If True, the scale of the x-axis is logarithmic.
     title : str, optional
         Sets the title of the plot
-    plabel : array-like or boolean, optional
-        Specifies label(s) for the contour(s). If False, do not create a legend. If an array of
-        strings, sets the labels for each contour. Must be of equal length to number specified by 'percent'.
+    labels : array-like or boolean, optional
+        Specifies label(s) for the contour(s). If given as an array of strings, sets the labels for each contour.
+        Must be of equal length to number specified by 'percent'. If False, no legend is drawn.
     xlabel : str, optional
         Sets the label of the x-axis.
     ylabel : str, optional
@@ -145,7 +151,7 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     grid : boolean, optional
         If not given defaults to the value defined in splotch.Params.
     output : boolean, optional
-        If True, returns the edges and values of the underlying histogram plus the levels of the contours.
+        If True, returns the edges and values of the underlying histogram in addition to the default output of.
     plot_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are QuadContourSet properties.
     **kwargs: QuadContourSet properties, optional
@@ -167,15 +173,18 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
 
     from warnings import warn
     from matplotlib import lines, patches, rcParams
-    from matplotlib.cm import get_cmap, ScalarMappable
-    from matplotlib.colors import Normalize
-    from matplotlib.pyplot import gca, sca, contour, contourf, legend  # , Normalize
-    from numpy import array, linspace, round, ndarray, ceil
+    from matplotlib.cm import get_cmap
+    from matplotlib.pyplot import gca, contour, contourf, legend  # , Normalize
+    from numpy import array, linspace, round, ndarray
     from scipy.ndimage.filters import gaussian_filter
 
-    from .base_func import axes_handler, basehist2D, percent_finder, plot_finalizer, dict_splicer, is_numeric
-    from .axis_func import colorbar
+    from .base_func import axes_handler, basehist2D, percent_finder, plot_finalizer
     from .defaults import Params
+
+    # Check deprecated parameters
+    if 'plabel' in kwargs.keys():
+        warn("'plabel' will be deprecated, use instead 'labels'", DeprecationWarning, stacklevel=2)
+        labels = kwargs.pop('plabel')
 
     # Initialise defaults
     if filled is None:
@@ -187,24 +196,25 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     if output is None:
         output = Params.contp_output
 
-    func_dict = {True: contourf, False: contour}
-    
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
-    
+        ax = gca()
+        old_axes = ax
+
     if not isinstance(percent, ndarray):
         percent = array([percent]).flatten()
+
     if not isinstance(bin_type, (list, tuple, ndarray)):
         bin_type = [bin_type] * 2
+
     if not isinstance(bins, (list, tuple)):
         if bins is None:
             bins = max([10, int(len(x)**0.4)])  # Defaults to min of 10 bins
         bins = [bins] * 2
-    percent = percent[::-1]
+
+    percent = percent[::-1]  # reverse the order of percent
 
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par = {**plot_kw, **kwargs} # For Python > 3.5
@@ -214,68 +224,83 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     if filled:
         plot_par['extend'] = 'max'
 
-    if not filled and len(percent) < 4 and 'colors' not in plot_par.keys():  # if drawing <4 lines with no color specified, get first color of color cycler
+    # if drawing <4 lines with no color specified, use 'solid', 'dashed' and then 'dotted'
+    if not filled and len(percent) < 4 and 'colors' not in plot_par.keys():
         plot_par['colors'] = [next(ax._get_lines.prop_cycler)['color']] * len(percent)
+
     if 'colors' in plot_par.keys():
         if isinstance(plot_par['colors'], str):
             plot_par['colors'] = [plot_par['colors'] for i in range(len(percent))]
+
         if 'cmap' in plot_par.keys():
             plot_par.pop('cmap')
     elif max_spacing:
         if isinstance(plot_par['cmap'], str):
             plot_par['cmap'] = get_cmap(plot_par['cmap'])
+
         plot_par['colors'] = [plot_par['cmap'](i) for i in linspace(0, 1, len(percent))]
         plot_par.pop('cmap')
-    if not filled and len(percent) < 4 and 'linestyles' not in plot_par.keys():  # if drawing <4 lines with no color specified, use 'solid', 'dashed' and then 'dotted'
+
+    # if drawing <4 lines with no color specified, use 'solid', 'dashed' and then 'dotted'
+    if not filled and len(percent) < 4 and 'linestyles' not in plot_par.keys():
         plot_par['linestyles'] = [['solid', 'dashed', 'dotted'][i] for i in range(len(percent))][::-1]
 
     # Validate labels array
-    if (type(plabel) in [list, tuple, ndarray]):
-        if (len(plabel) != len(percent)):
-            raise ValueError(f"Length of labels ({len(plabel)}) does not match length of percent ({len(percent)}).")
+    if isinstance(labels, (list, tuple, ndarray)):
+        if (len(labels) != len(percent)):
+            raise ValueError(f"Length of labels ({len(labels)}) does not match length of percent ({len(percent)}).")
     else:
-        if plabel is None:
+        if labels is None:
             if rcParams['text.usetex']:
-                plabel = [f'{round(p,1)}\\%' for p in percent]
+                labels = [f'{round(p,1)}\\%' for p in percent]
             else:
-                plabel = [f'{round(p,1)}%' for p in percent]
+                labels = [f'{round(p,1)}%' for p in percent]
 
-    X, Y, Z = basehist2D(x, y, None, bin_type, bins, None, None, None, xlog, ylog)
+    X, Y, Z = basehist2D(x, y, c=None, bin_type=bin_type, bin_num=bins, norm=None, dens=None, cstat=None, xlog=xlog, ylog=ylog)
     X = (X[:-1] + X[1:]) / 2
     Y = (Y[:-1] + Y[1:]) / 2
 
     level = array([percent_finder(Z, p / 100) for p in percent])
-    plot_return = func_dict[filled](X, Y, gaussian_filter(Z.T, sigma=smooth), levels=level, **plot_par)
+    if filled:  # Removed `func_dict` for readability
+        contourset = contourf(X, Y, gaussian_filter(Z.T, sigma=smooth), levels=level, **plot_par)
+    else:
+        contourset = contour(X, Y, gaussian_filter(Z.T, sigma=smooth), levels=level, **plot_par)
 
-    if plabel:
-        plot_par['colors'] = plot_return.colors
+    if labels:
+        plot_par['colors'] = contourset.colors
         if isinstance(plot_par['colors'], str):
-            plot_par['colors'] = [plot_par['colors'] for i in range(len(percent))]
+            plot_par['colors'] = [plot_par['colors']] * len(percent)
 
-        plot_par['linestyles'] = plot_return.linestyles
-        if isinstance(plot_par['linestyles'], str):
-            plot_par['linestyles'] = [plot_return.linestyles for i in range(len(percent))]
-        elif plot_par['linestyles'] is None:
-            plot_par['linestyles'] = ['solid' for i in range(len(percent))]
+        if contourset.linestyles is None:
+            plot_par['linestyles'] = ['solid'] * len(percent)
+        elif isinstance(contourset.linestyles, str):
+            plot_par['linestyles'] = [contourset.linestyles] * len(percent)
+        else:
+            plot_par['linestyles'] = contourset.linestyles
 
-        plot_par['alpha'] = plot_return.alpha
-        if isinstance(plot_par['alpha'], float):
-            plot_par['alpha'] = [plot_return.alpha for i in range(len(percent))]
-        elif plot_par['alpha'] is None:
+        if contourset.alpha is None:
             plot_par['alpha'] = [1.0 for i in range(len(percent))]
+        elif isinstance(contourset.alpha, (float, int)):
+            plot_par['alpha'] = [contourset.alpha for i in range(len(percent))]
+        else:
+            plot_par['alpha'] = contourset.alpha
 
         if filled:
             legend([patches.Patch(color=plot_par['colors'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
-                   plabel, numpoints=1, loc=lab_loc)
+                   labels, numpoints=1, loc=lab_loc)
         else:
             legend([lines.Line2D([0, 1], [0, 1], color=plot_par['colors'][i], linestyle=plot_par['linestyles'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
-                   plabel, numpoints=1, loc=lab_loc)
+                   labels, numpoints=1, loc=lab_loc)
 
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
+
     if output:
-        return(X, Y, Z.T, array(level))
+        return(contourset, X, Y, Z.T)
+    else:
+        return(contourset)
+
 
 ####################################
 ##########  Error bands  ###########
