@@ -1,9 +1,9 @@
-def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
+def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
     """ Adjusts text instances.
-    
+
     Function which allows the user to adjust texts of one or many of either x/y-axis labels,
     title, legend, colorbars, etc.
-    
+
     Parameters
     ----------
     which : str, array-like or list
@@ -12,167 +12,173 @@ def adjust_text(which=['x','y'],ax=None,text_kw={},**kwargs):
         ==============================  =================================
          Arguments                      Description
         ==============================  =================================
-        'x','xlabel'                    x-axis label
-        'y', 'ylabel'                    y-axis label 
-        'k', 'tick'                        Tick labels
-        't', 'title'                    Title
-        's', 'suptitle'                 Sup. title
+        'x','xlabel'                     x-axis label
+        'y', 'ylabel'                    y-axis label
+        'k', 'tick'                      Tick labels
+        't', 'title'                     Title
+        's', 'suptitle'                  Sup. title
         'l', 'legend'                    Legend text
-        'c', 'colorbar'                 Color bar
-        'T', 'text'                     Text objects
-        'a', 'all'                        All instances of all the above
+        'c', 'colorbar'                  Color bar
+        'T', 'text'                      Text objects
+        'a', 'all'                       All instances of all the above
         ==============================  =================================
 
     ax : pyplot.Axes or list, optional
         Use the given axes to adjust text, defaults to the current axis. If a list of Axis instances given, the text properties is applied to each.
 
     text_kw : dict, optional
-        Explicit dictionary of kwargs to be parsed to matplotlib ``Text`` instance. It is recommended that text keyword arguments be given as \*\*kwargs.
+        Explicit dictionary of kwargs to be parsed to matplotlib ``Text`` instance. It is recommended that text keyword arguments be given as **kwargs.
 
-    \*\*kwargs : Text instance properties
-        kwargs are used to specify properties of Text instances. A list of valid Text kwargs can be found in the matplotlib `Text <https://matplotlib.org/stable/api/text_api.html>`_ documentation.
+    **kwargs : Text instance properties
+        kwargs are used to specify properties of Text instances. A list of valid Text kwargs can be found in the matplotlib
+        `Text <https://matplotlib.org/stable/api/text_api.html>`_ documentation.
 
     """
-    
+
     from matplotlib.text import Text
     from matplotlib.pyplot import gca
-    from numpy import array, shape, max as np_max, argmax, append#, flatten
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
-    
+    from numpy import array, shape, max as np_max, argmax, append
+    from .base_func import axes_handler, dict_splicer, plot_finalizer
+
     try:
-        _=(it for it in ax)
+        _ = (it for it in ax)
     except TypeError:
-        if (ax == None):
-            ax=gca()
-        ax=[ax]
-    
+        if (ax is None):
+            ax = gca()
+        ax = [ax]
+
     # Validate `which` value(s)
-    whichRef=['x','y','t','s','k','l','c','T','a',
-                'xlabel','ylabel','title','suptitle','ticks','legend','colorbar','text','all']
-    
-    try: # check if iterable
-        _=(i for i in which)
-        if (isinstance(which, str)): # If string instance
-            if which in whichRef[9:]: # Set to a single-item list if one of the long references
-                which=[which]
-            else: # Else, check this is not a combination of shortened references i.e., 'xyk'
+    whichRef = ['x', 'y', 't', 's', 'k', 'l', 'c', 'T', 'a',
+                'xlabel', 'ylabel', 'title', 'suptitle', 'ticks', 'legend', 'colorbar', 'text', 'all']
+
+    try:  # check if iterable
+        _ = (i for i in which)
+        if (isinstance(which, str)):  # If string instance
+            if which in whichRef[9:]:  # Set to a single-item list if one of the long references
+                which = [which]
+            else:  # Else, check this is not a combination of shortened references i.e., 'xyk'
                 # Check condition: All of the characters are recognised letters and there are no duplicates
                 if (all(w in whichRef[:9] for w in list(which)) and len(which) <= len(set(which))):
-                    which = list(which) # set to a list of each of the letters
+                    which = list(which)  # set to a list of each of the letters
                 else:
                     which = [which]
-                
+
     except (TypeError):
-        which=[which]
+        which = [which]
 
     for w in which:
         try:
-            wInd=whichRef.index(w)
-            wComp=(wInd + len(whichRef)//2) % len(whichRef) # get the complimenting short/long version
-            if (whichRef[wComp] in which):
-                raise TypeError("adjust_text() received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[wInd],whichRef[wComp]))
+            whichIndex = whichRef.index(w)
+            whichComp = (whichIndex + len(whichRef) // 2) % len(whichRef)  # get the complimenting short/long version
+            if (whichRef[whichComp] in which):
+                raise TypeError("adjust_text() received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[whichIndex], whichRef[whichComp]))
         except (ValueError):
-            if (type(w) != Text):
-                raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w,', '.join(whichRef)))
-                
-    
-    L=len(which)
-    
+            if (not isinstance(w, Text)):
+                raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w, ', '.join(whichRef)))
+
+    L = len(which)
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    textpar=text_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    textpar = text_kw.copy()
     textpar.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    textpar=dict_splicer(textpar,L,[1]*L)
-    
+    textpar = dict_splicer(textpar, L, [1] * L)
+
     for a in array(ax).flatten():
-        if (a == None): continue # ignore empty subplots
-        
+        if (a is None or a.axes is None):
+            continue  # ignore empty subplots
+
         for ii, lab in enumerate(which):
-            if (lab in ['x','xlabel']):
-                texts=[a.xaxis.label]
-            elif (lab in ['y','ylabel']):
-                texts=[a.yaxis.label]
-            elif (lab in ['t','title']):
-                texts=[a.title]
-            elif (lab in ['s','suptitle']): # Not implemented
-                texts=[a.title]
-            elif (lab in ['k','ticks']):
-                texts=append(a.get_yticklabels(), a.get_xticklabels())
-            elif (lab in ['l','legend']):
+            if (lab in ['x', 'xlabel']):
+                texts = [a.xaxis.label]
+            elif (lab in ['y', 'ylabel']):
+                texts = [a.yaxis.label]
+            elif (lab in ['t', 'title']):
+                texts = [a.title]
+            elif (lab in ['s', 'suptitle']):  # Not implemented
+                texts = [a.title]
+            elif (lab in ['k', 'ticks']):
+                texts = append(a.get_yticklabels(), a.get_xticklabels())
+            elif (lab in ['l', 'legend']):
                 lgnd = a.get_legend()
-                if (lgnd != None): texts = lgnd.get_texts() # Get list of text objects in legend (if it exists)
-            elif (lab in ['c','colorbar']):
+                if (lgnd is not None):
+                    texts = lgnd.get_texts()  # Get list of text objects in legend (if it exists)
+            elif (lab in ['c', 'colorbar']):
                 # Get the axis with the largest ratio between width or height
-                caxInd=argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
+                caxInd = argmax([np_max([c.get_position().width / c.get_position().height, c.get_position().height / c.get_position().width]) for c in a.figure.get_axes()])
                 if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
-                    texts=[a.figure.get_axes()[caxInd].yaxis.label]
+                    texts = [a.figure.get_axes()[caxInd].yaxis.label]
                 else:
-                    texts=[a.figure.get_axes()[caxInd].xaxis.label]
-            elif (lab in ['T','text']):
-                texts=[child for child in a.get_children()[:-4] if type(child) == Text] # -4 to avoid grabbing Title, Subtitle. etc. Text instances
-            elif (type(lab) == Text):
-                texts=[lab]
-            elif (lab in ['a','all']):
-                texts=[a.xaxis.label,a.yaxis.label,a.title,*a.get_xticklabels(),*a.get_yticklabels()]
+                    texts = [a.figure.get_axes()[caxInd].xaxis.label]
+            elif (lab in ['T', 'text']):
+                texts = [child for child in a.get_children()[:-4] if isinstance(child, Text)]  # -4 to avoid grabbing Title, Subtitle. etc. Text instances
+            elif (isinstance(lab, Text)):
+                texts = [lab]
+            elif (lab in ['a', 'all']):
+                texts = [a.xaxis.label, a.yaxis.label, a.title, *a.get_xticklabels(), *a.get_yticklabels()]
 
                 lgnd = a.get_legend()
-                if (lgnd != None): texts = texts + lgnd.get_texts()
+                if (lgnd is not None): texts = texts + lgnd.get_texts()
 
-                caxInd=argmax([np_max([c.get_position().width/c.get_position().height,c.get_position().height/c.get_position().width]) for c in a.figure.get_axes()])
+                caxInd = argmax([np_max([c.get_position().width / c.get_position().height, c.get_position().height / c.get_position().width]) for c in a.figure.get_axes()])
                 if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
                     texts.append(a.figure.get_axes()[caxInd].yaxis.label)
                 else:
                     texts.append(a.figure.get_axes()[caxInd].xaxis.label)
-                
-                texts=texts + [child for child in a.get_children()[:-4] if type(child) == Text]
 
-                print(type(texts))
-                print(texts)
+                texts = texts + [child for child in a.get_children()[:-4] if isinstance(child, Text)]
 
-            
-            for t in texts: # Actually apply the font changes
+            for t in texts:  # Actually apply the font changes
                 t.set(**textpar[ii])
-    
+
     return(None)
 
 
-def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transform=None,
-              inset=False,aspect=0.05,width=None,height=None,pad=0.05,ticks=None,bar_kw={},**kwargs):
+def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, transform=None,
+             inset=False, aspect=0.05, width=None, height=None, pad=0.05, ticks=None, bar_kw={}, **kwargs):
     """Colorbar function
-    
+
     This function will produce a colorbar for any currently plotted mappable on a given axis.
-    
+
     Parameters
     ----------
     mappable : ScalarMappable, optional
-        A list or individual matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) described
-        by this colorbar(s). This argument is optional and will seek out any mappables currently
-        present in each axis given if nothing is specified.
-
+        A list or individual matplotlib.cm.ScalarMappable (i.e., Image, ContourSet, etc.) to be described
+        by this colorbar(s). If no mappable given, any currently present mappables will be searched for
+        in each axis given.
     ax : pyplot.Axes, optional
-        Use the given axes to produce the colorbars onto. If multiple axes are given, number of
-        mappable objects given must be either one or equal to the number of axis objects. If no
-        mappables are provided, a mappable will be searched for independently for each axis.
+        Use the axis specified to draw the colorbars onto. If multiple axes given, the number of
+        mappable objects provides must be one or equal to the number of axes.
         Defaults to the current axis.
-
     label : str, optional
-        The label to be given to the colorbar
-
+        The label to be given to the colorbar.
     orientation : optional
-        The orientation of the colorbar specified either as 'vertical' | 'horizontal'.
-        Orientation is necessary to decide which axis of the colorbar to place labels. Default: 'vertical'.
-
+        The orientation of the colorbar, permitted values are: 'vertical' or 'horizontal'.
+        Orientation is necessary to decide which spine of the colorbar axis to place labels.
+        Default: 'vertical'.
     loc : int or tuple-like, optional
-        Specifies the location of the colorbar. Can be a two element tuple-like object in the format
-        of (x0, y0).
+        Specifies the location of the colorbar. Can either be the string or integer case from the list below.
+
+            ===============   =============
+            Location String   Location Code
+            ===============   =============
+            \'upper right\'     1
+            \'upper left\'      2
+            \'lower left\'      3
+            \'lower right\'     4
+            \'center right\'    5
+            \'upper center\'    6
+            \'center left\'     7
+            \'lower center\'    8
+            \'center\'          9
+            ===============   =============
 
     transform : matplotlib.transforms.Transform instance, optional
         The transformation instance to be used for colorbar location if loc is tuple-like. For example,
         using ax.transAxes() will specify the colorbar location in the coordinates of the axis; (0,0)
         is bottom-left and (1,1) is top-right. Default: ax.transAxes.
-
     inset : boolean, optional
         Whether to inset the colorbar within the inside of the axis. If loc not tuple-like, this
         will add padding to both sides of the colorbar to avoid colliding with the axis spine.
@@ -193,121 +199,142 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
     bar_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are colorbar
         properties.
-    \*\*kwargs : Colorbar properties, optional
+    **kwargs : Colorbar properties, optional
         Keyword arguments are used to specify matplotlib.pyplot.colorbar specific properties such as
         extend, spacing, format, drawedges, etc. The list of available properties can be found in the
         matplotlib `Colorbar <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html>`_ documentation.
-    
+
     Returns
     -------
     cbar
         The colorbar object.
     """
-    
+
     from .base_func import axes_handler, dict_splicer
     from matplotlib.pyplot import gca, colorbar
-    from mpl_toolkits.axes_grid1.inset_locator import inset_axes, zoomed_inset_axes
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
     import matplotlib.ticker as tckr
+    from numpy import ndarray
 
-    
     # Validate axis input
     if ax is not None:
-        try: # check if iterable
+        try:  # check if iterable
             _ = (i for i in ax)
-            old_axes = axes_handler(ax[0])
+            # old_axes = axes_handler(ax[0])
             axes = ax
         except (TypeError):
-            old_axes=axes_handler(ax)
-            axes=[ax]  
+            # old_axes = axes_handler(ax)
+            axes = [ax]
     else:
-        axes=[gca()]
-        old_axes=axes[0]
-    
-    if type(loc) != int:
-        raise NotImplementedError("loc must be specified as integer. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
-    
+        axes = [gca()]
+        # old_axes = axes[0]
+
+    locRef = {'upper right': 1, 'top right': 1,
+              'upper left': 2, 'top left': 2,
+              'lower left': 3, 'bottom left': 3,
+              'lower right': 4, 'bottom right': 4,
+              'right': 5, 'center right': 5,
+              'upper center': 6, 'top center': 6,
+              'left': 7, 'center left': 7,
+              'lower center': 8, 'bottom center': 8,
+              'center': 9}
+
+    if isinstance(loc, str):
+        loc = loc.replace('centre', 'center')  # allows both spellings of centre/center
+        if loc in locRef.keys():
+            loc = locRef[loc]
+        else:
+            raise ValueError(f"loc {loc} not recognised.")
+    elif isinstance(loc, int):
+        if loc < 0 or loc > 10:
+            raise ValueError(f"loc {loc} must be between 0 - 10.")
+    else:
+        raise NotImplementedError("loc must be specified as integer or string. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
+
     ### Define the positions of preset colorbars
-    labpad=0.125 # The padding added for labels
-    ins=1 if inset == True else 0 # Convert inset boolean to a binary multiplier
-    
+    labpad = 0.125  # The padding added for labels
+    ins = 1 if inset is True else 0  # Convert inset boolean to a binary multiplier
+
     # Validate aspect value
     if (aspect <= 0 or aspect > 1):
         raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
-    
+
     # Get width/height values of colorbar
-    if (width == None and height == None):
-        width, height=(aspect, 1.0-ins*2*pad) if orientation == 'vertical' else (1.0-ins*2*pad, aspect)
+    if (width is None and height is None):
+        width, height = (aspect, 1.0 - ins * 2 * pad) if orientation == 'vertical' else (1.0 - ins * 2 * pad, aspect)
     else:
-        if height == None:
-            height=width/aspect if orientation == 'vertical' else aspect*width
-        elif width == None:
-            width=aspect*height if orientation == 'vertical' else height/aspect
-    
+        if height is None:
+            height = width / aspect if orientation == 'vertical' else aspect * width
+        elif width is None:
+            width = aspect * height if orientation == 'vertical' else height / aspect
+
     # Vertically-oriented colorbars
-    vertPositions={1:(1+pad-ins*(2*pad+width), 1-height-ins*pad, width, height),
-                     2:(0-width-labpad-pad+ins*(labpad+2*pad+width), 1-height-ins*pad, width, height),
-                     3:(0-width-labpad-pad+ins*(labpad+2*pad+width), 0+ins*pad, width, height),
-                     4:(1+pad-ins*(2*pad+width), 0+ins*pad, width, height),
-                     5:(1+pad-ins*(2*pad+width), 0.5*(1-height), width, height),
-                     6:(0.5*(1-width), 1+pad-ins*(2*pad+height), width, height),
-                     7:(0-width-labpad-pad+ins*(labpad+2*pad+width), 0.5*(1-height), width, height),
-                     8:(0.5*(1-width),0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
-                     9:(0.5*(1-width), 0.5*(1-height), width, height)}
-    
-    # horizontally-oriented colorbars
-    horPositions ={1:(1-width-ins*pad, 1+pad-ins*(2*pad+height), width, height),
-                     2:(0+ins*pad, 1+pad-ins*(2*pad+height), width, height),
-                     3:(0+ins*pad, 0-height-labpad-pad+ins*(height+labpad+2*pad), width, height),
-                     4:(1-width-ins*pad, 0-height-labpad-pad+ins*(height+labpad+2*pad), width, height),
-                     5:(1+pad-ins*(2*pad+width), 0.5*(1-height), width, height),
-                     6:(0.5*(1-width), 1+pad-ins*(2*pad+height), width, height),
-                     7:(0-width-labpad-pad+ins*(width+labpad+2*pad), 0.5*(1-height), width, height),
-                     8:(0.5*(1-width), 0-height-labpad-pad+ins*(labpad+2*pad+height), width, height),
-                     9:(0.5*(1-width), 0.5*(1-height), width, height)}
-    
+    vertPositions = {1: (1 + pad - ins * (2 * pad + width), 1 - height - ins * pad, width, height),  # upper right
+                     2: (0 - width - labpad - pad + ins * (labpad + 2 * pad + width), 1 - height - ins * pad, width, height),  # upper left
+                     3: (0 - width - labpad - pad + ins * (labpad + 2 * pad + width), 0 + ins * pad, width, height),  # lower left
+                     4: (1 + pad - ins * (2 * pad + width), 0 + ins * pad, width, height),  # lower right
+                     5: (1 + pad - ins * (2 * pad + width), 0.5 * (1 - height), width, height),  # center right
+                     6: (0.5 * (1 - width), 1 + pad - ins * (2 * pad + height), width, height),  # upper center
+                     7: (0 - width - labpad - pad + ins * (labpad + 2 * pad + width), 0.5 * (1 - height), width, height),  # center left
+                     8: (0.5 * (1 - width), 0 - height - labpad - pad + ins * (labpad + 2 * pad + height), width, height),  # lower center
+                     9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)} # center
+
+    # horizontally - oriented colorbars
+    horPositions = {1: (1 - width - ins * pad, 1 + pad - ins * (2 * pad + height), width, height),
+                    2: (0 + ins * pad, 1 + pad - ins * (2 * pad + height), width, height),  # upper left
+                    3: (0 + ins * pad, 0 - height - labpad - pad + ins * (height + labpad + 2 * pad), width, height),  # lower left
+                    4: (1 - width - ins * pad, 0 - height - labpad - pad + ins * (height + labpad + 2 * pad), width, height),  # lower right
+                    5: (1 + pad - ins * (2 * pad + width), 0.5 * (1 - height), width, height),  # center right
+                    6: (0.5 * (1 - width), 1 + pad - ins * (2 * pad + height), width, height),  # upper center
+                    7: (0 - width - labpad - pad + ins * (width + labpad + 2 * pad), 0.5 * (1 - height), width, height),  # center left
+                    8: (0.5 * (1 - width), 0 - height - labpad - pad + ins * (labpad + 2 * pad + height), width, height),  # lower center
+                    9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)} # center
+
     # Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
     #bar_par={**bar_kw, **kwargs} # For Python > 3.5
-    bar_par=bar_kw.copy()
+    bar_par = bar_kw.copy()
     bar_par.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    bar_par=dict_splicer(bar_par,len(axes),[1]*len(axes))
-    
-    cbars=[] # Initiate empty list of colorbars for output
+    bar_par = dict_splicer(bar_par, len(axes), [1] * len(axes))
+
+    cbars = []  # Initiate empty list of colorbars for output
     for ii, ax in enumerate(axes):
-        if mappable == None:
-            mappables = [child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
-            if len(mappables) == 1:
-                mapper=mappables[0]
-            else:
-                mapper=mappables
+        if mappable is None:
+            if ax.figure._gci() is not None:
+                mapper = ax.figure._gci()
+            else:  # try to automatically find mapable as children of the axis
+                mappables = [child for child in ax.get_children() if hasattr(child, 'autoscale_None')]
+                mapper = mappables[0] if len(mappables) > 1 else mappables
         else:
-            try: # check if iterable
+            # check if list-like
+            if isinstance(mappable, (list, tuple, ndarray)):
                 if (len(mappable) == len(axes)):
-                    mapper=mappable[ii]
+                    mapper = mappable[ii]
                 elif (len(mappable) == 1):
-                    mapper=mappable[0]
+                    mapper = mappable[0]
                 else:
                     raise ValueError("Number of mappables given must be either 1 or equal to the number of axes specified.")
-            except (TypeError):
-                mapper=mappable
-                
-        cax=inset_axes(ax, width='100%', height='100%',
+            else:
+                mapper = mappable
+
+        cax = inset_axes(ax, width='100%', height='100%',
                          bbox_to_anchor=vertPositions[loc] if orientation == 'vertical' else horPositions[loc],
-                         bbox_transform=transform if transform != None else ax.transAxes,
+                         bbox_transform=transform if transform is not None else ax.transAxes,
                          borderpad=0)
 
-        cbar = colorbar(mapper, cax=cax, orientation=orientation,ticks=ticks,**bar_par[ii])
+        cbar = colorbar(mapper, cax=cax, orientation=orientation, ticks=ticks, **bar_par[ii])
         cbar.ax.yaxis.set_major_formatter = tckr.ScalarFormatter()
-        
+
         # Orient tick axes correctly
         if (orientation == 'horizontal'):
             cbar.ax.set_xlabel(label)
-            
-            flip=True if loc in [3,4,8] else False # Flip the labels if colorbar on bottom edge
-            if (inset==True) and loc not in [5,7,9]: flip=not flip # Reverse flipping in the case of a inset colorbar    
-            
-            if (flip == True):
+
+            flip = True if loc in [3, 4, 8] else False  # Flip the labels if colorbar on bottom edge
+            if (inset is True) and loc not in [5, 7, 9]:
+                flip = not flip  # Reverse flipping in the case of a inset colorbar
+
+            if (flip is True):
                 cbar.ax.xaxis.set_label_position('bottom')
                 cbar.ax.xaxis.tick_bottom()
             else:
@@ -315,22 +342,22 @@ def colorbar(mappable=None,ax=None,label='',orientation='vertical',loc=1,transfo
                 cbar.ax.xaxis.tick_top()
 
             cbar.ax.yaxis.set_ticks([], minor=True)
-        
+
         else:
             cbar.ax.set_ylabel(label)
-            
-            flip = True if loc in [2,3,7] else False  # Flip the labels if colorbar on left edge
-            if (inset==True) and loc not in [6,8,9]: flip=not flip # Reverse flipping in the case of a inset colorbar
-            
-            if (flip == True):
+
+            flip = True if loc in [2, 3, 7] else False  # Flip the labels if colorbar on left edge
+            if (inset is True) and loc not in [6, 8, 9]:
+                flip = not flip  # Reverse flipping in the case of a inset colorbar
+
+            if (flip is True):
                 cbar.ax.yaxis.set_label_position('left')
                 cbar.ax.yaxis.tick_left()
 
             cbar.ax.xaxis.set_ticks([], minor=True)
 
-        
         cbars.append(cbar)
-    
+
     return (cbars[0] if len(cbars) == 1 else cbars)
 
 
@@ -424,7 +451,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
     dims=shape(data)
     
     # Validate plot parameters
-    if (isinstance(pair_type,(list,ndarray,tuple))):
+    if (isinstance(pair_type,(list, ndarray, tuple))):
         if len(pair_type) > 2:
             raise ValueError("Too many pair types given.")
     elif (isinstance(pair_type, str)):
