@@ -975,6 +975,10 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
     
     if ax is not None:
         old_axes=axes_handler(ax)
+    else:
+        ax=gca()
+        old_axes=ax
+    
     if type(data) not in [list, tuple, ndarray] or (len(shape(data))==1 and array(data).dtype is not dtype('O')):
         data=[data]
     L=len(data)
@@ -1041,22 +1045,24 @@ def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=No
         if vstat[i]:
             temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
         else:
-            temp_y=histogram(temp_data,bins=bins_hist,density=dens[i],weights=weights[i])[0]
+            if scale:
+                temp_y=histogram(temp_data,bins=bins_hist,density=False,weights=weights[i])[0]
+            else:
+                temp_y=histogram(temp_data,bins=bins_hist,density=dens[i],weights=weights[i])[0]
         if cumul[i]:
             temp_y=np_cumsum(temp_y)
             if dens[i]:
                 temp_y=temp_y.astype('float')/nanmax(temp_y)
         if scale[i]:
+            temp_y=temp_y.astype('float')/scale[i]
             if dens[i]:
-                temp_y*=len(data[i])/scale[i]
-            else:
-                temp_y=temp_y.astype('float')/scale[i]
+                temp_y/=bins_hist[1:]-bins_hist[:-1]
         if ylog:
             temp_y=where(temp_y==0,nan,temp_y)
         temp_y=where(n_check,temp_y,nan)
         y=temp_y
         if hist_type[i]=='step':
-            if ylog:
+            if (ylog or v is not None):
                 y=array([y[0]]+[j for j in y])
             else:
                 bins_plot=array([bins_plot[0]]+[b for b in bins_plot]+[bins_plot[-1]])
