@@ -1,6 +1,18 @@
-**0.5.8.4** (02/09/2022):
+**0.5.10.1** (13/09/2022):
 
 * Fixed bug in plots_1d.hist that resulted in inaccurate results when 1) the bins spanned only a fraction of the total data range, 2) dens=True, and 3) scale!=None
+
+**0.5.10.0** (11/08/2022):
+
+* Made changes to contourp, contour and colorbar
+* Changed plabel --> labels for consistency with other functions
+* Default is to always return QuadContourSet from contour functions. If output=True, this appends the X, Y and Z.T hitogram bins to the return. Returning the result of the matplotlib contour functions is required in order for colorbar to act on a contour function.
+* Made some changes to documentation and did some pep-8 linting
+
+**0.5.9.0** (11/08/2022):
+
+* Made some adjustments to colorbar() for easier usage
+* Applied some pep-8 linting to some functions in axis_plots.py
 
 **0.5.8.3** (10/05/2022):
 
