@@ -831,7 +831,7 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
 ########################################
 ## 2D histogram and binned statistics ##
 ########################################
-def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=None, xlim=None, ylim=None, clim=[None, None], nmin=0,
+def hist2D(x, y, weights=None, bins=None, bin_type=None, dens=True, scale=None, c=None, cstat=None, xlim=None, ylim=None, clim=[None, None], nmin=0,
            xinvert=False, yinvert=False, cbar_invert=False, xlog=False, ylog=False, clog=None, title=None, xlabel=None,
            ylabel=None, clabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
     """2D histogram function.
@@ -928,7 +928,7 @@ def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=
         bin_type = [bin_type] * 2
     if type(bins) not in [list, tuple]:
         if bins is None:
-            bins = max([10, int(len(x)**0.4)])  # Defaults to min of 10 bins
+            bins = max([6, int(len(x)**0.4)])  # Defaults to min of 10 bins
         bins = [bins] * 2
 
     if None in (clog, output):
@@ -942,13 +942,13 @@ def hist2D(x, y, bin_type=None, bins=None, dens=True, scale=None, c=None, cstat=
         if (clog is True): raise ValueError("Cannot set 'clog'=True if zero-size array given.")
         if (cstat is not None): raise ValueError(f"Cannot compute statistic (cstat='{cstat}') on zero-size array, set cstat=None if no data given.")
 
-    X, Y, Z = basehist2D(x, y, c, bin_type, bins, scale, dens, cstat, xlog, ylog)
+    X, Y, Z = basehist2D(x, y, c, weights, bin_type, bins, scale, dens, cstat, xlog, ylog)
 
     # Also get counts for number threshold cut
     if (size([x, y]) == 0):
         counts = zeros(shape=shape(Z))
     else:
-        _, _, counts = basehist2D(x, y, c, bin_type, bins, None, False, None, xlog, ylog)
+        _, _, counts = basehist2D(x, y, c, weights, bin_type, bins, None, False, None, xlog, ylog)
 
     # Cut bins which do not meet the number count threshold
     Z[counts < nmin] = nan

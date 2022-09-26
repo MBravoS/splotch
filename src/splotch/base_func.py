@@ -35,7 +35,7 @@ def axes_handler(new_axis):
 ####################################
 # Base function for 2D histograms
 ####################################
-def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
+def basehist2D(x,y,c,weights,mbin_type,bin_num,norm,dens,cstat,xlog,ylog):
     """2D histogram base calculation
     
     Base-level function used by plots_2d.hist2D() and plots_2d.sigma_cont() to calculate the
@@ -79,18 +79,26 @@ def basehist2D(x,y,c,bin_type,bin_num,norm,dens,cstat,xlog,ylog):
         The value of each bin.
     """
     
-    from numpy import histogram2d, size
+    from numpy import empty, histogram2d, max as np_max, min as np_min, size, sum as np_sum
     from scipy.stats import binned_statistic_2d
     
-    x_temp,x_bins_hist,x_bins_plot=bin_axis(x,bin_type[0],bin_num[0],log=xlog)
-    y_temp,y_bins_hist,y_bins_plot=bin_axis(y,bin_type[1],bin_num[1],log=ylog)
+    x_temp,x_bins_hist,x_bins_plot=bin_axis(x,mbin_type[0],bin_num[0],log=xlog)
+    y_temp,y_bins_hist,y_bins_plot=bin_axis(y,mbin_type[1],bin_num[1],log=ylog)
     if cstat:
         Z=binned_statistic_2d(x_temp,y_temp,c,statistic=cstat,bins=[x_bins_hist,y_bins_hist])[0]
     else:
-        Z=histogram2d(x_temp,y_temp,bins=[x_bins_hist,y_bins_hist],
+        Z=histogram2d(x_temp,y_temp,bins=[x_bins_hist,y_bins_hist],weights=weights,
                       density=False if (size(x_temp)==0 or size(y_temp)==0) else dens)[0]
-        if dens and norm:
-            Z*=1.0*len(x)/norm
+        if norm:
+            Z/=norm
+            if dens:
+                bin_area=empty(Z.shape)
+                for i in range(len(x_bins_hist)-1):
+                    for j in range(len(y_bins_hist)-1):
+                        Z[i,j]/=(x_bins_hist[i+1]-x_bins_hist[i])*(y_bins_hist[j+1]-y_bins_hist[j])
+                scale_temp=(x_temp>min(x_bins_hist))&(x_temp<max(x_bins_hist))
+                scale_temp&=(y_temp>min(y_bins_hist))&(y_temp<max(y_bins_hist))
+                Z*=sum(scale_temp)
     return(x_bins_plot,y_bins_plot,Z)
 
 def bin_axis(data,btype,bins,log=False,plot_centre=False):

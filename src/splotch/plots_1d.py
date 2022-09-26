@@ -880,7 +880,7 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
 ####################################
 # 1D histogram and binned statistics
 ####################################
-def hist(data,bin_type=None,bins=None,dens=True,cumul=None,scale=None,weights=None,hist_type=None,v=None,vstat=None,
+def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=None,hist_type=None,v=None,vstat=None,
             xlim=None,ylim=None,nmin=0,xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
             label=None,lab_loc=0,ax=None,grid=None,plot_kw={},output=None,**kwargs):
     
