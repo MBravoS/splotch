@@ -1,6 +1,16 @@
 ########################################################################
 ######### Base functions for axis_funcs, plots_1d and plots_2d #########
 ########################################################################
+from numbers import Number
+from math import ceil, floor
+from distutils.util import strtobool
+from numpy import array, asarray, concatenate, cumsum, empty, histogram2d, linspace, log10, nanmax
+from numpy import nanmin, nansum, ndarray, ones, ravel, size, sort
+from scipy.stats import binned_statistic_2d
+from matplotlib import rcParams
+from matplotlib.pyplot import fill_between, gca, grid, sca, title as plt_title
+from matplotlib.pyplot import xlabel as plt_xlabel, xlim as plt_xlim, xscale
+from matplotlib.pyplot import ylabel as plt_ylabel, ylim as plt_ylim, yscale
 
 ####################################
 # Boolean, unsigned integer, signed integer, float, complex.
@@ -26,7 +36,6 @@ def axes_handler(new_axis):
     curr_axis : Axes object
         The previous Axes instance.
     """
-    from matplotlib.pyplot import gca,sca
     
     curr_axis = gca() # get current axis if it exists, else create one.
     sca(new_axis)
@@ -79,9 +88,6 @@ def basehist2D(x,y,c,weights,mbin_type,bin_num,norm,dens,cstat,xlog,ylog):
         The value of each bin.
     """
     
-    from numpy import empty, histogram2d, max as np_max, min as np_min, size, sum as np_sum
-    from scipy.stats import binned_statistic_2d
-    
     x_temp,x_bins_hist,x_bins_plot=bin_axis(x,mbin_type[0],bin_num[0],log=xlog)
     y_temp,y_bins_hist,y_bins_plot=bin_axis(y,mbin_type[1],bin_num[1],log=ylog)
     if cstat:
@@ -132,7 +138,6 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
         The bin centers.
     
     """
-    from numpy import linspace,nanmax,nanmin,size
     
     def N(d,b):
         if (size(d)==0): # If no data given.
@@ -144,7 +149,6 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
         return(h)
     
     def W(d,b):
-        from math import ceil
         if (size(d)==0): # If no data given.
             return linspace(0,1.0,num=ceil(1.0/b))
         if nanmin(d)==nanmax(d):
@@ -167,8 +171,6 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
         if nanmin(d)==nanmax(d):
             h=linspace(nanmin(d)-0.5,nanmax(d)+0.5,num=b+1)
         else:
-            from math import ceil,floor
-            from numpy import array,concatenate,cumsum,ones,sort
             d=sort(d)
             L=len(d)
             w_l=floor(L/b)
@@ -180,10 +182,8 @@ def bin_axis(data,btype,bins,log=False,plot_centre=False):
         return(h)
     
     if log:
-        from numpy import log10
         data=log10(data)
     if btype is None:
-        from numpy import ndarray
         bdict={int:'number',float:'width',ndarray:'edges'}
         btype=bdict[type(bins)]
     bfunc={'number':N,'width':W,'edges':E,'equal':Q}
@@ -218,7 +218,6 @@ def dict_splicer(plot_dict,Ld,Lx):
     dict_list : list
         List of dictionaries, one for each plot to be made.
     """
-    from numbers import Number
     
     dict_list=[]
     dict_keys=plot_dict.keys()
@@ -271,7 +270,6 @@ def is_numeric(array):
     Credit for code: StackExchange users Gareth Rees and MSeifert.
     https://codereview.stackexchange.com/questions/128032/check-if-a-numpy-array-contains-numerical-data
     """
-    from numpy import asarray
 
     return asarray(array).dtype.kind in _NUMERIC_KINDS
 
@@ -296,17 +294,14 @@ def percent_finder(data,p):
     min_value : float
         Level for the contour.
     """
-    from numpy import cumsum,ravel,sort
-    from numpy import min as np_min
-    from numpy import sum as np_sum
     
     data_sorted=sort(ravel(data))[::-1]
     data_fraction=cumsum(data_sorted)
-    data_fraction/=np_sum(data_sorted)
+    data_fraction/=nansum(data_sorted)
     try:
-        min_value=np_min(data_sorted[data_fraction<p])
+        min_value=nanmin(data_sorted[data_fraction<p])
     except ValueError:
-        min_value=np_min(data_sorted)
+        min_value=nanmin(data_sorted)
     return(min_value)
     
 ####################################
@@ -332,7 +327,6 @@ def simpler_dict_splicer(plot_dict,Ld,Lx):
     dict_list : list
         List of dictionaries, one for each plot to be made.
     """
-    from numbers import Number
     
     dict_list=[]
     dict_keys=plot_dict.keys()
@@ -386,10 +380,6 @@ def plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid_
     -------
     None
     """
-    from .defaults import Params
-    from matplotlib import rcParams
-    from matplotlib.pyplot import gca,grid,xscale,yscale
-    from matplotlib.pyplot import title as plt_title, xlabel as plt_xlabel, xlim as plt_xlim, ylabel as plt_ylabel, ylim as plt_ylim
     
     if xlog:
         xscale('log')
@@ -439,9 +429,6 @@ def step_filler(x,y,**kwargs):
     val : Recasted value
     """
     
-    from numpy import empty
-    from matplotlib.pyplot import fill_between
-    
     temp_y=empty(len(y)+1)
     temp_y[1:]=y
     temp_y[0]=y[0]
@@ -463,8 +450,6 @@ def val_checker(val):
     -------
     val : Recasted value
     """
-    
-    from distutils.util import strtobool
     
     if "'" not in val and '"' not in val:
         try: 

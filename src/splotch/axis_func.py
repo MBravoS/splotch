@@ -1,3 +1,28 @@
+########################################################################
+###################### Axis manipulation functions #####################
+########################################################################
+import warnings
+from numpy import arange, argmax, append, array, ceil, empty, full, nanmax, ndarray, reshape, shape
+from numpy.random import default_rng as rng
+from pandas import DataFrame, Series, RangeIndex
+from matplotlib import rcParams
+from matplotlib.contour import ContourSet
+from matplotlib.figure import Figure
+from matplotlib.gridspec import GridSpec
+from matplotlib.pyplot import colorbar, figure, gca, subplot
+from matplotlib.text import Text
+import matplotlib.ticker as tckr
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from .base_func import axes_handler, dict_splicer, is_numeric, plot_finalizer
+from .plots_2d import contourp, scatter, hist2D
+
+# Try to import astropy
+try:
+    from astropy.table import Table
+    hasAstropy=True
+except ImportError:
+    hasAstropy=False
+
 def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
     """ Adjusts text instances.
 
@@ -22,35 +47,30 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
         'T', 'text'                      Text objects
         'a', 'all'                       All instances of all the above
         ==============================  =================================
-
+    
     ax : pyplot.Axes or list, optional
         Use the given axes to adjust text, defaults to the current axis. If a list of Axis instances given, the text properties is applied to each.
-
+    
     text_kw : dict, optional
         Explicit dictionary of kwargs to be parsed to matplotlib ``Text`` instance. It is recommended that text keyword arguments be given as **kwargs.
-
+    
     **kwargs : Text instance properties
         kwargs are used to specify properties of Text instances. A list of valid Text kwargs can be found in the matplotlib
         `Text <https://matplotlib.org/stable/api/text_api.html>`_ documentation.
-
+    
     """
-
-    from matplotlib.text import Text
-    from matplotlib.pyplot import gca
-    from numpy import array, shape, max as np_max, argmax, append
-    from .base_func import axes_handler, dict_splicer, plot_finalizer
-
+    
     try:
         _ = (it for it in ax)
     except TypeError:
         if (ax is None):
             ax = gca()
         ax = [ax]
-
+    
     # Validate `which` value(s)
     whichRef = ['x', 'y', 't', 's', 'k', 'l', 'c', 'T', 'a',
                 'xlabel', 'ylabel', 'title', 'suptitle', 'ticks', 'legend', 'colorbar', 'text', 'all']
-
+    
     try:  # check if iterable
         _ = (i for i in which)
         if (isinstance(which, str)):  # If string instance
@@ -62,10 +82,10 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
                     which = list(which)  # set to a list of each of the letters
                 else:
                     which = [which]
-
+    
     except (TypeError):
         which = [which]
-
+    
     for w in which:
         try:
             whichIndex = whichRef.index(w)
@@ -75,21 +95,21 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
         except (ValueError):
             if (not isinstance(w, Text)):
                 raise TypeError("adjust_text() received invalid value for 'which' ('{0}'). Must be one of: {1}".format(w, ', '.join(whichRef)))
-
+    
     L = len(which)
-
+    
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par={**plot_kw, **kwargs} # For Python > 3.5
     textpar = text_kw.copy()
     textpar.update(kwargs)
-
+    
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     textpar = dict_splicer(textpar, L, [1] * L)
-
+    
     for a in array(ax).flatten():
         if (a is None or a.axes is None):
             continue  # ignore empty subplots
-
+        
         for ii, lab in enumerate(which):
             if (lab in ['x', 'xlabel']):
                 texts = [a.xaxis.label]
@@ -107,7 +127,7 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
                     texts = lgnd.get_texts()  # Get list of text objects in legend (if it exists)
             elif (lab in ['c', 'colorbar']):
                 # Get the axis with the largest ratio between width or height
-                caxInd = argmax([np_max([c.get_position().width / c.get_position().height, c.get_position().height / c.get_position().width]) for c in a.figure.get_axes()])
+                caxInd = argmax([nanmax([c.get_position().width / c.get_position().height, c.get_position().height / c.get_position().width]) for c in a.figure.get_axes()])
                 if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
                     texts = [a.figure.get_axes()[caxInd].yaxis.label]
                 else:
@@ -118,23 +138,22 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
                 texts = [lab]
             elif (lab in ['a', 'all']):
                 texts = [a.xaxis.label, a.yaxis.label, a.title, *a.get_xticklabels(), *a.get_yticklabels()]
-
+                
                 lgnd = a.get_legend()
                 if (lgnd is not None): texts = texts + lgnd.get_texts()
-
-                caxInd = argmax([np_max([c.get_position().width / c.get_position().height, c.get_position().height / c.get_position().width]) for c in a.figure.get_axes()])
+                
+                caxInd = argmax([nanmax([c.get_position().width / c.get_position().height, c.get_position().height / c.get_position().width]) for c in a.figure.get_axes()])
                 if (a.figure.get_axes()[caxInd].get_position().height > a.figure.get_axes()[caxInd].get_position().width):
                     texts.append(a.figure.get_axes()[caxInd].yaxis.label)
                 else:
                     texts.append(a.figure.get_axes()[caxInd].xaxis.label)
-
+                
                 texts = texts + [child for child in a.get_children()[:-4] if isinstance(child, Text)]
-
+            
             for t in texts:  # Actually apply the font changes
                 t.set(**textpar[ii])
-
+    
     return(None)
-
 
 def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, transform=None,
              inset=False, aspect=0.05, width=None, height=None, pad=0.05, ticks=None, bar_kw={}, **kwargs):
@@ -209,14 +228,7 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
     cbar
         The colorbar object.
     """
-
-    from splotch.base_func import axes_handler, dict_splicer
-    from matplotlib.pyplot import gca, colorbar
-    from matplotlib.contour import ContourSet
-    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-    import matplotlib.ticker as tckr
-    from numpy import ndarray
-
+    
     # Validate axis input
     if ax is not None:
         try:  # check if iterable
@@ -229,7 +241,7 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
     else:
         axes = [gca()]
         # old_axes = axes[0]
-
+    
     locRef = {'upper right': 1, 'top right': 1,
               'upper left': 2, 'top left': 2,
               'lower left': 3, 'bottom left': 3,
@@ -239,7 +251,7 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
               'left': 7, 'center left': 7,
               'lower center': 8, 'bottom center': 8,
               'center': 9}
-
+    
     if isinstance(loc, str):
         loc = loc.replace('centre', 'center')  # allows both spellings of centre/center
         if loc in locRef.keys():
@@ -251,15 +263,15 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
             raise ValueError(f"loc {loc} must be between 0 - 9.")
     else:
         raise NotImplementedError("loc must be specified as integer or string. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
-
+    
     ### Define the positions of preset colorbars
     labpad = 0.125  # The padding added for labels
     ins = 1 if inset is True else 0  # Convert inset boolean to a binary multiplier
-
+    
     # Validate aspect value
     if (aspect <= 0 or aspect > 1):
         raise ValueError("Value for aspect must be strictly positive and less than or equal to 1 (i.e. 0 < aspect <= 1)")
-
+    
     # Get width/height values of colorbar
     if (width is None and height is None):
         width, height = (aspect, 1.0 - ins * 2 * pad) if orientation == 'vertical' else (1.0 - ins * 2 * pad, aspect)
@@ -268,7 +280,7 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
             height = width / aspect if orientation == 'vertical' else aspect * width
         elif width is None:
             width = aspect * height if orientation == 'vertical' else height / aspect
-
+    
     # Vertically-oriented colorbars
     vertPositions = {1: (1 + pad - ins * (2 * pad + width), 1 - height - ins * pad, width, height),  # upper right
                      2: (0 - width - labpad - pad + ins * (labpad + 2 * pad + width), 1 - height - ins * pad, width, height),  # upper left
@@ -279,7 +291,7 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
                      7: (0 - width - labpad - pad + ins * (labpad + 2 * pad + width), 0.5 * (1 - height), width, height),  # center left
                      8: (0.5 * (1 - width), 0 - height - labpad - pad + ins * (labpad + 2 * pad + height), width, height),  # lower center
                      9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)}  # center
-
+    
     # horizontally - oriented colorbars
     horPositions = {1: (1 - width - ins * pad, 1 + pad - ins * (2 * pad + height), width, height),
                     2: (0 + ins * pad, 1 + pad - ins * (2 * pad + height), width, height),  # upper left
@@ -290,15 +302,15 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
                     7: (0 - width - labpad - pad + ins * (width + labpad + 2 * pad), 0.5 * (1 - height), width, height),  # center left
                     8: (0.5 * (1 - width), 0 - height - labpad - pad + ins * (labpad + 2 * pad + height), width, height),  # lower center
                     9: (0.5 * (1 - width), 0.5 * (1 - height), width, height)}  # center
-
+    
     # Combine the `explicit` bar_kw dictionary with the `implicit` **kwargs dictionary
     # bar_par={**bar_kw, **kwargs} # For Python > 3.5
     bar_par = bar_kw.copy()
     bar_par.update(kwargs)
-
+    
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     bar_par = dict_splicer(bar_par, len(axes), [1] * len(axes))
-
+    
     cbars = []  # Initiate empty list of colorbars for output
     for ii, ax in enumerate(axes):
         if mappable is None:
@@ -322,52 +334,51 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
                     raise ValueError("Number of mappables given must be either 1 or equal to the number of axes specified.")
             else:
                 mapper = mappable
-
+            
             if isinstance(mapper, ContourSet) and not mapper.filled:
                 raise NotImplementedError("Cannot create colorbars for unfilled contours.")
-
+    
         cax = inset_axes(ax, width='100%', height='100%',
                          bbox_to_anchor=vertPositions[loc] if orientation == 'vertical' else horPositions[loc],
                          bbox_transform=transform if transform is not None else ax.transAxes,
                          borderpad=0)
-
+        
         cbar = colorbar(mapper, cax=cax, orientation=orientation, ticks=ticks, **bar_par[ii])
         cbar.ax.yaxis.set_major_formatter = tckr.ScalarFormatter()
-
+        
         # Orient tick axes correctly
         if (orientation == 'horizontal'):
             cbar.ax.set_xlabel(label)
-
+            
             flip = True if loc in [3, 4, 8] else False  # Flip the labels if colorbar on bottom edge
             if (inset is True) and loc not in [5, 7, 9]:
                 flip = not flip  # Reverse flipping in the case of a inset colorbar
-
+            
             if (flip is True):
                 cbar.ax.xaxis.set_label_position('bottom')
                 cbar.ax.xaxis.tick_bottom()
             else:
                 cbar.ax.xaxis.set_label_position('top')
                 cbar.ax.xaxis.tick_top()
-
+            
             cbar.ax.yaxis.set_ticks([], minor=True)
-
+        
         else:
             cbar.ax.set_ylabel(label)
-
+            
             flip = True if loc in [2, 3, 7] else False  # Flip the labels if colorbar on left edge
             if (inset is True) and loc not in [6, 8, 9]:
                 flip = not flip  # Reverse flipping in the case of a inset colorbar
-
+            
             if (flip is True):
                 cbar.ax.yaxis.set_label_position('left')
                 cbar.ax.yaxis.tick_left()
-
+            
             cbar.ax.xaxis.set_ticks([], minor=True)
-
+        
         cbars.append(cbar)
-
+    
     return (cbars[0] if len(cbars) == 1 else cbars)
-
 
 def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='rand',labels=None,histlabel=None,
                 fig=None,figsize=None,wspace=0.0,hspace=0.0,squeeze=False,
@@ -432,25 +443,6 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
         A list of valid ``axis`` kwargs can be found here:
         [https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes](https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes "Matplotlib.axes.Axes")    
     """
-    from splotch.base_func import is_numeric, dict_splicer
-    from splotch.plots_2d import contourp, scatter, hist2D
-    from numpy import shape, reshape, full, ndarray, array, arange
-    from numpy.random import choice
-    from pandas import DataFrame, Series, RangeIndex
-    
-    from matplotlib.pyplot import figure
-    from matplotlib.figure import Figure
-    from matplotlib import rcParams
-    from matplotlib.gridspec import GridSpec
-    
-    import warnings
-    
-    # Try to import astropy
-    try:
-        from astropy.table import Table
-        hasAstropy=True
-    except ImportError:
-        hasAstropy=False
     
     nGroups=shape(columns)[0] if len(shape(columns)) > 1 else 1    
     if (_debug_ == True): print(f"Groups: {nGroups}")
@@ -483,7 +475,7 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
     if (sample_type.lower() == 'end'):
         samps=arange(dims[0]-nsamples,dims[0])
     elif (sample_type.lower() == 'rand'):
-        samps=choice(arange(0,dims[0]),size=nsamples,replace=False)
+        samps=rng().choice(arange(0,dims[0]),size=nsamples,replace=False)
     elif (sample_type.lower() == 'thin'):
         step=(dims[0]-1)//(nsamples-1) if nsamples > 1 else dims[0] # Get the largest possible step size given the sample size
         offset=(dims[0] - step*(nsamples-1) - 1) // 2 # Offset of the initial point so that the points are centered
@@ -678,7 +670,6 @@ def cornerplot(data,columns=None,pair_type='contour',nsamples=None,sample_type='
     else:
         return(fig, axes)
 
-
 def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hspace=None,
              widths=None,heights=None,sharex='none',sharey='none',squeeze=True,
              figsize=None,axes_kw={},**kwargs):
@@ -748,14 +739,6 @@ def subplots(naxes=None,nrows=None,ncols=None,va='top',ha='left',wspace=None,hsp
         axes may either be a single Axes object or a numpy array if naxes > 1.
         The dimensions of this array are controlled by the squeeze keyword above.
     """
-    
-    from .base_func import dict_splicer
-    
-    import warnings
-    from matplotlib import rcParams
-    from matplotlib.gridspec import GridSpec
-    from matplotlib.pyplot import figure, subplot
-    from numpy import ceil, array, reshape, empty
     
     gridRef=[[0,0], [1,1], [1,2], [1,3], [2,2], [2,3], [2,3], [2,4], [2,4], [3,3], [2,5], [3,4], [3,4], 
                [4,4], [3,5], [3,5], [4,4], [3,6], [3,6], [4,5], [4,5], [3,7], [5,5], [5,5], [4,6], [5,5]]
