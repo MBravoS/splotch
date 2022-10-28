@@ -6,15 +6,15 @@
 
  Histograms                 | Scatter Plots
 :---:|:---:
-| ![hist](/example_images/example_hist.png) |  ![contours](/example_images/example_scatter.png)
+| <img src="/example_images/example_hist.png" alt="drawing" width="400"/> |  <img src="/example_images/example_scatter.png" alt="drawing" width="400"/>
 
  Contour Plots              | Sector Plots             
 :---:|:---:
-| ![colorbar](/example_images/example_contours.png) | ![sector](/example_images/example_sectorplot.png) 
+| <img src="/example_images/example_contours.png" alt="drawing" width="400"/> | <img src="/example_images/example_sectorplot.png" alt="drawing" width="400"/>
 
 | Corner Plots              | Subplots                
 :---:|:---:
-| ![corner](/example_images/example_cornerplot.png)  |  ![subplots](/example_images/example_subplots.png) | 
+| <img src="/example_images/example_cornerplot.png" alt="drawing" width="400"/>  |  <img src="/example_images/example_subplots.png" alt="drawing" width="400"/>
 
 
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
