@@ -9,7 +9,7 @@
 | ![hist](/example_images/example_hist.png) |  ![contours](/example_images/example_scatter.png)
 
  Contour Plots              | Sector Plots             
-:---:|:---:|:---:
+:---:|:---:
 | ![colorbar](/example_images/example_contours.png) | ![sector](/example_images/example_sectorplot.png) 
 
 | Corner Plots              | Subplots                
