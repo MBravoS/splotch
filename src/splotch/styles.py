@@ -1,3 +1,15 @@
+########################################################################
+############## Functions for loading/reseting stylesheets ##############
+########################################################################
+import os
+from matplotlib.pyplot import style
+from splotch import __file__
+from .defaults import Params
+from .base_func import val_checker
+
+####################################
+# Loading stylesheet
+####################################
 def use_style(path):
     """ Loads in splotch configuration file containing a set of splotch style 
         parameters appended on top of a standard matplotlib .mplstyle configuration
@@ -13,10 +25,6 @@ def use_style(path):
     None
     
     """
-    
-    from .defaults import Params
-    from .base_func import val_checker
-    from matplotlib.pyplot import style
     
     (path)
     
@@ -74,6 +82,9 @@ def use_style(path):
     
     return(None)
 
+####################################
+# Reseting stylesheet
+####################################
 def reset_style():
     """ Resets the Splotch parameters to their defaults.
     
@@ -86,11 +97,9 @@ def reset_style():
     None
     
     """
-    import os
-    import splotch
     
-    basedir=os.path.dirname(splotch.__file__)
-    splotch.use_style("{0}/styles/default.style".format(basedir))
+    basedir=os.path.dirname(__file__)
+    splotch.use_style(f"{basedir}/styles/default.style")
     
     return(None)
 

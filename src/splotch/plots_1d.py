@@ -1,7 +1,22 @@
 ########################################################################
 ############## Definition of all wrappers for 1D plotting ##############
 ########################################################################
+from collections import Iterable
+from warnings import warn
+from numpy import array, diff, dtype, empty, full_like, histogram, inf, linspace, log10, logspace, meshgrid, nan, nancumsum
+from numpy import nanmax, nanmean, nanmin, nanstd, nansum, ndarray, ones, piecewise, prod, shape, squeeze, where
+from matplotlib import rcParams
+from matplotlib.collections import LineCollection
+from matplotlib.legend import Legend
+from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection, HandlerTuple
+from matplotlib.pyplot import bar, fill_between, gca, legend, plot as plt_plot, rcParams, sca, show, step
+from matplotlib.transforms import Bbox
+from scipy.stats import binned_statistic
+from sympy import Expr, latex, symbols, sympify
+from sympy.utilities.lambdify import lambdify
 
+from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, plot_finalizer, simpler_dict_splicer, step_filler
+from .defaults import Params
 
 ####################################
 # Generalized lines
@@ -64,10 +79,6 @@ def axline(x=None,y=None,a=None,b=None,
     
     """
     
-    from matplotlib.pyplot import plot, legend, gca, sca
-    from splotch.base_func import axes_handler,plot_finalizer,dict_splicer,is_numeric
-    from numpy import ndarray, shape, array, squeeze
-    
     # Set the current axis
     if ax is not None:
         if isinstance(ax, (list, tuple, ndarray)):
@@ -76,7 +87,7 @@ def axline(x=None,y=None,a=None,b=None,
             old_ax=axes_handler(ax[0])
         else:
             ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax)
+            old_ax=axes_handler(ax[0])
     else:
         ax=[gca()]
         old_ax=ax[0]
@@ -233,11 +244,6 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
         The lines are given as pairs to correspond to the separate lines either side of the x/ybreak.
     
     """
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
-    
-    from numpy import shape, arange, ndarray
-    from matplotlib.pyplot import plot, legend, show, sca, gca
-    from matplotlib.transforms import Bbox
     
     if ax is not None:
         old_axes=axes_handler(ax)
@@ -449,18 +455,6 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     
     """
     
-    from splotch.base_func import axes_handler,dict_splicer,plot_finalizer,simpler_dict_splicer
-    
-    from sympy import symbols, sympify, Expr, latex
-    from sympy.utilities.lambdify import lambdify
-    from numpy import linspace, logspace, log10, empty, array, full_like, meshgrid, prod
-    from collections import Iterable
-    
-    from matplotlib.pyplot import plot, legend, gca
-    from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
-    from matplotlib import rcParams
-    from matplotlib.legend import Legend
-    
     if ax is not None:
         old_axes=axes_handler(ax)
     else:
@@ -574,9 +568,9 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
             
             curvearr = func(vararr)
             
-        curves[ii]=plot(vararr if orientation=='horizontal' else curvearr,
-                        curvearr if orientation=='horizontal' else vararr,
-                        label=labellist[ii],**plot_par[ii])[0]
+        curves[ii]=plt_plot(vararr if orientation=='horizontal' else curvearr,
+                            curvearr if orientation=='horizontal' else vararr,
+                            label=labellist[ii],**plot_par[ii])[0]
     
     plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
     
@@ -681,19 +675,6 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         Otherwise, simply returns the `expr` that was given.
     
     """
-    
-    from splotch.base_func import axes_handler,dict_splicer,plot_finalizer,simpler_dict_splicer
-    
-    from sympy import symbols, sympify, Expr, latex
-    from sympy.utilities.lambdify import lambdify
-    from numpy import linspace, logspace, log10, empty, array, full_like, meshgrid, prod, piecewise
-    from collections import Iterable
-    
-    from matplotlib.pyplot import plot, legend, gca
-    from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D, HandlerTuple
-    from matplotlib import rcParams
-    from matplotlib.legend import Legend
-    from matplotlib.collections import LineCollection
     
     if ax is not None:
         old_axes=axes_handler(ax)
@@ -967,12 +948,6 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
         Only provided if output is True.
     """
     
-    from numpy import cumsum as np_cumsum, sum as np_sum, max as np_max, min as np_min
-    from scipy.stats import binned_statistic
-    from numpy import array, ndarray, diff, dtype, histogram, inf, nan, nanmax, nanmean, nanstd, ones, where, shape
-    from matplotlib.pyplot import bar, fill_between, gca, legend, plot, rcParams, step
-    from .base_func import axes_handler,bin_axis,dict_splicer,plot_finalizer,step_filler
-    
     if ax is not None:
         old_axes=axes_handler(ax)
     else:
@@ -1009,7 +984,6 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
         xlim=[nanmean(data)-xlim*nanstd(data),nanmean(data)+xlim*nanstd(data)]
     
     if None in [ylog,hist_type,output]:
-        from .defaults import Params
         if ylog is None:
             ylog=Params.hist1D_yaxis_log
         if hist_type is None:
@@ -1025,8 +999,7 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
     plot_par.update(kwargs)
     # Check if width is given as a kwarg
     if 'width' in plot_par.keys():
-        import warnings
-        warnings.warn('Received kwarg width, this will be ignored in the histogram',UserWarning)
+        warn('Received kwarg width, this will be ignored in the histogram',UserWarning)
         if hist_type!='bar':
             temp=plot_par.pop('width')
     
@@ -1045,12 +1018,12 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
         if vstat[i]:
             temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
         else:
-            if scale:
+            if scale[i]:
                 temp_y=histogram(temp_data,bins=bins_hist,density=False,weights=weights[i])[0]
             else:
                 temp_y=histogram(temp_data,bins=bins_hist,density=dens[i],weights=weights[i])[0]
         if cumul[i]:
-            temp_y=np_cumsum(temp_y)
+            temp_y=nancumsum(temp_y)
             if dens[i]:
                 temp_y=temp_y.astype('float')/nanmax(temp_y)
         if scale[i]:
@@ -1074,7 +1047,7 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
             bins_plot=(bins_plot[0:-1]+bins_plot[1:])/2
             if hist_type[i]=='bar':
                 if 'edgecolor' not in plot_par[i].keys():
-                    p=plot(bins_plot[0],0)
+                    p=plt_plot(bins_plot[0],0)
                     plot_par[i]['edgecolor']=p[0].get_color()
                     p.pop()
                     temp_ax=gca()
@@ -1089,7 +1062,7 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
     
     if ylim == None: # Adjust ylims if None given.
         if not ylog and all([val is None for val in v]): # These automatic limits do not apply when ylog=True or statistics are used.
-            ylim = [0, max(np_max(y)*(1+rcParams['axes.ymargin']), gca().get_ylim()[1])]
+            ylim = [0, max(nanmax(y)*(1+rcParams['axes.ymargin']), gca().get_ylim()[1])]
     
     plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
     if old_axes is not ax:
@@ -1158,10 +1131,6 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
         A list of Line2D objects representing the plotted data.
     """
     
-    from numpy import shape, arange
-    from matplotlib.pyplot import gca, plot, legend
-    from .base_func import axes_handler,dict_splicer,plot_finalizer
-    
     if ax is not None:
         old_axes = axes_handler(ax) # Set current axis to ax and return the previous axis to old_axes.
     else:
@@ -1190,7 +1159,7 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
     
     lines=[] # Initialising list which contains each line
     for i in range(L):
-        lines += plot(x[i],y[i],label=label[i],**plot_par[i])
+        lines += plt_plot(x[i],y[i],label=label[i],**plot_par[i])
     if any(label):
         legend(loc=lab_loc)
     plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)

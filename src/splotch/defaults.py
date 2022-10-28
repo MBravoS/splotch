@@ -8,7 +8,7 @@
 class Params:
     #Contours
     cont_filled=False
-    cont_cmap='viridis'
+    cont_cmap='scicm.Stone'
     cont_linestyle=['solid','dashed','dotted']
     contp_percent=[68.27,95.45]
     contp_output=False
@@ -20,7 +20,7 @@ class Params:
     hist2D_caxis_log=False
     #Images
     img_caxis_log=False
-    img_cmap='Greys_r'
+    img_cmap='scicm.Stone'
     grid_color = 'white'
     grid_alpha = 1.0
     grid_ls = '--'
