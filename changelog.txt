@@ -1,3 +1,8 @@
+**0.6.1.2** (01/11/2022):
+
+* Maybe fixed issue with colorbar not reassigning old current axis
+* Also did a little bit of linting on plots_2d
+
 **0.6.1.1** (01/11/2022):
 
 * Fixed bug with multiple legends in adjust_text()

@@ -9,11 +9,12 @@ from matplotlib import rcParams
 from matplotlib.contour import ContourSet
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
-from matplotlib.pyplot import colorbar as mpl_colorbar, figure, gca, subplot
+from matplotlib.pyplot import colorbar as mpl_colorbar, figure, gca, sca, subplot
 from matplotlib.text import Text
 import matplotlib.ticker as tckr
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from .base_func import axes_handler, dict_splicer, is_numeric, plot_finalizer
+
 
 def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, transform=None,
              inset=False, aspect=0.05, width=None, height=None, pad=0.05, ticks=None, bar_kw={}, **kwargs):
@@ -90,18 +91,16 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
     """
     
     # Validate axis input
+    old_axis = gca()
     if ax is not None:
         try:  # check if iterable
             _ = (i for i in ax)
-            # old_axes = axes_handler(ax[0])
             axes = ax
         except (TypeError):
-            # old_axes = axes_handler(ax)
             axes = [ax]
     else:
-        axes = [gca()]
-        # old_axes = axes[0]
-    
+        axes = [old_axis]
+        
     locRef = {'upper right': 1, 'top right': 1,
               'upper left': 2, 'top left': 2,
               'lower left': 3, 'bottom left': 3,
@@ -122,7 +121,8 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
         if loc < 0 or loc > 9:
             raise ValueError(f"loc {loc} must be between 0 - 9.")
     else:
-        raise NotImplementedError("loc must be specified as integer or string. Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
+        raise NotImplementedError("loc must be specified as integer or string. "
+                                  "Providing loc as a tuple-like as colorbar anchor position is not yet implemented.")
     
     ### Define the positions of preset colorbars
     labpad = 0.125  # The padding added for labels
@@ -237,5 +237,8 @@ def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, tr
             cbar.ax.xaxis.set_ticks([], minor=True)
         
         cbars.append(cbar)
+
+    # Return axis to the previous
+    sca(old_axis)
     
     return (cbars[0] if len(cbars) == 1 else cbars)

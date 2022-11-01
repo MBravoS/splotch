@@ -25,6 +25,7 @@ from scipy.ndimage.filters import gaussian_filter
 from .base_func import axes_handler, basehist2D, bin_axis, dict_splicer, percent_finder, plot_finalizer
 from .defaults import Params
 
+
 ####################################
 # Level contours
 ####################################
@@ -112,6 +113,7 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
         old_axes = axes_handler(old_axes)
     
     return contourset
+
 
 ####################################
 # Contours from density histograms
@@ -290,7 +292,7 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         else:
             plot_par['alpha'] = contourset.alpha
         if filled:
-            legend([patches.Patch(color=plot_par['colors'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
+            legend([Patch(color=plot_par['colors'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
                    labels, numpoints=1, loc=lab_loc)
         else:
             legend([Line2D([0, 1], [0, 1], color=plot_par['colors'][i], linestyle=plot_par['linestyles'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
@@ -304,6 +306,7 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         return(contourset, X, Y, Z.T)
     else:
         return(contourset)
+
 
 ####################################
 ##########  Error bands  ###########
@@ -363,10 +366,10 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
@@ -392,6 +395,7 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
+
 
 ####################################
 # Error bars
@@ -452,10 +456,10 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     # Convert data to lists if needed
     if not isinstance(x, list): x = [x]
@@ -482,6 +486,7 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
+
 
 ####################################
 ###########  Error boxes  ##########
@@ -544,10 +549,10 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if not isinstance(x, list): x = [x]
     if not isinstance(y, list): y = [y]
@@ -622,6 +627,7 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
+
 
 ####################################
 # Hexagonal 2D histogram
@@ -707,10 +713,10 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if type(bins) not in [list, tuple]:
         if bins is None:
@@ -802,6 +808,7 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
     if output:
         return(hist_return.get_array(), hist_return.get_offsets())
 
+
 ########################################
 ## 2D histogram and binned statistics ##
 ########################################
@@ -888,10 +895,10 @@ def hist2D(x, y, weights=None, bins=None, bin_type=None, dens=True, scale=None, 
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if not isinstance(bin_type, list):
         bin_type = [bin_type] * 2
@@ -942,12 +949,12 @@ def hist2D(x, y, weights=None, bins=None, bin_type=None, dens=True, scale=None, 
     if output:
         return(Z.T, X, Y)
 
+
 ####################################
 ######  Image from 2D array  #######
 ####################################
-def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xinvert=False, yinvert=False, cbar_invert=False, clog=None, 
+def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xinvert=False, yinvert=False, cbar_invert=False, clog=None,
         title=None, xlabel=None, ylabel=None, clabel=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
-
     """2D pixel-based image plotting function.
 
     Parameters
@@ -1002,10 +1009,10 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if x is None:
         x = arange(len(im[:, 0]) + 1)
@@ -1036,6 +1043,7 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
     
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
+
 
 ####################################
 ##########  Scatter plots ##########
@@ -1105,10 +1113,10 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if (not isinstance(x, list)) or (len(shape(x)) == 1 and array(x).dtype is not dtype('O')):
         x = [x]
@@ -1411,10 +1419,10 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
     
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
     
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
@@ -1479,10 +1487,10 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
     x = binned_statistic(temp_x, x, statistic=stat_mid, bins=bins_hist)[0]
     y = temp_y
     
-    x = x[counts>nmin]
-    y = y[counts>nmin]
-    band_low = band_low[counts>nmin]
-    band_high = band_high[counts>nmin]
+    x = x[counts > nmin]
+    y = y[counts > nmin]
+    band_low = band_low[counts > nmin]
+    band_high = band_high[counts > nmin]
     
     fill_between(x, band_low, band_high, label=label, **band_kw)
     
@@ -1500,7 +1508,7 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
 ########  Statistics bars  #########
 ####################################
 def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y='std', mask_na=False, line=False, xlim=None, ylim=None,
-            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None, #nmin=0,
+            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,  # nmin=0,
             label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Statistics line and bar plotting function.
 
