@@ -99,10 +99,10 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
             whichIndex = whichRef.index(w)
             whichComp = (whichIndex + len(whichRef) // 2) % len(whichRef)  # get the complimenting short/long version
             if (whichRef[whichComp] in which):
-                raise TypeError("adjust_text() received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[whichIndex], whichRef[whichComp]))
+                raise TypeError("Received equivalent values for 'which': '{0}' and '{1}'.".format(whichRef[whichIndex], whichRef[whichComp]))
         except (ValueError):
             if (not isinstance(w, Text)):
-                raise TypeError("adjust_text() received invalid value for `which` ('{0}')."
+                raise TypeError("Received invalid value for `which` ('{0}')."
                                 " Must be of type 'matplotlib.text.Text' or one of: {1}".format(w, ', '.join(whichRef)))
 
     L = len(which)
@@ -125,6 +125,8 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
                 lgnds.append(artist)
 
         for ii, lab in enumerate(which):
+            texts = []
+
             if (lab in ['x', 'xlabel']):
                 texts = [a.xaxis.label]
             elif (lab in ['y', 'ylabel']):
@@ -136,7 +138,9 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
             elif (lab in ['k', 'ticks']):
                 texts = append(a.get_yticklabels(), a.get_xticklabels())
             elif (lab in ['l', 'legend']):
-                texts = [lgnd.get_texts() for lgnd in lgnds]  # Get list of text objects in legend (if it exists)
+                for lgnd in lgnds:
+                    texts += list(lgnd.get_texts())
+
             elif (lab in ['L', 'legend title']):
                 texts = [lgnd.get_title() for lgnd in lgnds]  # Get title in legend (if it exists)
             elif (lab in ['c', 'colorbar']):
@@ -156,7 +160,7 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
                 texts = [a.xaxis.label, a.yaxis.label, a.title, *a.get_xticklabels(), *a.get_yticklabels()]
 
                 for lgnd in lgnds:
-                    texts = texts + lgnd.get_texts()
+                    texts += list(lgnd.get_texts())
                     texts.append(lgnd.get_title())
 
                 caxInd = argmax([nanmax([c.get_position().width / c.get_position().height,
@@ -204,7 +208,7 @@ def cornerplot(data, columns=None, pair_type='contour', nsamples=None, sample_ty
     pair_type : str, optional
         The plotting type for the off-diagonal plots,
         can be one of:'contour' | 'scatter' | 'hist2D' which correspond to contour plots, scatter
-        plots and 2D histograms. A dictionary of parameters can be parsed to 'pair_kw' to control
+        plots and 2D histograms. A dictionary of parameters can be parsed to one of `contour_kw` | `scatter_kw` | `hist2D_kw` to control
         the styling of each.
     nsamples : float, optional
         Specifies the number of samples kept out of the total number of samples. This is useful to
