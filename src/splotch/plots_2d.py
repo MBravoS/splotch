@@ -1171,6 +1171,7 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
     
     return paths[0] if len(paths) == 1 else paths
 
+
 ####################################
 ##########  Sector plots ###########
 ####################################
@@ -1223,35 +1224,35 @@ def sector(r, theta, rlim=(0.0, 1.0), thetalim=(0.0, 360.0), clim=None, rotate=0
         kwargs are used to specify matplotlib specific properties such as cmap, marker, norm, etc.
         A list of available `Collection` properties can be found here:
         https://matplotlib.org/3.1.0/api/collections_api.html#matplotlib.collections.Collection
-    
+
     Returns
     -------
     ax : The pyplot.Axes object created for the sector plot.
     """
-    
+
     if (fig is None):
         fig = gcf()
-    
+
     # rotate a bit for better orientation
     trans_rotate = Affine2D().translate(0.0, 0)
-    
+
     # scale degree to radians
     trans_scale = Affine2D().scale(pi / 180.0, 1.0)
     trans = trans_rotate + trans_scale + PolarAxes.PolarTransform()
-    
+
     # Get theta ticks
     thetaticks = arange(*radians(array(thetalim) - rotate), step=radians(thetastep))
     theta_gridloc = FixedLocator(thetaticks[thetaticks / (2 * pi) < 1])
     theta_tickfmtr = DictFormatter(dict(zip(thetaticks, [f"{(np_round(degrees(tck)+rotate)):g}" for tck in thetaticks])))
-    
+
     # tick_fmtr=DictFormatter(dict(angle_ticks))
     # tick_fmtr=angle_helper.Formatter()
-    
+
     if (rstep is None):
         rstep = 0.5
-    
+
     r_gridloc = FixedLocator(arange(rlim[0], rlim[1], step=rstep))
-    
+
     grid = floating_axes.GridHelperCurveLinear(
         PolarAxes.PolarTransform(),
         extremes=(*radians(array(thetalim) - rotate), *rlim),
@@ -1260,49 +1261,49 @@ def sector(r, theta, rlim=(0.0, 1.0), thetalim=(0.0, 360.0), clim=None, rotate=0
         tick_formatter1=theta_tickfmtr,
         tick_formatter2=None,
     )
-    
+
     ax = floating_axes.FloatingSubplot(fig, 111, grid_helper=grid)
     fig.add_subplot(ax)
-    
+
     # tick references
     thetadir_ref = ['top', 'right', 'bottom', 'left']
     rdir_ref = ['bottom', 'left', 'top', 'right']
-    
+
     # adjust axes directions
     ax.axis["left"].set_axis_direction('bottom')  # Radius axis (displayed)
     ax.axis["right"].set_axis_direction('top')  # Radius axis (hidden)
     ax.axis["top"].set_axis_direction('bottom')  # Theta axis (outer)
     ax.axis["bottom"].set_axis_direction('top')  # Theta axis (inner)
-    
+
     # Top theta axis
     ax.axis["top"].toggle(ticklabels=True, label=True)
     ax.axis["top"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate) // 90) % 4])
     ax.axis["top"].label.set_axis_direction(thetadir_ref[(int(rotate) // 90) % 4])
-    
+
     # Bottom theta axis
     ax.axis["bottom"].set_visible(False if rlim[0] < (rlim[1] - rlim[0]) / 3 else True)
     ax.axis["bottom"].major_ticklabels.set_axis_direction(thetadir_ref[(int(rotate) // 90 + 2) % 4])
-    
+
     # Visible radius axis
     ax.axis["left"].major_ticklabels.set_axis_direction(rdir_ref[(int(rotate) // 90) % 4])
     ax.axis["left"].label.set_axis_direction(rdir_ref[(int(rotate) // 90) % 4])
-    
+
     # Labels
     ax.axis["left"].label.set_text(rlabel)
     ax.axis["top"].label.set_text(thetalabel)
-    
+
     # create a parasite axes whose transData in RA, cz
     sector_ax = ax.get_aux_axes(trans)
-    
+
     # This has a side effect that the patch is drawn twice, and possibly over some other
     # artists. So, we decrease the zorder a bit to prevent this.
     sector_ax.patch = ax.patch
     sector_ax.patch.zorder = 0.9
-    
+
     L = shape(theta)[0] if len(shape(theta)) > 1 else 1
     plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Insert clim as vmin, vmax into **kwargs dictionary, if given.
     if (clim is not None):
         try:
@@ -1314,23 +1315,24 @@ def sector(r, theta, rlim=(0.0, 1.0), thetalim=(0.0, 360.0), clim=None, rotate=0
                 raise TypeError("`clim` must be of iterable type and have two values only.")
         except (TypeError):
             raise TypeError("`clim` must be of iterable type and have two values only.")
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     # plot_par=dict_splicer(plot_par,L,[1]*L)
-    
+
     if (L == 1):
         sctr = sector_ax.scatter(theta - rotate, r, label=label, **plot_par)
     else:
         for ii in range(L):
             sctr = sector_ax.scatter(theta[ii] - rotate, r[ii], label=label[ii], **plot_par[ii])
-    
+
     if clabel is not None:
         cbar = colorbar(sctr)
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
-    
+
     return sector_ax
+
 
 ####################################
 ########  Statistics bands  ########
@@ -1493,14 +1495,15 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
 
+
 ####################################
 ########  Statistics bars  #########
 ####################################
-def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y='std', line=False, xlim=None, ylim=None,
-            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None,#nmin=0,
+def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y='std', mask_na=False, line=False, xlim=None, ylim=None,
+            xinvert=False, yinvert=False, xlog=False, ylog=None, title=None, xlabel=None, ylabel=None, #nmin=0,
             label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Statistics line and bar plotting function.
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -1525,7 +1528,9 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
         for scipy.binned_statistic(), or a string that combines 'std' with a number (e.g., '2.2std'), where to number is
         interpreted as the number of standard deviations that the limit must cover. When passing an integer or float is
         interpreted as being the percentile for the limit. When passing a function it must have the input and ouput
-        characteristics required by scipy.binned_statistic().
+        characteristics required by scipy.stats.binned_statistic().
+    mask_na : bool, optional (default: False)
+        Whether to mask empty values (NA, NaN) in an array before calculating the statistic.
     line : boolean, optional
         If True, draw a line that follows the statistic defined in line_stat.
     xlim : tuple-like, optional
@@ -1560,24 +1565,24 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, antialiasing, etc.
         A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.Line2D.html#matplotlib.Line2D
-    
+
     Returns
     -------
     None
     """
-    
+
     # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
-    
+        ax = gca()
+        old_axes = ax
+
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
     if bins is None:
         bins = int((len(x))**0.4)
-    
+
     if not isinstance(stat_y, str):
         try:
             iter(stat_y)
@@ -1585,27 +1590,43 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
             stat_y = [stat_y, stat_y]
     else:
         stat_y = [stat_y, stat_y]
-    
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par = {**plot_kw, **kwargs}  # For Python > 3.5
     plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    if 'linewidth' not in plot_par.keys():
+
+    if 'linewidth' not in plot_par.keys() and line is False:
         plot_par['linewidth'] = 0
     if 'elinewidth' not in plot_par.keys():
         plot_par['elinewidth'] = rcParams['lines.linewidth']
-    
+
+    known_stats = ['mean', 'median', 'count', 'sum', 'std', 'min', 'max']
+
     bar_multi = ones(2)
-    for i in range(len(stat_y)):
-        if isinstance(stat_y[i], Number):
-            stat_y[i] = partial(nanpercentile, q=stat_y[i])
-        elif 'std' in stat_y[i] and len(stat_y[i].replace('std', '')) > 0:
-            bar_multi[i] = float(stat_y[i].replace('std', ''))
-            stat_y[i] = 'std'
-    
+    for i, stat in enumerate(stat_y):
+        if not callable(stat) and stat not in known_stats:  # check if statistic is not a function or a named statistic
+            if isinstance(stat, Number):  # statistic is a percentile
+                stat_y[i] = partial(nanpercentile, q=stat)
+            elif isinstance(stat, str) and stat.endswith('std'):  # statistic is a standard deviation
+                try:
+                    if stat == 'std':  # if no prefix given, defaults to 1.0
+                        val = 1.0
+                    else:
+                        val = float(stat.replace('std', ''))
+                    bar_multi[i] = val
+                    stat_y[i] = 'std'
+                except (ValueError):
+                    raise ValueError(f"Statistics given as a standard deviation must be in the format of '#[.##]std', instead got '{stat}'.")
+
+                if val <= 0:
+                    raise ValueError(f"Standard deviation values much be positive, instead got {val}.")
+            else:
+                raise ValueError('invalid statistic %r' % (stat,))
+
     if isinstance(stat_cen, Number):
         stat_cen = partial(nanpercentile, q=stat_cen)
-    
+
     temp_x, bins_hist, bins_plot = bin_axis(x, bin_type, bins, log=xlog)
     temp_y = binned_statistic(temp_x, y, statistic=stat_cen, bins=bins_hist)[0]
     if stat_y[0] == stat_y[1]:
@@ -1623,20 +1644,20 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
         bar_high -= temp_y
     if ylog:
         temp_y = where(temp_y == 0, nan, temp_y)
-    
+
     x = binned_statistic(temp_x, x, statistic=stat_cen, bins=bins_hist)[0]
     y = temp_y
     if bar_x:
         bar_x = [x - bins_plot[:-1], bins_plot[1:] - x]
-    
+
     if bar_x:
         mpl_errorbar(x, y, xerr=bar_x, yerr=[bar_low, bar_high], **plot_par)
     else:
         mpl_errorbar(x, y, yerr=[bar_low, bar_high], **plot_par)
-    
+
     if label is not None:
         legend(loc=lab_loc)
-    
+
     plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)

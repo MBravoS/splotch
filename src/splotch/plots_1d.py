@@ -3,36 +3,37 @@
 ########################################################################
 from collections import Iterable
 from warnings import warn
-from numpy import array, diff, dtype, empty, full_like, histogram, inf, linspace, log10, logspace, meshgrid, nan, nancumsum
+from numpy import array, diff, dtype, empty, full_like, histogram, inf, linspace, log10, logspace, meshgrid, nan, nancumsum, arange
 from numpy import nanmax, nanmean, nanmin, nanstd, nansum, ndarray, ones, piecewise, prod, shape, squeeze, where
 from matplotlib import rcParams
 from matplotlib.collections import LineCollection
 from matplotlib.legend import Legend
 from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection, HandlerTuple
-from matplotlib.pyplot import bar, fill_between, gca, legend, plot as plt_plot, rcParams, sca, show, step
+from matplotlib.pyplot import bar, barh, fill_between, fill_betweenx, gca, legend, plot as plt_plot, rcParams, sca, show, step
 from matplotlib.transforms import Bbox
+from matplotlib.colors import to_rgba_array
 from scipy.stats import binned_statistic
 from sympy import Expr, latex, symbols, sympify
 from sympy.utilities.lambdify import lambdify
 
-from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, plot_finalizer, simpler_dict_splicer, step_filler
+from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer, step_filler, step_fillerx
 from .defaults import Params
+
 
 ####################################
 # Generalized lines
 ####################################
-def axline(x=None,y=None,a=None,b=None,
-           xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
-           xlabel=None,ylabel=None,label=None,grid=None,ax=None,plot_kw={},**kwargs):
-    
+def axline(x=None, y=None, a=None, b=None,
+           xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, title=None,
+           xlabel=None, ylabel=None, label=None, grid=None, ax=None, plot_kw={}, **kwargs):
     """Generalised axis lines.
-    
+
     This function aims to generalise the usage of axis lines calls (axvline/axhline) together and
     to allow lines to be specified by a slope/intercept according to the function y=a*x + b.
-    
+
     Parameters
     ----------
-    x : int or list, optional 
+    x : int or list, optional
         x position(s) in data coordinates for a vertical line(s).
     y : int or list, optional
         y position(s) in data coordinates for a horizontal line(s).
@@ -68,115 +69,115 @@ def axline(x=None,y=None,a=None,b=None,
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
-        antialiasing, etc. A list of available `Line2D` properties can be found here: 
+        antialiasing, etc. A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     lines
         A list of Line2D objects representing the plotted lines. If more than one subplot and/or line is plotted,
         the resulting list will be multi-dimensional with the dimensions corresponding to the axes/lines.
-    
+
     """
-    
+
     # Set the current axis
     if ax is not None:
         if isinstance(ax, (list, tuple, ndarray)):
-            if len(shape(ax)) > 1: # If ax array is multi-dimensional, flatten it
+            if len(shape(ax)) > 1:  # If ax array is multi-dimensional, flatten it
                 ax = array(ax).flatten()
-            old_ax=axes_handler(ax[0])
+            old_ax = axes_handler(ax[0])
         else:
-            ax = [ax] # Axis must be a list to be enumerated over
-            old_ax=axes_handler(ax[0])
+            ax = [ax]  # Axis must be a list to be enumerated over
+            old_ax = axes_handler(ax[0])
     else:
-        ax=[gca()]
-        old_ax=ax[0]
-    
+        ax = [gca()]
+        old_ax = ax[0]
+
     # Validate input parameters
-    if not (any([is_numeric(var) for var in [x,y,a,b]])): # If nothing has been specified
+    if not (any([is_numeric(var) for var in [x, y, a, b]])):  # If nothing has been specified
         raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'a' or 'b'")
 
-    for i, val in enumerate([x,y,a,b]):
+    for i, val in enumerate([x, y, a, b]):
         if (val is not None):
-            try: # Test whether the parameter is iterable
-                temp=(k for k in val)
-            except TypeError: # If not, convert to a list
-                if   (i == 0): x=[x]
-                elif (i == 1): y=[y]
-                elif (i == 2): a=[a]
-                elif (i == 3): b=[b]
-    
-    if (x is not None and y is not None): # Check whether both x and y were specified
+            try:  # Test whether the parameter is iterable
+                _ = (k for k in val)
+            except TypeError:  # If not, convert to a list
+                if (i == 0): x = [x]
+                elif (i == 1): y = [y]
+                elif (i == 2): a = [a]
+                elif (i == 3): b = [b]
+
+    if (x is not None and y is not None):  # Check whether both x and y were specified
         raise ValueError("'x' and 'y' cannot be both specified")
-    
-    if (x is not None): # Check conditions if x specified
-        if (any([a,b])): # Should not specify a or b, if x given.
+
+    if (x is not None):  # Check conditions if x specified
+        if (any([a, b])):  # Should not specify a or b, if x given.
             raise ValueError("'{0}' cannot be specified if x specified".format('a' if a else 'b'))
-        L=len(x)
-    
-    if (y is not None): # Check conditions if y specified
-        if (any([a,b])): # Should not specify a or b, if y given.
+        L = len(x)
+
+    if (y is not None):  # Check conditions if y specified
+        if (any([a, b])):  # Should not specify a or b, if y given.
             raise ValueError("'{0}' cannot be specified if y specified".format('a' if a else 'b'))
-        L=len(y)
-    
+        L = len(y)
+
     if (a is not None):
-        if (b is None): # If no intercept specified
-            b=[0]*len(a) # set b to 0 for all a
+        if (b is None):  # If no intercept specified
+            b = [0] * len(a)  # set b to 0 for all a
         else:
             if (len(b) == 1):
-                b=[b[0]]*len(a)
+                b = [b[0]] * len(a)
             elif (len(b) != len(a)):
                 if (len(a) == 1):
-                    a=[a[0]]*len(b)
+                    a = [a[0]] * len(b)
                 else:
                     raise ValueError(f"Length of 'a' ({len(a)}) and length of 'b' ({len(b)}) must be equal or otherwise 1")
-        L=len(a)
+        L = len(a)
     elif (b is not None):
-        if (a is None): # If no slope specified
-            a=[1]*len(b) # set a to 1 for all b
-        L=len(b)
-    
-    if type(label) is not list:
-        label=[label for i in range(L)]
+        if (a is None):  # If no slope specified
+            a = [1] * len(b)  # set a to 1 for all b
+        L = len(b)
+
+    if not isinstance(label, list):
+        label = [label] * L
     elif (len(label) != L):
-        raise ValueError("Length of label list ({0}) must match the number of lines given ({1}).".format(len(label),L))
-    
+        raise ValueError("Length of label list ({0}) must match the number of lines given ({1}).".format(len(label), L))
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
-    
-    lines=[[] for kk in range(len(ax))] # Initialise list which contains each Line2D object
-    for jj, axis in enumerate(ax): # Loop over all axes
+    plot_par = dict_splicer(plot_par, L, [1] * L)
+
+    lines = [[] for kk in range(len(ax))]  # Initialise list which contains each Line2D object
+    for jj, axis in enumerate(ax):  # Loop over all axes
         sca(axis)
         if (x is not None):
             for ii, xx in enumerate(x):
-                lines[jj].append(axis.axvline(x=xx,**plot_par[ii],label=label[ii]))
+                lines[jj].append(axis.axvline(x=xx, **plot_par[ii], label=label[ii]))
         if (y is not None):
             for ii, yy in enumerate(y):
-                lines[jj].append(axis.axhline(y=yy,**plot_par[ii],label=label[ii]))
+                lines[jj].append(axis.axhline(y=yy, **plot_par[ii], label=label[ii]))
         if (a is not None):
-            for ii, (aa,bb) in enumerate(zip(a,b)):
+            for ii, (aa, bb) in enumerate(zip(a, b)):
                 xLims = axis.get_xlim() if xlim is None else xlim
                 yLims = axis.get_ylim() if ylim is None else ylim
 
-                lines[jj].append(axis.plot([xLims[0],xLims[1]],[aa*xLims[0]+bb,aa*xLims[1]+bb],label=label[ii],**plot_par[ii])[0])
+                lines[jj].append(axis.plot([xLims[0], xLims[1]], [aa * xLims[0] + bb, aa * xLims[1] + bb], label=label[ii], **plot_par[ii])[0])
                 axis.set_xlim(xLims)
                 axis.set_ylim(yLims)
 
-        plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+        plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
 
         # Autoscale the axes if needed
         if xlim is None: axis.autoscale(axis='x')
         if ylim is None: axis.autoscale(axis='y')
 
-    if old_ax is not None: # Reset the previously set axis
-        old_ax=axes_handler(old_ax)
+    if old_ax is not None:  # Reset the previously set axis
+        old_ax = axes_handler(old_ax)
 
-    return squeeze(lines).tolist() # Reduce the dimensionality of the lines, if needed
+    return squeeze(lines).tolist()  # Reduce the dimensionality of the lines, if needed
 
 
 ####################################
@@ -587,9 +588,9 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
 ##################################################
 # Piecewise curves from mathematical expressions #
 ##################################################
-def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=None, intervals=[], permute=False, num=101, 
-                   xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None, 
-                   title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
+def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=None, intervals=[], permute=False, num=101,
+                    xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None,
+                    title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
     """Plot Piecewise Mathematical Expressions
     
     Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
@@ -819,7 +820,6 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         else:
             labellist = label
 
-    
     vararr = logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
     intervals.append(vararr[-1])
     curves=[None]*L
@@ -861,16 +861,23 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
 ####################################
 # 1D histogram and binned statistics
 ####################################
-def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=None,hist_type=None,v=None,vstat=None,
-            xlim=None,ylim=None,nmin=0,xinvert=False,yinvert=False,xlog=False,ylog=None,title=None,xlabel=None,ylabel=None,
-            label=None,lab_loc=0,ax=None,grid=None,plot_kw={},output=None,**kwargs):
-    
+########################################################################
+############## Definition of all wrappers for 1D plotting ##############
+########################################################################
+
+
+####################################
+# 1D histogram and binned statistics
+####################################
+def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weights=None, hist_type=None, orientation='horizontal',
+         v=None, vstat=None, nmin=0, color=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=None, title=None,
+         xlabel=None, ylabel=None, label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, output=None, **kwargs):
     """1D histogram function.
-    
+
     The plotting is done with pyplot.plot(), so histograms are shown with interpolated curves instead
     of the more common stepwise curve. For this reason splotch.histstep is a better choice for
-    small datasets. 
-    
+    small datasets.
+
     Parameters
     ----------
     data : array-like or list
@@ -898,18 +905,28 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
         drawing a stepwise line, with the edges of each step coinciding with the bin edges.
         'bar' produces a bar plot. All have filled version (i.e., 'linefilled'), which fills the
         space between the edges of the histogram and 0.
+    orientation : {'vertical', 'horizontal'}, optional (default: 'vertical')
+        If 'horizontal', histograms values will be plot along the x-axis instead of the
+        default behaviour of plotting in the y-axis.
     v : array-like or list, optional
         If a valid argument is given in vstat, defines the value used for the binned statistics.
     vstat : str, function  or list, optional
         Must be or contain one of the valid str arguments for the statistics variable
         in scipy.stats.binned_statistic ('mean’, 'median’, 'count’, 'sum’, 'min’ or 'max’) or
         function(s) that takes a 1D array and outputs an integer or float.
+    nmin : int, optional (default: 0)
+        The minimum number of points required in a bin in order to be plotted.
+    color : color or list-like of colors or None, default: None
+        A color or sequence of strings to assign to each dataset given in `data`.
+        If `hist_type` is 'bar' or any 'filled' variant, then `color` refers to the facecolor,
+        whereas if `hist_type` is 'step', then color refers to the edgecolor. Note that `color`
+        will be overwritten if `facecolor` or `edgecolor` are also specified. Only `color` is
+        relevant when `hist_type` = 'line'. If `None` given, uses the next color in the
+        current color cycler.
     xlim : tuple-like, optional
         Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
     ylim : tuple-like, optional
         Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
-    nmin : int, optional (default: 0)
-        The minimum number of points required in a bin in order to be plotted.
     xinvert : bool or list, optional
         If true inverts the x-axis.
         Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
@@ -937,7 +954,7 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
         Passes the given dictionary as a kwarg to the plotting function.
     output : boolean, optional
         If True, returns the edges and values of the histogram.
-    
+
     Returns
     -------
     n : list
@@ -947,143 +964,189 @@ def hist(data,weights=None,bins=None,bin_type=None,dens=True,cumul=None,scale=No
         List containing the arrays with the bin edges for each of the histograms drawn.
         Only provided if output is True.
     """
-    
+
+    # Set the current axis
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
-    
-    if type(data) not in [list, tuple, ndarray] or (len(shape(data))==1 and array(data).dtype is not dtype('O')):
-        data=[data]
-    L=len(data)
-    if type(bin_type) not in [list, tuple]:
-        bin_type=[bin_type]*L
-    if type(bins) not in [list, tuple, ndarray] or (len(shape(bin_type))==1):
+        ax = gca()
+        old_axes = ax
+
+    if not isinstance(data, (list, tuple, ndarray)) or (len(shape(data)) == 1 and array(data).dtype is not dtype('O')):
+        data = [data]
+    L = len(data)
+
+    if not isinstance(bin_type, (list, tuple)):
+        bin_type = [bin_type] * L
+    if not isinstance(bins, (list, tuple, ndarray)) or (len(shape(bin_type)) == 1):
         if bins is not None:
-            bins=[bins]*L
+            bins = [bins] * L
         else:
-            bins=[int((len(d))**0.4) for d in data]
-    if type(weights) not in [list, tuple, ndarray] or (len(shape(weights))==1):
-        weights=[weights]*L
-    if type(dens) not in [list, tuple]:
-        dens=[dens]*L
-    if type(cumul) not in [list, tuple]:
-        cumul=[cumul]*L
-    if type(scale) not in [list, tuple, ndarray]:
-        scale=[scale]*L
-    if type(v) not in [list, tuple, ndarray] or (len(shape(v)) == 1):
-        v=[v]*L
-    if type(nmin) not in [list, tuple, ndarray] or (len(shape(nmin)) == 1):
-        nmin=[nmin]*L
-    if type(vstat) not in [list, tuple]:
-        vstat=[vstat]*L
-    if type(label) not in [list, tuple]:
-        label=[label for i in range(L)]
-    if type(xlim) in [int,float]:
-        xlim=[nanmean(data)-xlim*nanstd(data),nanmean(data)+xlim*nanstd(data)]
-    
-    if None in [ylog,hist_type,output]:
-        if ylog is None:
-            ylog=Params.hist1D_yaxis_log
-        if hist_type is None:
-            hist_type=Params.hist1D_histtype
-        if output is None:
-            output=Params.hist1D_output
-    if type(hist_type) not in [list, tuple, ndarray]:
-        hist_type=[hist_type]*L
-    
+            bins = [int((len(d))**0.4) for d in data]
+    if not isinstance(weights, (list, tuple, ndarray)) or (len(shape(weights)) == 1):
+        weights = [weights] * L
+    if not isinstance(dens, (list, tuple)):
+        dens = [dens] * L
+    if not isinstance(cumul, (list, tuple)):
+        cumul = [cumul] * L
+    if not isinstance(scale, (list, tuple, ndarray)):
+        scale = [scale] * L
+    if not isinstance(v, (list, tuple, ndarray)) or (len(shape(v)) == 1):
+        v = [v] * L
+    if not isinstance(nmin, (list, tuple, ndarray)) or (len(shape(nmin)) == 1):
+        nmin = [nmin] * L
+    if not isinstance(vstat, (list, tuple)):
+        vstat = [vstat] * L
+    if not isinstance(label, (list, tuple)):
+        label = [label for i in range(L)]
+    if is_number(xlim):
+        xlim = [nanmean(data) - xlim * nanstd(data), nanmean(data) + xlim * nanstd(data)]
+
+    if ylog is None:
+        ylog = Params.hist1D_yaxis_log
+    if hist_type is None:
+        hist_type = Params.hist1D_histtype
+    if output is None:
+        output = Params.hist1D_output
+
+    if not isinstance(hist_type, (list, tuple, ndarray)):
+        hist_type = [hist_type] * L
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
+
     # Check if width is given as a kwarg
     if 'width' in plot_par.keys():
-        warn('Received kwarg width, this will be ignored in the histogram',UserWarning)
-        if hist_type!='bar':
-            temp=plot_par.pop('width')
-    
-    # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
-    
-    plot_type={'line':plot,'linefilled':fill_between,'step':step,'stepfilled':step_filler,'bar':bar,'barfilled':bar}
-    hist_centre={'line':True,'linefilled':True,'step':False,'stepfilled':False,'bar':False,'barfilled':False}
-    bin_edges=[]
-    n_return=[]
-    
-    for i in range(L):
-        temp_data,bins_hist,bins_plot=bin_axis(data[i],bin_type[i],bins[i],log=xlog,plot_centre=hist_centre[hist_type[i]])
-        n_check=histogram(temp_data,bins=bins_hist,density=False)[0]
-        n_check=n_check>=nmin[i]
-        if vstat[i]:
-            temp_y=binned_statistic(temp_data,v[i],statistic=vstat[i],bins=bins_hist)[0]
+        warn('Received kwarg width, this will be ignored in the histogram', UserWarning)
+        if hist_type != 'bar':
+            del plot_par['width']
+
+    if color is None:  # check color as per matplotlib.pyplot.hist()
+        if 'c' in plot_par.keys():
+            color = plot_par.pop('c')
         else:
-            if scale[i]:
-                temp_y=histogram(temp_data,bins=bins_hist,density=False,weights=weights[i])[0]
-            else:
-                temp_y=histogram(temp_data,bins=bins_hist,density=dens[i],weights=weights[i])[0]
+            color = [ax._get_lines.get_next_color() for i in range(L)]
+
+    color = to_rgba_array(color)
+    if len(color) not in (1, L):  # either length of 1 or length of number of datasets.
+        raise ValueError(f"The `color`/`c` keyword argument should contain one color or one color per dataset, "
+                         f"but {L} datasets and {len(color)} colors given.")
+
+    if len(color) == 1:  # duplicate color for all datasets if only one given
+        color = [color] * L
+
+    # Create 'L' number of plot kwarg dictionaries to parse into each plot call
+    plot_par = dict_splicer(plot_par, L, [1] * L)
+
+    plot_type = {'line': plt_plot, 'linefilled': fill_between if orientation == 'horizontal' else fill_betweenx,
+                 'step': step, 'stepfilled': step_filler if orientation == 'horizontal' else step_fillerx,
+                 'bar': bar if orientation == 'horizontal' else barh, 'barfilled': bar if orientation == 'horizontal' else barh}
+    hist_centre = {'line': True, 'linefilled': True,
+                   'step': False, 'stepfilled': False,
+                   'bar': False, 'barfilled': False}
+
+    bin_edges = []
+    n_return = []
+
+    for i in range(L):
+        temp_data, bins_hist, bins_plot = bin_axis(data[i], bin_type[i], bins[i], log=xlog, plot_centre=hist_centre[hist_type[i]])
+        n_check = histogram(temp_data, bins=bins_hist, density=False)[0]
+        n_check = n_check >= nmin[i]
+
+        if vstat[i]:
+            temp_y = binned_statistic(temp_data, v[i], statistic=vstat[i], bins=bins_hist)[0]
+        else:
+            temp_y = histogram(temp_data, bins=bins_hist, density=False if scale[i] else dens[i], weights=weights[i])[0]
+
         if cumul[i]:
-            temp_y=nancumsum(temp_y)
+            temp_y = nancumsum(temp_y)
             if dens[i]:
-                temp_y=temp_y.astype('float')/nanmax(temp_y)
+                temp_y = temp_y.astype('float') / nanmax(temp_y)
+
         if scale[i]:
-            temp_y=temp_y.astype('float')/scale[i]
+            temp_y = temp_y.astype('float') / scale[i]
             if dens[i]:
-                temp_y/=bins_hist[1:]-bins_hist[:-1]
+                temp_y /= bins_hist[1:] - bins_hist[:-1]
         if ylog:
-            temp_y=where(temp_y==0,nan,temp_y)
-        temp_y=where(n_check,temp_y,nan)
-        y=temp_y
-        if hist_type[i]=='step':
-            if (ylog or v is not None):
-                y=array([y[0]]+[j for j in y])
+            temp_y = where(temp_y == 0, nan, temp_y)
+
+        temp_y = where(n_check, temp_y, nan)
+        y = temp_y
+
+        if hist_type[i] in ['step', 'line']:
+            for par in ['edgecolor', 'ec']:  # edgecolor supercedes color for step and line funcs.
+                if (par in plot_par[i].keys()):
+                    color[i] = to_rgba_array(plot_par[i].pop(par))
+            for par in ['facecolor', 'fc']:  # facecolor is superfluous for step and line funcs.
+                if (par in plot_par[i].keys()):
+                    del plot_par[i][par]
+
+        if hist_type[i] == 'step':
+            if (ylog or v[i] is not None):
+                y = array([y[0]] + [j for j in y])
             else:
-                bins_plot=array([bins_plot[0]]+[b for b in bins_plot]+[bins_plot[-1]])
-                y=array([0,y[0]]+[j for j in y]+[0])
-        if 'bar' in hist_type[i]:
-            #prop_cycle=rcParams['axes.prop_cycle']
-            #barcolor=prop_cycle.by_key()['color']
-            plot_par[i]['width']=diff(bins_plot)
-            bins_plot=(bins_plot[0:-1]+bins_plot[1:])/2
-            if hist_type[i]=='bar':
-                if 'edgecolor' not in plot_par[i].keys():
-                    p=plt_plot(bins_plot[0],0)
-                    plot_par[i]['edgecolor']=p[0].get_color()
-                    p.pop()
-                    temp_ax=gca()
-                    temp_ax.relim()
-                    temp_ax.autoscale()
-                plot_par[i]['fill']=False
-        plot_type[hist_type[i]](bins_plot,y,label=label[i],**plot_par[i])
+                bins_plot = array([bins_plot[0]] + [b for b in bins_plot] + [bins_plot[-1]])
+                y = array([0, y[0]] + [j for j in y] + [0])
+
+        if hist_type[i].startswith('bar'):
+            plot_par[i]['fill'] = True if hist_type[i] == 'barfilled' else False
+
+            if orientation == 'horizontal':
+                plot_par[i]['width'] = diff(bins_plot)
+            else:
+                plot_par[i]['height'] = diff(bins_plot)
+
+            bins_plot = (bins_plot[0:-1] + bins_plot[1:]) / 2
+
+            if ('edgecolor' not in plot_par[i].keys() and 'ec' not in plot_par[i].keys()):  # could also be 'ec'
+                if (color[i] is not None):
+                    plot_par[i]['edgecolor'] = color[i]
+                else:
+                    cycler = ax._get_lines.prop_cycler
+                    plot_par[i]['edgecolor'] = next(cycler)['color']
+
+        if orientation == 'horizontal' or hist_type[i] not in ('line', 'step'):  # ('linefilled', 'bar', 'barfilled', 'stepfilled'):
+            plot_type[hist_type[i]](bins_plot, y, color=color[i], label=label[i], **plot_par[i])
+        else:
+            plot_type[hist_type[i]](y, bins_plot, color=color[i], label=label[i], **plot_par[i])
+
         bin_edges.append(bins_plot)
         n_return.append(temp_y)
-    if any(label):
+
+    if any(label) and Params.legend_auto is True:
         legend(loc=lab_loc)
-    
-    if ylim == None: # Adjust ylims if None given.
-        if not ylog and all([val is None for val in v]): # These automatic limits do not apply when ylog=True or statistics are used.
-            ylim = [0, max(nanmax(y)*(1+rcParams['axes.ymargin']), gca().get_ylim()[1])]
-    
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+
+    if ylim is None and orientation == 'horizontal':  # Adjust ylims if None given.
+        if not ylog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
+            ylim = [0, max(nanmax(y) * (1 + rcParams['axes.ymargin']), gca().get_ylim()[1])]
+
+    if xlim is None and orientation == 'vertical':  # Adjust xlims if None given.
+        if not xlog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
+            xlim = [0, max(nanmax(y) * (1 + rcParams['axes.xmargin']), gca().get_xlim()[1])]
+
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+
     if old_axes is not ax:
-        old_axes=axes_handler(old_axes)
-    if len(n_return)==1:
-        n_return=n_return[0]
-    if len(bin_edges)==1:
-        bin_edges=bin_edges[0]
+        old_axes = axes_handler(old_axes)
+    if len(n_return) == 1:
+        n_return = n_return[0]
+    if len(bin_edges) == 1:
+        bin_edges = bin_edges[0]
     if output:
-        return(n_return,bin_edges)
+        return(n_return, bin_edges)
+
 
 ####################################
 # Standard plots
 ####################################
-def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,xlabel=None,
-            ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-    
+def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, title=None, xlabel=None,
+         ylabel=None, label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Base plotting function.
-    
+
     This is a wrapper for pyplot.plot().
-    
+
     Parameters
     ----------
     x : array-like or list
@@ -1122,50 +1185,50 @@ def plot(x,y=None,xlim=None,ylim=None,xinvert=False,yinvert=False,xlog=False,ylo
         Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
-        antialiasing, etc. A list of available `Line2D` properties can be found here: 
+        antialiasing, etc. A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     lines
         A list of Line2D objects representing the plotted data.
     """
-    
-    if ax is not None:
-        old_axes = axes_handler(ax) # Set current axis to ax and return the previous axis to old_axes.
-    else:
-        ax=gca()
-        old_axes=ax
 
-    if type(x) is not list or len(shape(x))==1:
-        x=[x]
-    L=len(x)
-    if y is None:
-        y=x
-        x=[arange(len(x[i])) for i in range(L)]
+    if ax is not None:
+        old_axes = axes_handler(ax)  # Set current axis to ax and return the previous axis to old_axes.
     else:
-        if type(y) is not list or len(shape(y))==1:
-            y=[y]
-    if type(label) is not list:
-        label=[label for i in range(L)]
-    
+        ax = gca()
+        old_axes = ax
+
+    if not isinstance(x, list) or len(shape(x)) == 1:
+        x = [x]
+    L = len(x)
+    if y is None:
+        y = x
+        x = [arange(len(x[i])) for i in range(L)]
+    else:
+        if not isinstance(y, list) or len(shape(y)) == 1:
+            y = [y]
+    if not isinstance(label, list):
+        label = [label for i in range(L)]
+
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
+    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
+    plot_par = plot_kw.copy()
     plot_par.update(kwargs)
-    
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
-    
-    lines=[] # Initialising list which contains each line
+    plot_par = dict_splicer(plot_par, L, [1] * L)
+
+    lines = []  # Initialising list which contains each line
     for i in range(L):
-        lines += plt_plot(x[i],y[i],label=label[i],**plot_par[i])
+        lines += plt_plot(x[i], y[i], label=label[i], **plot_par[i])
+
     if any(label):
         legend(loc=lab_loc)
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
-    
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+
     if old_axes is not ax:
         old_axes = axes_handler(old_axes)
-    
-    return (lines[0] if len(lines) == 1 else lines)
 
+    return (lines[0] if len(lines) == 1 else lines)

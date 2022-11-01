@@ -1,3 +1,12 @@
+**0.6.1.0** (01/11/2022):
+
+* Various changes to plots_1d.hist() function:
+*  hist() now accepts the orientation parameter, which acts like matplotlib's orientation.
+*  changed the way colors are handled between the various hist_types such that the user does not necessarily need to switch between 'color' and 'edgecolor' when changing hist_types.
+*  Added autolimits on x/y axes depending on orientation
+*  Created step_fillerx function in base_funcs(), although, one could rework add an orientation parameter to original step_filler() function to achieve the same.
+* Cleaned up several functions with pep-8
+
 **0.6.0.0** (29/10/2022):
 
 * Added scicm as the default colour map package for splotch
