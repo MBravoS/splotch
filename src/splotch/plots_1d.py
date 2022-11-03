@@ -869,7 +869,7 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
 ####################################
 # 1D histogram and binned statistics
 ####################################
-def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weights=None, hist_type=None, orientation='horizontal',
+def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weights=None, hist_type=None, orientation='vertical',
          v=None, vstat=None, nmin=0, color=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=None, title=None,
          xlabel=None, ylabel=None, label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, output=None, **kwargs):
     """1D histogram function.
@@ -1105,11 +1105,9 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
                     plot_par[i]['edgecolor'] = next(cycler)['color']
         
         if (orientation == 'vertical' and hist_type[i] not in ('step', 'stepfilled')) or hist_type[i] in ('bar', 'barfilled', 'linefilled'):
-            print(f"{hist_type[i]}: (bins, vals)")
             plot_type[hist_type[i]](bins_plot, y, color=color[i], label=label[i], **plot_par[i])
 
         else:
-            print(f"{hist_type[i]}: (vals, bins)")
             plot_type[hist_type[i]](y, bins_plot, color=color[i], label=label[i], **plot_par[i])
 
         bin_edges.append(bins_plot)

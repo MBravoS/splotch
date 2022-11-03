@@ -1,3 +1,8 @@
+**0.6.1.5** (03/11/2022):
+
+* Corrected orientation='vertical' as the default
+* Made some adjustments to Examples.ipynb
+
 **0.6.1.4** (03/11/2022):
 
 * Fixed a bug when importing plt.stairs
