@@ -9,14 +9,14 @@ from matplotlib import rcParams
 from matplotlib.collections import LineCollection
 from matplotlib.legend import Legend
 from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection, HandlerTuple
-from matplotlib.pyplot import bar, barh, fill_between, fill_betweenx, gca, legend, plot as plt_plot, rcParams, sca, show, step
+from matplotlib.pyplot import bar, barh, fill_between, fill_betweenx, gca, legend, plot as plt_plot, sca, stairs  # step
 from matplotlib.transforms import Bbox
 from matplotlib.colors import to_rgba_array
 from scipy.stats import binned_statistic
 from sympy import Expr, latex, sympify
 from sympy.utilities.lambdify import lambdify
 
-from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer, stairs
+from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer
 from .defaults import Params
 
 
