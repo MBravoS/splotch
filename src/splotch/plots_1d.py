@@ -13,10 +13,10 @@ from matplotlib.pyplot import bar, barh, fill_between, fill_betweenx, gca, legen
 from matplotlib.transforms import Bbox
 from matplotlib.colors import to_rgba_array
 from scipy.stats import binned_statistic
-from sympy import Expr, latex, symbols, sympify
+from sympy import Expr, latex, sympify
 from sympy.utilities.lambdify import lambdify
 
-from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer, step_filler, step_fillerx
+from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer, stairs
 from .defaults import Params
 
 
@@ -361,16 +361,17 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
 
     return (lines[0] if len(lines) == 1 else lines)
 
+
 ########################################
 # Curves from mathematical expressions #
 ########################################
-def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, bounds=None, num=101, 
-          xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None, 
+def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, bounds=None, num=101,
+          xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None,
           title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
     """Plot Mathematical Expressions
     
     Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
-    Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all 
+    Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all
     others are substitution variables, which can take a variable number of values producing the corresponding number
     of curves.
     
@@ -394,7 +395,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     orientation : str, optional (default: 'horizontal')
         The orientation of the independent axis, i.e. whether the independent variable is defined along
         the x-axis ('horizontal') or the y-axis ('vertical') of the plot.
-        splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical'). 
+        splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical').
     bounds : list-like, optional
         The range over which the function will be plotted. If not given, these default to
         the current bounds of the plot.
@@ -442,10 +443,10 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
         properties. It is recommended that kwargs be parsed implicitly through **kwargs
         for readability.
     **kwargs: Line2D properties, optional
-        kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
-        antialiasing, etc. A list of available `Line2D` properties can be found here: 
+        kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
+        antialiasing, etc. A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     curves : list of (or single) pyplot.Line2D object(s)
@@ -457,49 +458,48 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     """
     
     if ax is not None:
-        old_axes=axes_handler(ax)
+        old_axes = axes_handler(ax)
     else:
-        ax=gca()
-        old_axes=ax
+        ax = gca()
+        old_axes = ax
         
-    # Assign bounds if none given  
-    if (bounds == None):
+    # Assign bounds if none given
+    if (bounds is None):
         if orientation == 'horizontal':
             bounds = xlim if xlim is not None else ax.get_xlim()
         else:
             bounds = ylim if ylim is not None else ax.get_ylim()
     
     # Parse expression
-    isfunc=False
+    isfunc = False
     if (isinstance(expr, str)):
-        expr=sympify(expr)
+        expr = sympify(expr)
     elif (callable(expr)):
-        isfunc=True
+        isfunc = True
     elif (isinstance(expr, Expr)):
         pass
     else:
         raise TypeError(f"`expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr)}.")
-    
-    
-    if not isfunc: # expr is a Sympy expression
-        symbols=expr.free_symbols # Get all of the Symbols in the expression
-        symbolkeys=[str(symb) for symb in symbols] # convert these to strings, instead of sympy.Symbols
+
+    if not isfunc:  # expr is a Sympy expression
+        symbols = expr.free_symbols  # Get all of the Symbols in the expression
+        symbolkeys = [str(symb) for symb in symbols]  # convert these to strings, instead of sympy.Symbols
         
-        if var is None: # Assume independent variable is 'x', otherwise, assume the first symbol.
+        if var is None:  # Assume independent variable is 'x', otherwise, assume the first symbol.
             if orientation == 'horizontal':
-                var = 'x' #if 'x' in symbolkeys or len(symbolkeys)==0 else None
-            else: # first test for 'y' as an independent variable, then default to x.
+                var = 'x'  # if 'x' in symbolkeys or len(symbolkeys)==0 else None
+            else:  # first test for 'y' as an independent variable, then default to x.
                 if 'y' in symbolkeys:
                     var = 'y'
                 else:
-                    var = 'x' #if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
+                    var = 'x'  # if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
         
         # Validate the substitution variable names
         if subs is None: subs = dict()
         if (var in list(subs)):
             raise ValueError(f"Independent variable '{var}' should not be in subs")
             
-        for key in list(subs): 
+        for key in list(subs):
             if (key not in symbolkeys):
                 raise KeyError(f"Substitution variable '{key}' does not exist in 'expr'")
         
@@ -509,59 +509,59 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
             raise TypeError(f"`expr` missing {len(missing)} required substitution variable{'s' if len(missing) > 1 else ''}: {list(missing)}")
     
     # The lengths of each substitute value list, len=1 if just a single value
-    lens=[len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
-    if (permute == True):
+    lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and not isinstance(subs[key], str)) else 1 for key in list(subs)]
+    if (permute is True):
         L = prod(lens)
-        perms=array(meshgrid(*subs.values())).reshape(len(subs),-1)
-        permsubs={}
+        perms = array(meshgrid(*subs.values())).reshape(len(subs), -1)
+        permsubs = {}
         for ii, key in enumerate(list(subs)):
-            permsubs[key]=perms[ii]
-        subsarr=simpler_dict_splicer(permsubs,L,[1]*L)
+            permsubs[key] = perms[ii]
+        subsarr = simpler_dict_splicer(permsubs, L, [1] * L)
     else:
-        L=max(lens) if len(lens) > 0 else 1
-        subsarr=simpler_dict_splicer(subs,L,[1]*L)
+        L = max(lens) if len(lens) > 0 else 1
+        subsarr = simpler_dict_splicer(subs, L, [1] * L)
     
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    plot_par={**plot_kw, **kwargs}
+    plot_par = {**plot_kw, **kwargs}
     
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
+    plot_par = dict_splicer(plot_par, L, [1] * L)
 
     # Create the legend object
-    if bool(label) == False: # label was `None` or `False`
-        labellist = [None]*L
-    elif label == True: # Auto-generate labels
+    if bool(label) is False:  # label was `None` or `False`
+        labellist = [None] * L
+    elif label is True:  # Auto-generate labels
         if subsarr == [{}]:
             labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
         else:
             labellist = []
             exprstr = f"${latex(expr)}$" if uselatex else str(expr)
-            for ii in range(L): # Make a label for each of sub values
+            for ii in range(L):  # Make a label for each of sub values
                 if uselatex:
-                    labellist.append(f"{exprstr} (" + "; ".join( [f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+                    labellist.append(f"{exprstr} (" + "; ".join([f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
                 else:
-                    labellist.append(f"{exprstr} (" + "; ".join( [f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
-    elif isinstance(label,str): # A single string
-        labellist = [label]*L
+                    labellist.append(f"{exprstr} (" + "; ".join([f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
+    elif isinstance(label, str):  # A single string
+        labellist = [label] * L
     else:
-        try: # Test whether the parameter is iterable
+        try:  # Test whether the parameter is iterable
             _ = (k for k in label)
             if (len(label) != L):
                 raise TypeError(f"Number of labels ({len(label)}) does not match the number of curves ({L}).")
             else:
                 labellist = label
-        except TypeError: # was not an iterable
+        except TypeError:  # was not an iterable
             raise TypeError(f"`label` of type {type(label)} is not recognised.")
                                  
     # Create and plot the curves
-    vararr=logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
-    curves=[None]*L
+    vararr = logspace(*log10(bounds), num=num) if xlog else linspace(*bounds, num=num)
+    curves = [None] * L
     for ii in range(L):
         if (isfunc):
-            curvearr=expr(vararr, **subsarr[ii])
+            curvearr = expr(vararr, **subsarr[ii])
         else:
-            lamb = lambdify(var, expr.subs(subsarr[ii]), modules='numpy') # returns a numpy-ready function
-            
+            lamb = lambdify(var, expr.subs(subsarr[ii]), modules='numpy')  # returns a numpy-ready function
+
             if expr.subs(subsarr[ii]).is_constant():
                 func = lambda x: full_like(x, lamb(x))
             else:
@@ -569,20 +569,20 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
             
             curvearr = func(vararr)
             
-        curves[ii]=plt_plot(vararr if orientation=='horizontal' else curvearr,
-                            curvearr if orientation=='horizontal' else vararr,
-                            label=labellist[ii],**plot_par[ii])[0]
+        curves[ii] = plt_plot(vararr if orientation == 'horizontal' else curvearr,
+                              curvearr if orientation == 'horizontal' else vararr,
+                              label=labellist[ii], **plot_par[ii])[0]
     
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
     
     # Autoscale the axes if needed
     if xlim is None: ax.autoscale(axis='x')
     if ylim is None: ax.autoscale(axis='y')
     
     if old_axes is not ax:
-        old_axes=axes_handler(old_axes)
+        old_axes = axes_handler(old_axes)
     
-    return(curves[0] if len(curves)==1 else curves, expr)
+    return(curves[0] if len(curves) == 1 else curves, expr)
 
 
 ##################################################
@@ -953,7 +953,7 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     plot_par : dict, optional
         Passes the given dictionary as a kwarg to the plotting function.
     output : boolean, optional
-        If True, returns the edges and values of the histogram.
+        If True, returns the values and edges of the resulting histogram.
 
     Returns
     -------
@@ -1040,9 +1040,9 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)
 
-    plot_type = {'line': plt_plot, 'linefilled': fill_between if orientation == 'horizontal' else fill_betweenx,
-                 'step': step, 'stepfilled': step_filler if orientation == 'horizontal' else step_fillerx,
-                 'bar': bar if orientation == 'horizontal' else barh, 'barfilled': bar if orientation == 'horizontal' else barh}
+    plot_type = {'line': plt_plot, 'linefilled': fill_between if orientation == 'vertical' else fill_betweenx,
+                 'step': stairs, 'stepfilled': stairs,
+                 'bar': bar if orientation == 'vertical' else barh, 'barfilled': bar if orientation == 'vertical' else barh}
     hist_centre = {'line': True, 'linefilled': True,
                    'step': False, 'stepfilled': False,
                    'bar': False, 'barfilled': False}
@@ -1083,17 +1083,14 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
                 if (par in plot_par[i].keys()):
                     del plot_par[i][par]
 
-        if hist_type[i] == 'step':
-            if (ylog or v[i] is not None):
-                y = array([y[0]] + [j for j in y])
-            else:
-                bins_plot = array([bins_plot[0]] + [b for b in bins_plot] + [bins_plot[-1]])
-                y = array([0, y[0]] + [j for j in y] + [0])
+        if hist_type[i].startswith('step'):
+            plot_par[i]['fill'] = True if hist_type[i] == 'stepfilled' else False
+            plot_par[i]['orientation'] = orientation
 
         if hist_type[i].startswith('bar'):
             plot_par[i]['fill'] = True if hist_type[i] == 'barfilled' else False
 
-            if orientation == 'horizontal':
+            if orientation == 'vertical':
                 plot_par[i]['width'] = diff(bins_plot)
             else:
                 plot_par[i]['height'] = diff(bins_plot)
@@ -1106,10 +1103,13 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
                 else:
                     cycler = ax._get_lines.prop_cycler
                     plot_par[i]['edgecolor'] = next(cycler)['color']
-
-        if orientation == 'horizontal' or hist_type[i] not in ('line', 'step'):  # ('linefilled', 'bar', 'barfilled', 'stepfilled'):
+        
+        if (orientation == 'vertical' and hist_type[i] not in ('step', 'stepfilled')) or hist_type[i] in ('bar', 'barfilled', 'linefilled'):
+            print(f"{hist_type[i]}: (bins, vals)")
             plot_type[hist_type[i]](bins_plot, y, color=color[i], label=label[i], **plot_par[i])
+
         else:
+            print(f"{hist_type[i]}: (vals, bins)")
             plot_type[hist_type[i]](y, bins_plot, color=color[i], label=label[i], **plot_par[i])
 
         bin_edges.append(bins_plot)
@@ -1118,11 +1118,11 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     if any(label) and Params.legend_auto is True:
         legend(loc=lab_loc)
 
-    if ylim is None and orientation == 'horizontal':  # Adjust ylims if None given.
+    if ylim is None and orientation == 'vertical':  # Adjust ylims if None given.
         if not ylog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
             ylim = [0, max(nanmax(y) * (1 + rcParams['axes.ymargin']), gca().get_ylim()[1])]
 
-    if xlim is None and orientation == 'vertical':  # Adjust xlims if None given.
+    if xlim is None and orientation == 'horizontal':  # Adjust xlims if None given.
         if not xlog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
             xlim = [0, max(nanmax(y) * (1 + rcParams['axes.xmargin']), gca().get_xlim()[1])]
 

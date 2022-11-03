@@ -469,6 +469,7 @@ def plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinve
 ####################################
 # Modified fill_between for hist
 ####################################
+### This function is now not needed as step_filler() has been replaced by stairs() in splt.hist()
 def step_filler(x, y, **kwargs):
     """Wrapper for a specific fill_between plot.
 
@@ -496,6 +497,7 @@ def step_filler(x, y, **kwargs):
 ####################################
 # Modified fill_between for hist
 ####################################
+### This function is now not needed as step_fillerx() has been replaced by stairs(..., orientation='horizontal') in splt.hist()
 def step_fillerx(x, y, **kwargs):
     """Wrapper for a specific fill_between plot.
 
