@@ -1,3 +1,7 @@
+**0.6.2.0** (05/11/2022):
+
+* Replaced the use of matplotlib's colour bar with our own in plots_2d
+
 **0.6.1.5** (03/11/2022):
 
 * Corrected orientation='vertical' as the default

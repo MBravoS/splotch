@@ -12,7 +12,8 @@ from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse, Rectangle, Patch
 from matplotlib.projections.polar import PolarAxes
-from matplotlib.pyplot import colorbar, contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, gca, gcf, hexbin as mpl_hexbin
+#from matplotlib.pyplot import colorbar, contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, gca, gcf, hexbin as mpl_hexbin
+from matplotlib.pyplot import contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, gca, gcf, hexbin as mpl_hexbin
 from matplotlib.pyplot import legend, pcolormesh, plot as mpl_plot, rcParams, scatter as mpl_scatter
 from matplotlib.transforms import Affine2D
 from mpl_toolkits.axisartist import floating_axes
@@ -21,7 +22,7 @@ import mpl_toolkits.axisartist.angle_helper as angle_helper
 from scipy.stats import binned_statistic, gaussian_kde
 from scipy.ndimage.filters import gaussian_filter
 
-#from .colorbar import colorbar
+from .colorbar import colorbar
 from .base_func import axes_handler, basehist2D, bin_axis, dict_splicer, percent_finder, plot_finalizer
 from .defaults import Params
 

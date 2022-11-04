@@ -1,8 +1,10 @@
+**Simple PLOTs, Contours and Histograms** is a small package with wrapper functions designed to simplify plotting calls from matplotlib.
+
+[![Github release](https://img.shields.io/github/release/MBravoS/splotch.svg?label=tag&colorB=54ebff)](https://github.com/MBravoS/splotch/releases) [![PyPI version](https://img.shields.io/pypi/v/splotch.svg?colorB=ff0080)](https://pypi.python.org/pypi/splotch)
+
 <p align="center">
 <img src="/example_images/SPLOTCH_logo.png" alt="drawing" width="500"/>
 </p>
-
-**Simple PLOTs, Contours and Histograms** is a small package with wrapper functions designed to simplify plotting calls from matplotlib.
 
  Histograms                 | Scatter Plots
 :---:|:---:
@@ -21,7 +23,7 @@ The package is available in for installation using `>pip install splotch`, thoug
 
 The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
 
-*Current version*: 0.6.1.5
+*Current version*: 0.6.2.0
 
 *Planned releases*:
 * Addition of legend customisation function (0.7.0.0).

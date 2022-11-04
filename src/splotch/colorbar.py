@@ -15,7 +15,6 @@ import matplotlib.ticker as tckr
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from .base_func import axes_handler, dict_splicer, is_numeric, plot_finalizer
 
-
 def colorbar(mappable=None, ax=None, label='', orientation='vertical', loc=1, transform=None,
              inset=False, aspect=0.05, width=None, height=None, pad=0.05, ticks=None, bar_kw={}, **kwargs):
     """Colorbar function
