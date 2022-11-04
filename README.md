@@ -21,9 +21,7 @@
 
 The package is available in for installation using `>pip install splotch`, though you may get the lastest stable version using `>pip install git+https://github.com/MBravoS/splotch.git@master`, or the latest development version using `>pip install git+https://github.com/MBravoS/splotch.git@devel`.
 
-The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/). 
-
-*Current version*: 0.6.2.0
+The documentation is [splotch's readthedocs page](https://splotch.readthedocs.io/en/latest/).
 
 *Planned releases*:
 * Addition of legend customisation function (0.7.0.0).
