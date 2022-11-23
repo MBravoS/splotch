@@ -9,7 +9,6 @@ Date: 09/08/19
 #changelog_message=argv[2]
 
 changelog = "../changelog.txt"
-readme = "../README.md"
 setup = "../setup.py"
 conf = "../docs/conf.py"
 
@@ -30,7 +29,7 @@ def get_version():
 
     # Check the versions in all of these files
     versions = []
-    for filename in [changelog,readme,setup,conf]:
+    for filename in [changelog,setup,conf]:
 
         with open(filename, 'r') as file:
             if ('changelog' in filename):
@@ -52,7 +51,7 @@ def get_version():
 
     if ( len(set(versions)) > 1 ): # Make sure all versions are equal
         print("\nWARNING: Not all versions match across files. Got versions:")
-        for version, filename in zip(versions, [changelog,readme,setup,conf]):
+        for version, filename in zip(versions, [changelog,setup,conf]):
             print(f"{filename:<14}: {version}")
 
         choice = input("\nAre you sure you want to proceed (y/n)? ")
@@ -69,7 +68,7 @@ def get_version():
 def set_versions(version, message):
 
     # Loop through all files
-    for filename in [changelog,readme,setup,conf]:
+    for filename in [changelog,setup,conf]:
         if ('changelog' in filename):
             string = (f"**{version}** ({date.today().strftime('%d/%m/%Y')}):\n\n{message}\n")
             prepend(filename, string)
