@@ -14,7 +14,7 @@ setup(name='splotch',
     include_package_data=True,
     package_data={'src':['styles/*.style']},
     #cmdclass={'install':new_install},
-    install_requires=['numpy>=1.15','matplotlib>=3.0.0','scipy>=1.1.0','sympy>=1.2','scicm>=1.0.0'],
+    install_requires=['numpy>=1.15','matplotlib>=3.0.0','scipy>=1.1.0','sympy>=1.2','scicm>=1.0.3'],
     extras_require={ # optional packages
                     'astro':['astropy']
     },
