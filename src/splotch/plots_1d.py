@@ -20,7 +20,7 @@ from .defaults import Params
 
 try:
     from collections.abc import Iterable
-except ImportError
+except ImportError:
     from collections import Iterable
 
 ####################################
