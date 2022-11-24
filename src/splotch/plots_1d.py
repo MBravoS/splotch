@@ -1,6 +1,7 @@
 ########################################################################
 ############## Definition of all wrappers for 1D plotting ##############
 ########################################################################
+from collections.abc import Iterable
 from warnings import warn
 from numpy import array, diff, dtype, empty, full_like, histogram, inf, linspace, log10, logspace, meshgrid, nan, nancumsum, arange
 from numpy import nanmax, nanmean, nanmin, nanstd, nansum, ndarray, ones, piecewise, prod, shape, squeeze, where
@@ -17,11 +18,6 @@ from sympy.utilities.lambdify import lambdify
 
 from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer
 from .defaults import Params
-
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
 
 ####################################
 # Generalized lines
