@@ -1,6 +1,7 @@
 ########################################################################
 ######### Base functions for axis_funcs, plots_1d and plots_2d #########
 ########################################################################
+from warnings import warn
 from numbers import Number
 from math import ceil, floor
 from distutils.util import strtobool
@@ -8,7 +9,7 @@ from numpy import array, asarray, concatenate, cumsum, empty, histogram2d, linsp
 from numpy import nanmin, nansum, ndarray, ones, ravel, size, sort
 from scipy.stats import binned_statistic_2d
 from matplotlib import rcParams
-from matplotlib.pyplot import fill_between, fill_betweenx, gca, grid, sca, title as plt_title
+from matplotlib.pyplot import fill_between, fill_betweenx, gca, gcf, grid, sca, title as plt_title
 from matplotlib.pyplot import xlabel as plt_xlabel, xlim as plt_xlim, xscale
 from matplotlib.pyplot import ylabel as plt_ylabel, ylim as plt_ylim, yscale
 
@@ -41,6 +42,46 @@ def axes_handler(new_axis):
     curr_axis = gca()  # get current axis if it exists, else create one.
     sca(new_axis)
     return(curr_axis)
+
+
+#########################################
+# Handle various inputs to grid parameter
+#########################################
+def grid_handler(grid, ax=None):
+    """ Handles grid behaviour
+
+    Base-level function to handle the behaviour of inputs to the grid parameter. If grid is a boolean, then
+    nothing is changed, however, if grid is None, first check whether this is the first plot call to this
+    axis, if so, use rcParams, otherwise do nothing.
+
+    Parameters
+    ----------
+    grid : boolean, dict or None
+        The requested grid settings. If boolean, then a gridpar
+    ax : Axes object or None
+        The axis in which to check the current grid settings.
+    
+    Returns
+    -------
+    gridpar : boolean
+        Returns the modified grid parameters as a dictionary.
+    """
+
+    if ax is None:
+        ax = gca()
+
+    if grid is None:
+        if ax.has_data():
+            return None  # i.e. do nothing
+        else:
+            return dict(visible=rcParams['axes.grid'], which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
+    elif isinstance(grid, bool):
+        return dict(visible=grid, which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
+    elif isinstance(grid, dict):
+        return grid
+    else:
+        warn(f"grid must be given as either boolean, dict or None. Instead got {type(grid)}.")
+        return None
 
 
 ####################################
@@ -251,15 +292,6 @@ def dict_splicer(plot_dict, Ld, Lx):
 
     return(dict_list)
 
-####################################
-# Density/scaled counts for hexbin
-####################################
-#def hexarea(value,norm):
-#    return(value/norm)
-#
-#def hexscaled(value,scale):
-#    return(1.0*value/scale)
-
 
 ####################################
 # General check for numeric values
@@ -311,7 +343,6 @@ def is_number(var):
     Credit for code: StackExchange users Gareth Rees and MSeifert.
     https://codereview.stackexchange.com/questions/128032/check-if-a-numpy-array-contains-numerical-data
     """
-    from numbers import Number
 
     return isinstance(var, Number)
 
@@ -460,10 +491,90 @@ def plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinve
         if not gca().yaxis_inverted():
             gca().invert_yaxis()
 
-    if grid_control is not None:
+    if isinstance(grid_control, bool):
         grid(b=grid_control, which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
     else:
         grid(b=rcParams['axes.grid'], which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
+
+
+####################################
+# Set labels, limits and more
+####################################
+def _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax=None):
+    """New axis handler
+
+    This function is a base-level function used by most other plotting functions to set the current
+    Axes instance to ax and returns the old Axes instance to be later reverted.
+
+    Parameters
+    ----------
+    xlog : None or bool
+        If True, the x-axis scale is set to 'log'.
+    ylog : None or bool
+        If True, the y-axis scale is set to 'log'.
+    xlim : None or array-like
+        If given, defines the low and high limits for the x-axis. The first two elements must be int
+        and/or float.
+    ylim : None or array-like
+        If given, defines the low and high limits for the y-axis. The first two elements must be int
+        and/or float.
+    title : None or str
+        If given, defines the title of the figure.
+    xlabel : None or str
+        If given, defines the label of the x-axis.
+    ylabel : None or str
+        If given, defines the label of the y-axis.
+    xinvert : None or bool
+        If True, ensures the x-axis is inverted. If False, ensures the x-axis is not inverted.
+    yinvert : None or bool
+        If True, ensures the y-axis is inverted. If False, ensures the y-axis is not inverted.
+    gridpar : None or dict
+        The parameters to be given to matplotlib's grid function.
+    ax : Axes object or None
+        The axis for which to apply the plot parameters.
+
+    Returns
+    -------
+    None
+    """
+
+    ax = gca() if ax is None else ax
+
+    if xlog:
+        ax.set_xscale('log')
+
+    if ylog:
+        ax.set_yscale('log')
+
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    else:
+        ax.set_xlim(auto=True)
+
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    else:
+        ax.set_ylim(auto=True)
+
+    if title is not None:
+        ax.set_title(title)
+
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
+
+    if xinvert:
+        if not ax.xaxis_inverted():
+            ax.invert_xaxis()
+
+    if yinvert:
+        if not ax.yaxis_inverted():
+            ax.invert_yaxis()
+
+    if gridpar is not None:
+        ax.grid(**gridpar)
 
 
 ####################################

@@ -1,3 +1,11 @@
+**0.6.3.0** (15/12/2022):
+
+* Added a temporary testing function: _plot_finalizer() which has a modified handling of the grid parameter
+* grid can now be given a True/False or None (sets of default rcParams if first plotting instance, else do nothing) or as a dictionary of grid control parameters.
+* The usage of grid is handled by a new base function: grid_handler().
+* Also slightly modified iterable check in 'splotch.hist' as a warning was being through when user provided multiple lists of varying length.
+* Various pep-8 linting performed
+
 **0.6.2.1** (24/11/2022):
 
 * Fix for collections.Iterable being deprecated in Python 3.9

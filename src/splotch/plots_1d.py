@@ -9,15 +9,16 @@ from matplotlib import rcParams
 from matplotlib.collections import LineCollection
 from matplotlib.legend import Legend
 from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection, HandlerTuple
-from matplotlib.pyplot import bar, barh, fill_between, fill_betweenx, gca, legend, plot as plt_plot, sca, stairs  # step
+from matplotlib.pyplot import bar, barh, fill_between, fill_betweenx, gcf, gca, legend, plot as plt_plot, sca, stairs  # step
 from matplotlib.transforms import Bbox
 from matplotlib.colors import to_rgba_array
 from scipy.stats import binned_statistic
 from sympy import Expr, latex, sympify
 from sympy.utilities.lambdify import lambdify
 
-from .base_func import axes_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, simpler_dict_splicer
+from .base_func import axes_handler, grid_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, _plot_finalizer, simpler_dict_splicer
 from .defaults import Params
+
 
 ####################################
 # Generalized lines
@@ -84,13 +85,12 @@ def axline(x=None, y=None, a=None, b=None,
         if isinstance(ax, (list, tuple, ndarray)):
             if len(shape(ax)) > 1:  # If ax array is multi-dimensional, flatten it
                 ax = array(ax).flatten()
-            old_ax = axes_handler(ax[0])
         else:
-            ax = [ax]  # Axis must be a list to be enumerated over
-            old_ax = axes_handler(ax[0])
+            ax = [ax]  # Axis must be a list-like object
     else:
         ax = [gca()]
-        old_ax = ax[0]
+    
+    old_ax = axes_handler(ax[0])  # sets the current axis and returns old axis
 
     # Validate input parameters
     if not (any([is_numeric(var) for var in [x, y, a, b]])):  # If nothing has been specified
@@ -151,7 +151,8 @@ def axline(x=None, y=None, a=None, b=None,
 
     lines = [[] for kk in range(len(ax))]  # Initialise list which contains each Line2D object
     for jj, axis in enumerate(ax):  # Loop over all axes
-        sca(axis)
+        gridpar = grid_handler(grid, axis)
+
         if (x is not None):
             for ii, xx in enumerate(x):
                 lines[jj].append(axis.axvline(x=xx, **plot_par[ii], label=label[ii]))
@@ -167,14 +168,14 @@ def axline(x=None, y=None, a=None, b=None,
                 axis.set_xlim(xLims)
                 axis.set_ylim(yLims)
 
-        plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+        _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, axis)
 
         # Autoscale the axes if needed
         if xlim is None: axis.autoscale(axis='x')
         if ylim is None: axis.autoscale(axis='y')
 
     if old_ax is not None:  # Reset the previously set axis
-        old_ax = axes_handler(old_ax)
+        sca(old_ax)
 
     return squeeze(lines).tolist()  # Reduce the dimensionality of the lines, if needed
 
@@ -245,11 +246,11 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
     
     """
     
-    if ax is not None:
-        old_axes=axes_handler(ax)
-    else:
-        ax=gca()
-        old_axes=ax
+    # Set the current axis
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
 
     if type(x) is not list or len(shape(x))==1:
         x=[x]
@@ -353,10 +354,10 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
     if any(label):
         ax.legend(loc=lab_loc)
     
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    if old_axes is not ax:
-        old_axes=axes_handler(old_axes)
+    if old_ax is not ax:
+        sca(old_ax)
 
     return (lines[0] if len(lines) == 1 else lines)
 
@@ -456,11 +457,11 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     
     """
     
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    # Set the current axis
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
         
     # Assign bounds if none given
     if (bounds is None):
@@ -572,14 +573,14 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
                               curvearr if orientation == 'horizontal' else vararr,
                               label=labellist[ii], **plot_par[ii])[0]
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
     # Autoscale the axes if needed
     if xlim is None: ax.autoscale(axis='x')
     if ylim is None: ax.autoscale(axis='y')
     
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    if old_ax is not None:
+        sca(old_ax)
     
     return(curves[0] if len(curves) == 1 else curves, expr)
 
@@ -593,14 +594,14 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     """Plot Piecewise Mathematical Expressions
     
     Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
-    Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all 
+    Expressions can be given with multiple variables, whereby one is taken to be the independent variable and all
     others are substitution variables. This function can only accept one value per substitution variable.
     
     Parameters
     ----------
     expr : str, sympy.Expr, callable() or list-like
         An expression parsed either as a string, sympy expression or callable (function or lambda)
-        which will be evaluated by the function in the range of `bounds`. A piece-wise function is defined 
+        which will be evaluated by the function in the range of `bounds`. A piece-wise function is defined
         by parsing a list of expressions. The piece-wise functionality must also be reflected in `bounds`.
     var : str or sympy symbol, required.
         The independent variable on which to evaluate the expression (i.e. the variable on the x-axis).
@@ -611,9 +612,9 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     orientation : str, optional (default: 'horizontal')
         The orientation of the independent axis, i.e. whether the independent variable is defined along
         the x-axis ('horizontal') or the y-axis ('vertical') of the plot.
-        splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical'). 
+        splotch.curve('a*x') is notationally the same as splotch.curve('1/a*y',var='y',orientation='vertical').
     bounds : list-like, optional
-        The range over which the function will be plotted. If not given, these default to the current bounds 
+        The range over which the function will be plotted. If not given, these default to the current bounds
         of the axes being plotted onto, given by `ax`.
     intervals : list-like, required
         The points at which the curve partitions each of the N expressions given in `expr`. The values must lie
@@ -662,10 +663,10 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         properties. It is recommended that kwargs be parsed implicitly through **kwargs
         for readability.
     **kwargs: Line2D properties, optional
-        kwargs are used to specify matplotlib specific properties such as linecolor, linewidth, 
-        antialiasing, etc. A list of available `Line2D` properties can be found here: 
+        kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
+        antialiasing, etc. A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
-    
+
     Returns
     -------
     curves : list of (or single) pyplot.Line2D object(s)
@@ -673,26 +674,25 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     expr : Sympy.Expr
         If expr was given as a string, this returns the sympy expression created from `sympy.sympify()`.
         Otherwise, simply returns the `expr` that was given.
-    
     """
+
+    # Set the current axis
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
-    if ax is not None:
-        old_axes=axes_handler(ax)
-    else:
-        ax=gca()
-        old_axes=ax
-        
-    # Assign bounds if none given  
-    if (bounds == None):
+    # Assign bounds if none given
+    if (bounds is None):
         if orientation == 'horizontal':
             bounds = xlim if xlim is not None else ax.get_xlim()
         else:
             bounds = ylim if ylim is not None else ax.get_ylim()
 
     # Check if iterable
-    try: # duck-type check
+    try:  # duck-type check
         _ = (k for k in expr)
-        if isinstance(expr,str):
+        if isinstance(expr, str):
             expr = [expr]
         elif isinstance(expr, tuple):
             expr = list(expr)
@@ -700,10 +700,10 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         expr = [expr]
     
     # Parse expressions
-    isfunc=[False]*len(expr)
+    isfunc = [False] * len(expr)
     for ii in range(len(expr)):
         if (isinstance(expr[ii], str)):
-            expr[ii]=sympify(expr[ii])
+            expr[ii] = sympify(expr[ii])
         elif (callable(expr[ii])):
             isfunc[ii] = True
         elif (isinstance(expr[ii], Expr)):
@@ -711,7 +711,7 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         else:
             raise TypeError(f"Elements of `expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr[ii])}.")
             
-    if not (all(isfunc) or all([not b for b in isfunc])): # Must either be all expressions or all callables
+    if not (all(isfunc) or all([not b for b in isfunc])):  # Must either be all expressions or all callables
         raise TypeError("`expr` cannot mix callable functions with expressions.")
         
     # Validate intervals is given in the correct format and the correct number given within the bounds.
@@ -720,21 +720,20 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         
         if isinstance(intervals, tuple):
             intervals = list(intervals)
-        if len(intervals) == 0: # if no intervals are given, set the interval to be the ending bound as a placeholder
+        if len(intervals) == 0:  # if no intervals are given, set the interval to be the ending bound as a placeholder
             if len(expr) == 1:
                 intervals = [bounds[-1]]
             else:
                 raise ValueError(f"No intervals given for {len(expr)} expressions.")
-        elif len(intervals) != len(expr) - 1: 
+        elif len(intervals) != len(expr) - 1:
             raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(expr)} expressions.")
-        else: # If intervals are given, ensure they are within the bounds given.
+        else:  # If intervals are given, ensure they are within the bounds given.
             if min(intervals) <= bounds[0]:
                 raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
             elif max(intervals) >= bounds[1]:
                 raise ValueError(f"The maximum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
     except (TypeError):
         intervals = [intervals]
-        
 
     # Validate the substitution variable names
     symbolkeysArr = []
@@ -742,20 +741,20 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         raise ValueError(f"Independent variable '{var}' should not be in subs")
         
     if subs is None: subs = dict()
-    if not any(isfunc): # expr contains Sympy expressions
+    if not any(isfunc):  # expr contains Sympy expressions
         symbols = expr[0].free_symbols
         for ii in range(len(expr)):
-            symbols=expr[ii].free_symbols # Get expression Symbols
-            symbolkeys=[str(symb) for symb in symbols] # convert these to strings, instead of sympy.Symbols
+            symbols = expr[ii].free_symbols  # Get expression Symbols
+            symbolkeys = [str(symb) for symb in symbols]  # convert these to strings, instead of sympy.Symbols
             
-            if var is None: # Assume independent variable is 'x', otherwise, assume the first symbol.
+            if var is None:  # Assume independent variable is 'x', otherwise, assume the first symbol.
                 if orientation == 'horizontal':
-                    var = 'x' #if 'x' in symbolkeys or len(symbolkeys)==0 else None
-                else: # first test for 'y' as an independent variable, then default to x.
+                    var = 'x'  # if 'x' in symbolkeys or len(symbolkeys)==0 else None
+                else:  # first test for 'y' as an independent variable, then default to x.
                     if 'y' in symbolkeys:
                         var = 'y'
                     else:
-                        var = 'x' #if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
+                        var = 'x'  # if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
                         
             # remove the independent variable from the symbols and append to list
             symbolkeysArr += symbolkeys
@@ -766,52 +765,52 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
             raise TypeError(f"`expr` missing {len(missing)} required substitution variable{'s' if len(missing) > 1 else ''}: {list(missing)}")
 
         # Check for any substitution variables that are not in any expressions
-        for key in list(subs): 
+        for key in list(subs):
             if not any([key in symb for symb in symbolkeysArr]):
                 raise KeyError(f"Substitution variable '{key}' does not exist in any 'expr'")
 
     # The lengths of each substitute value list, len=1 if just a single value
-    lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and type(subs[key])!=str) else 1 for key in list(subs)]
-    if (permute == True):
+    lens = [len(subs[key]) if (isinstance(subs[key], Iterable) and not isinstance(subs[key], str)) else 1 for key in list(subs)]
+    if (permute is True):
         L = prod(lens)
-        perms=array(meshgrid(*subs.values())).reshape(len(subs),-1)
-        permsubs={}
+        perms = array(meshgrid(*subs.values())).reshape(len(subs), -1)
+        permsubs = {}
         for ii, key in enumerate(list(subs)):
-            permsubs[key]=perms[ii]
-        subsarr=simpler_dict_splicer(permsubs,L,[1]*L)
+            permsubs[key] = perms[ii]
+        subsarr = simpler_dict_splicer(permsubs, L, [1] * L)
     else:
-        L=max(lens) if len(lens) > 0 else 1
-        subsarr=simpler_dict_splicer(subs,L,[1]*L)
+        L = max(lens) if len(lens) > 0 else 1
+        subsarr = simpler_dict_splicer(subs, L, [1] * L)
     
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    plot_par={**plot_kw, **kwargs}
-    
+    plot_par = {**plot_kw, **kwargs}
+
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
+    plot_par = dict_splicer(plot_par, L, [1] * L)
 
     # Create the legend object
-    if bool(label) == False: # label was `None` or `False`
-        labellist = None
+    if bool(label) is False:  # label was `None` or `False`
+        labellist = [None] * L
     
-    elif label == True: # Auto-generate labels
+    elif label is True:  # Auto-generate labels
         if subsarr == [{}]:
             labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
         else:
             labellist = []
             exprstr = f"${latex(expr)}$" if uselatex else str(expr)
-            for ii in range(L): # Make a label for each of sub values
+            for ii in range(L):  # Make a label for each of sub values
                 if uselatex:
-                    labellist.append(f"{exprstr} (" + "; ".join( [f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+                    labellist.append(f"{exprstr} (" + "; ".join([f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
                 else:
-                    labellist.append(f"{exprstr} (" + "; ".join( [f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii])) ] ) +")" ) # join substitute strings together
+                    labellist.append(f"{exprstr} (" + "; ".join([f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
     
-    elif isinstance(label,str): # A single string
-        labellist = [label]*L
+    elif isinstance(label, str):  # A single string
+        labellist = [label] * L
     
     else:
-        try: # Test whether the parameter is iterable
+        try:  # Test whether the parameter is iterable
             _ = (k for k in label)
-        except TypeError: # was not an iterable
+        except TypeError:  # was not an iterable
             raise TypeError(f"`label` of type {type(label)} is not recognised.")
             
         if (len(label) != L):
@@ -819,16 +818,16 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         else:
             labellist = label
 
-    vararr = logspace(*log10(bounds),num=num) if xlog else linspace(*bounds,num=num)
+    vararr = logspace(*log10(bounds), num=num) if xlog else linspace(*bounds, num=num)
     intervals.append(vararr[-1])
-    curves=[None]*L
-    for ii in range(L): 
+    curves = [None] * L
+    for ii in range(L):
         lines = []
         start = 0
         for jj in range(len(expr)):
             end = array(abs(vararr - intervals[jj])).argmin()
             if any(isfunc):
-                lines.append( list( zip(vararr[start:end+1],expr[jj](vararr[start:end+1],**subsarr[ii])) ) )
+                lines.append(list(zip(vararr[start: end + 1], expr[jj](vararr[start: end + 1], **subsarr[ii]))))
             else:
                 lamb = lambdify(var, expr[jj].subs(subsarr[ii]), modules='numpy')
                 if expr[jj].subs(subsarr[ii]).is_constant():
@@ -837,24 +836,24 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
                     func = lambda x: lamb(array(x))
                 
                 if orientation == 'horizontal':
-                    lines.append( list( zip(vararr[start:end+1],func(vararr[start:end+1])) ) )
+                    lines.append(list(zip(vararr[start: end + 1], func(vararr[start: end + 1]))))
                 else:
-                    lines.append( list( zip(func(vararr[start:end+1]),vararr[start:end+1]) ) )
+                    lines.append(list(zip(func(vararr[start: end + 1]), vararr[start: end + 1])))
                     
-            start = end # move to next interval
+            start = end  # move to next interval
 
         curves[ii] = LineCollection(lines, label=labellist[ii], **plot_par[ii])
         ax.add_collection(curves[ii])
 
-    plot_finalizer(xlog,ylog,xlim,ylim,title,xlabel,ylabel,xinvert,yinvert,grid)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
     if xlim is None: ax.autoscale(axis='x')
     if ylim is None: ax.autoscale(axis='y')
     
-    if old_axes is not ax:
-        old_axes=axes_handler(old_axes)
+    if old_ax is not None:
+        sca(old_ax)
     
-    return(curves[0] if len(curves)==1 else curves)
+    return(curves[0] if len(curves) == 1 else curves)
 
 
 ####################################
@@ -965,14 +964,17 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     """
 
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
 
-    if not isinstance(data, (list, tuple, ndarray)) or (len(shape(data)) == 1 and array(data).dtype is not dtype('O')):
+    gridpar = grid_handler(grid, ax)
+
+    if not isinstance(data, (list, tuple, ndarray)):
         data = [data]
+    elif isinstance(data, ndarray):
+        if (len(shape(data)) == 1 and data.dtype is not dtype('O')):
+            data = [data]
+
     L = len(data)
 
     if not isinstance(bin_type, (list, tuple)):
@@ -1123,14 +1125,17 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
         if not xlog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
             xlim = [0, max(nanmax(y) * (1 + rcParams['axes.xmargin']), gca().get_xlim()[1])]
 
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
 
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    if old_ax is not ax:
+        sca(old_ax)
+
     if len(n_return) == 1:
         n_return = n_return[0]
+
     if len(bin_edges) == 1:
         bin_edges = bin_edges[0]
+
     if output:
         return(n_return, bin_edges)
 
@@ -1191,11 +1196,11 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
         A list of Line2D objects representing the plotted data.
     """
 
-    if ax is not None:
-        old_axes = axes_handler(ax)  # Set current axis to ax and return the previous axis to old_axes.
-    else:
-        ax = gca()
-        old_axes = ax
+    # Set the current axis
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
 
     if not isinstance(x, list) or len(shape(x)) == 1:
         x = [x]
@@ -1223,9 +1228,9 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
 
     if any(label):
         legend(loc=lab_loc)
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
 
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    if old_ax is not ax:
+        sca(old_ax)
 
     return (lines[0] if len(lines) == 1 else lines)
