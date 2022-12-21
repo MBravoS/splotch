@@ -61,8 +61,11 @@ def axline(x=None, y=None, a=None, b=None,
         Sets the label of the y-axis.
     label : str, optional
         Sets the legend for the plot.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     ax : pyplot.Axes or list-like, optional
         Specifies the axes on which to plot the lines, defaults to the current axes.
     plot_kw : dict, optional
@@ -170,10 +173,6 @@ def axline(x=None, y=None, a=None, b=None,
 
         _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, axis)
 
-        # Autoscale the axes if needed
-        if xlim is None: axis.autoscale(axis='x')
-        if ylim is None: axis.autoscale(axis='y')
-
     if old_ax is not None:  # Reset the previously set axis
         sca(old_ax)
 
@@ -183,10 +182,9 @@ def axline(x=None, y=None, a=None, b=None,
 ####################################
 # Broken axis plot
 ####################################
-def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
-               xinvert=False,yinvert=False,xlog=False,ylog=False,title=None,
-               xlabel=None,ylabel=None,label=None,lab_loc=0,ax=None,grid=None,plot_kw={},**kwargs):
-
+def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.05, overflow=0.05,
+               xinvert=False, yinvert=False, xlog=False, ylog=False, title=None,
+               xlabel=None, ylabel=None, label=None, lab_loc=0, ax=None, grid=None, plot_kw={}, **kwargs):
     """Broken Axis Plot Function
     
     Creates a standard plot call with an axis break at `xbreak` or `ybreak` for vertical or
@@ -207,8 +205,11 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
         Defines the limits of the x-axis, it must contain two elements (lower and higer limits).
     ylim : tuple-like, optional
         Defines the limits of the y-axis, it must contain two elements (lower and higer limits).
-    sep : float, optional, default: 0.05
+    sep : float, optional (default: 0.05)
         The separation size of the axis break, given as a fraction of the axis dimensions.
+    overflow : float, optional (default: 0.05)
+        The fractional overflow of the axes beyond the break values. Often good to keep this non-zero as
+        breaking the axis exactly at the break point leaves the final gridlines and ticks out of view.
     xinvert : bool or list, optional
         If true inverts the x-axis.
     yinvert : bool or list, optional
@@ -235,131 +236,199 @@ def brokenplot(x,y=None,xbreak=None,ybreak=None,xlim=None,ylim=None,sep=0.05,
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
         kwargs are used to specify matplotlib specific properties such as linecolor, linewidth,
-        antialiasing, etc. A list of available `Line2D` properties can be found here: 
+        antialiasing, etc. A list of available `Line2D` properties can be found here:
         https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D
     
     Returns
     -------
-    lines
+    lines : list of Line2D
         A list of Line2D objects (paired as tuples) representing the plotted data.
         The lines are given as pairs to correspond to the separate lines either side of the x/ybreak.
-    
+    ax2 : pyplot.Axes, optional
+        The additional axis object created.
     """
     
     # Set the current axis
-    if ax is None: ax = gca()
-    old_ax = axes_handler(ax)
+    ax1 = gca() if ax is None else ax
+    old_ax = axes_handler(ax1)
 
-    gridpar = grid_handler(grid, ax)
+    gridpar = grid_handler(grid, ax1)
 
-    if type(x) is not list or len(shape(x))==1:
-        x=[x]
-    L=len(x)
+    if not isinstance(x, (list, tuple, ndarray)) or len(shape(x)) == 1:
+        x = [x]
+
+    L = len(x)
+
     if y is None:
-        y=x
-        x=[arange(len(x[i])) for i in range(L)]
+        y = x
+        x = [arange(len(x[i])) for i in range(L)]
     else:
-        if type(y) is not list or len(shape(y))==1:
-            y=[y]
-    if type(label) is not list:
-        label=[label for i in range(L)]
-    
-    # Validate x/ybreak
-    if (xbreak == None):
-        raise ValueError("Require either xbreak/ybreak to be specified.")
+        if not isinstance(y, (list, tuple, ndarray)) or len(shape(y)) == 1:
+            y = [y]
 
-    if (ybreak != None):
-        raise NotImplementedError("ybreak not yet implemented.")
-
-
-    if type(xbreak) not in [list,tuple,ndarray]:
-        xbreak=(xbreak, xbreak)
-    else:
-        if (len(xbreak) != 2):
-            raise ValueError("xbreak must be a single value of a tuple-like list of two elements.")
-    
-    
+    if not isinstance(label, (list, tuple, ndarray)) or len(shape(label)) == 1:
+        label = [label] * L
+        
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    #plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par=plot_kw.copy()
-    plot_par.update(kwargs)
+    plot_par = {**plot_kw, **kwargs}
+    # plot_par = plot_kw.copy()
+    # plot_par.update(kwargs)
     
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
-    plot_par=dict_splicer(plot_par,L,[1]*L)
+    plot_par = dict_splicer(plot_par, L, [1] * L)
     
     # Get the original axis position
-    pos0=ax.get_position(original=True)
-    width0, height0=pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
+    pos0 = ax.get_position(original=True)
+    width0, height0 = pos0.x1 - pos0.x0, pos0.y1 - pos0.y0
     
-    lines=[] # Initialising list which contains each line
+    # Perform first plot call to original axis
+    lines = []
     for i in range(L):
-        # First side plot call
-        l1=ax.plot(x[i],y[i],label=label[i],**plot_par[i])
-        
-        # Get the axis limits if not already specified
-        xlims=ax.get_xlim() if xlim == None else xlim
-        ylims=ax.get_ylim() if ylim == None else ylim
+        lines += plt_plot(x[i], y[i], label=label[i], **plot_par[i])
     
-        # Define the positions of the two separated axes
-        if (i == 0):
-            pos1=Bbox(list(pos0.get_points()))
-            pos1.x1=pos1.x0 + (pos1.x1-pos1.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) - sep*(pos1.x1-pos1.x0)/2
-            
-            pos2=Bbox(list(pos0.get_points()))
-            pos2.x0=pos2.x0 + (pos2.x1-pos2.x0)*(sum(xbreak)/2-xlims[0])/(xlims[1]-xlims[0]) + sep*(pos2.x1-pos2.x0)/2
-            
-            ax.set_position(pos1) # Resize the first axis
-            ax2=ax.figure.add_axes(pos2) # Add and duplicate the plotting in the second axis
-            
-            # Set the new axis limits at the break point
-            ax.set_xlim(xlims[0],xbreak[0])
-            ax2.set_xlim(xbreak[1],xlims[1])
-        
-        # Second side plot call
-        l2=ax2.plot(x[i],y[i],label=None,**plot_par[i])
+    # Get the axis limits if not already specified
+    xlims = ax1.get_xlim() if xlim is None else xlim
+    ylims = ax1.get_ylim() if ylim is None else ylim
+    
+    # Validate xbreak/ybreak
+    if (xbreak is None and ybreak is None):
+        raise ValueError("Require either xbreak/ybreak to be specified.")
 
-        lines.append((*l1,*l2)) # Add line as tuple of both axes.
+    if (ybreak is not None and xbreak is not None):
+        raise ValueError("Cannot specify both xbreak and ybreak.")
+
+    breaks = xbreak if xbreak else ybreak
+    if not isinstance(breaks, (list, tuple, ndarray)):
+        breaks = (breaks,) * 2
+    else:
+        if len(breaks) == 1:
+            breaks = (breaks[0],) * 2
+        elif len(breaks) == 2:
+            if breaks[0] > breaks[1]:
+                raise ValueError("First value in xbreak/ybreak must not be greater than the second value.")
+        else:
+            raise ValueError("xbreak/ybreak must be a single value or a list-like object with two elements.")
+
+    if xbreak and (breaks[0] < xlims[0] or breaks[1] > xlims[1]):
+        raise ValueError(f"xbreak given ({xbreak}) must be within the xlim ({xlims}).")
+    if ybreak and (breaks[0] < ylims[0] or breaks[1] > ylims[1]):
+        raise ValueError(f"ybreak given ({ybreak}) must be within the ylim ({ylims}).")
+
+    # Define the positions of the two separated axes
+    pos1 = Bbox(list(pos0.get_points()))
+    if xbreak:
+        pos1.x1 = pos1.x0 + (pos1.x1 - pos1.x0) * (sum(breaks) / 2 - xlims[0]) / (xlims[1] - xlims[0]) - sep * (pos1.x1 - pos1.x0) / 2
+    if ybreak:
+        pos1.y1 = pos1.y0 + (pos1.y1 - pos1.y0) * (sum(breaks) / 2 - ylims[0]) / (ylims[1] - ylims[0]) - sep * (pos1.y1 - pos1.y0) / 2
+
+    pos2 = Bbox(list(pos0.get_points()))
+    if xbreak:
+        pos2.x0 = pos2.x0 + (pos2.x1 - pos2.x0) * (sum(breaks) / 2 - xlims[0]) / (xlims[1] - xlims[0]) + sep * (pos2.x1 - pos2.x0) / 2
+    if ybreak:
+        pos2.y0 = pos2.y0 + (pos2.y1 - pos2.y0) * (sum(breaks) / 2 - ylims[0]) / (ylims[1] - ylims[0]) + sep * (pos2.y1 - pos2.y0) / 2
+    
+    ax1.set_position(pos1)  # Resize the first axis
+    ax2 = ax1.figure.add_axes(pos2)  # Add and duplicate the plotting in the second axis
+    
+    # Perform first plot call to original axis
+    lines = []
+    for i in range(L):
+        lines += ax2.plot(x[i], y[i], label=label[i], **plot_par[i])
+    
+    width1, height1 = pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
+    width2, height2 = pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
+
+    # Adjust x/y limits for both axes
+    xlim1 = (xlims[0], breaks[0] + overflow * (width1 + sep) / width0) if xbreak else xlims
+    xlim2 = (breaks[1] - overflow * (width2 + sep) / width0, xlims[1]) if xbreak else xlims
+    
+    ylim1 = (ylims[0], breaks[0]) if ybreak else ylims
+    ylim2 = (breaks[1], ylims[1]) if ybreak else ylims
+    
+    if xbreak:
+        dx1, dy1 = 0.01 * width0 / (width0 - width2 - sep / 2), height1 * 0.025
+        dx2, dy2 = 0.01 * width0 / (width0 - width1 - sep / 2), height2 * 0.025
         
-        width1, height1=pos1.x1 - pos1.x0, pos1.y1 - pos1.y0
-        width2, height2=pos2.x1 - pos2.x0, pos2.y1 - pos2.y0
+        dash_kw = dict(transform=ax1.transAxes, color='black', linestyle='-', marker='', clip_on=False)
+        temp1 = (breaks[0] - xlim1[0]) / (breaks[0] - xlim1[0] + overflow * (width1 + sep) / width0)
+        ax1.plot((temp1 - dx1, temp1 + dx1), (0 - dy1, 0 + dy1), **dash_kw)  # bottom-left
+        ax1.plot((temp1 - dx1, temp1 + dx1), (1 - dy1, 1 + dy1), **dash_kw)  # top-left
         
-        dx1, dy1=0.01 * width0/(width0-width1-sep/2), height1*0.025
-        
-        dash_kw=dict(transform=ax2.transAxes, color='black', linestyle='-', marker='', clip_on=False)
-        ax2.plot((0 - dx1, 0 + dx1), (0 - dy1, 0 + dy1), **dash_kw)  # bottom-right diagonal
-        ax2.plot((0 - dx1, 0 + dx1), (1 - dy1, 1 + dy1), **dash_kw)  # top-right diagonal
-        
-        dx2, dy2=0.01 * width0/(width0-width2-sep/2), height2*0.025
-        dash_kw.update(transform=ax.transAxes)  # switch to the left axes
-        ax.plot((1 - dx2, 1 + dx2), (0 - dy2, 0 + dy2), **dash_kw)  # bottom-left sep/5iagonal
-        ax.plot((1 - dx2, 1 + dx2), (1 - dy2, 1 + dy2), **dash_kw)  # top-left sep/5iagonal
-        
-        ax.spines['right'].set_visible(False)
-        ax.tick_params(labelright=False,which='both')  # don't put tick labels at the top
-        ax.yaxis.tick_left()
-        
+        dash_kw.update(transform=ax2.transAxes)  # switch to the left axes
+        temp2 = 1 - (xlim2[1] - breaks[1]) / (xlim2[1] - breaks[1] + overflow * (width2 + sep) / width0)
+        ax2.plot((temp2 - dx2, temp2 + dx2), (0 - dy2, 0 + dy2), **dash_kw)  # bottom-right
+        ax2.plot((temp2 - dx2, temp2 + dx2), (1 - dy2, 1 + dy2), **dash_kw)  # top-right
+
+        # Fix axes labels and splines
+        ax1.spines['right'].set_visible(False)
+        ax1.tick_params(labelright=False, which='both')
+        ax1.yaxis.tick_left()
+
         ax2.spines['left'].set_visible(False)
-        ax2.tick_params(labelleft=False,which='both')  # don't put tick labels at the top
+        ax2.tick_params(labelleft=False, which='both')
         ax2.yaxis.tick_right()
 
-        # Check that there is no duplicate ticks over both axes    
-    if (xbreak):
-        if (ax.get_xticks()[-1] == ax2.get_xticks()[0]):
-            if (xbreak[0] >= (xlims[0] + xlims[1])*0.5):
-                ax.set_xticks(ax.get_xticks()[:-1]) # Remove duplicate tick on left side
+        if (ax1.get_xticks()[-1] == ax2.get_xticks()[0]):
+            if (breaks[0] >= (xlims[0] + xlims[1]) * 0.5):
+                ax1.set_xticks(ax1.get_xticks()[:-1])  # Remove duplicate tick on left side
             else:
-                ax2.set_xticks(ax2.get_xticks()[1:]) # Remove duplicate tick on right side
-    sca(ax)
+                ax2.set_xticks(ax2.get_xticks()[1:])  # Remove duplicate tick on right side
+
+        ax1.axes.spines[['top', 'bottom']].set_bounds((xlim1[0], breaks[0]))
+        ax2.axes.spines[['top', 'bottom']].set_bounds((breaks[1], xlim2[-1]))
+        
+        ax1.xaxis.set_label_coords(0.5 * (width0 / width1), -0.125, transform=ax1.axes.transAxes)
+                
+    if ybreak:
+        dx1, dy1 = width1 * 0.0125, 0.02 * height0 / (height0 - height2 - sep / 2)
+        dx2, dy2 = width2 * 0.0125, 0.02 * height0 / (height0 - height1 - sep / 2)
+        
+        dash_kw = dict(transform=ax1.transAxes, color='black', linestyle='-', marker='', clip_on=False)
+        temp1 = (breaks[0] - ylim1[0]) / (breaks[0] - ylim1[0] + overflow * (height1 + sep) / height0)
+        ax1.plot((0 - dx1, 0 + dx1), (temp1 - dy1, temp1 + dy1), **dash_kw)  # bottom-left
+        ax1.plot((1 - dx1, 1 + dx1), (temp1 - dy1, temp1 + dy1), **dash_kw)  # bottom-right
+        
+        dash_kw.update(transform=ax2.transAxes)  # switch to the left axes
+        temp2 = 1 - (ylim2[1] - breaks[1]) / (ylim2[1] - breaks[1] + overflow * (height2 + sep) / height0)
+        ax2.plot((0 - dx2, 0 + dx2), (temp2 - dy2, temp2 + dy2), **dash_kw)  # top-left
+        ax2.plot((1 - dx2, 1 + dx2), (temp2 - dy2, temp2 + dy2), **dash_kw)  # top-right
+
+        # Fix axes labels and splines
+        ax1.spines['top'].set_visible(False)
+        ax1.tick_params(labeltop=False, which='both')
+        ax1.xaxis.tick_bottom()
+
+        ax2.spines['bottom'].set_visible(False)
+        ax2.tick_params(labelbottom=False, which='both')
+        ax2.xaxis.tick_top()
+
+        if (ax1.get_yticks()[-1] == ax2.get_yticks()[0]):
+            if (breaks[0] >= (ylims[0] + ylims[1]) * 0.5):
+                ax1.set_yticks(ax1.get_yticks()[:-1])  # Remove duplicate tick on top
+            else:
+                ax2.set_yticks(ax2.get_yticks()[1:])  # Remove duplicate tick on bottom
+                
+        ax1.axes.spines[['left', 'right']].set_bounds((ylim1[0], breaks[0]))
+        ax2.axes.spines[['left', 'right']].set_bounds((breaks[1], ylim2[-1]))
+
+        ax1.yaxis.set_label_coords(-0.125, 0.5 * (height0 / height1), transform=ax1.axes.transAxes)
     
     if any(label):
-        ax.legend(loc=lab_loc)
+        ax2.legend(loc=lab_loc)
     
-    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    _plot_finalizer(xlog, ylog, xlim1, ylim1, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax=ax1)
+    _plot_finalizer(xlog, ylog, xlim2, ylim2, None, None, None, xinvert, yinvert, gridpar, ax=ax2)
     
-    if old_ax is not ax:
+    # Share axes
+    if xbreak:
+        ax1.get_shared_y_axes().join(ax, ax2)
+    if ybreak:
+        ax1.get_shared_x_axes().join(ax, ax2)
+    
+    if old_ax is not None:
         sca(old_ax)
 
-    return (lines[0] if len(lines) == 1 else lines)
+    return (lines[0] if len(lines) == 1 else lines, ax2)
 
 
 ########################################
@@ -413,8 +482,11 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
         If True the scale of the x-axis is logarithmic.
     ylog : bool or list, optional
         If True the scale of the x-axis is logarithmic.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     title : str, optional
         Sets the title of the plot
     xlabel : str, optional
@@ -575,10 +647,6 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     
     _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    # Autoscale the axes if needed
-    if xlim is None: ax.autoscale(axis='x')
-    if ylim is None: ax.autoscale(axis='y')
-    
     if old_ax is not None:
         sca(old_ax)
     
@@ -633,8 +701,11 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         If True the scale of the x-axis is logarithmic.
     ylog : bool or list, optional
         If True the scale of the x-axis is logarithmic.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     title : str, optional
         Sets the title of the plot
     xlabel : str, optional
@@ -847,9 +918,6 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
 
     _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    if xlim is None: ax.autoscale(axis='x')
-    if ylim is None: ax.autoscale(axis='y')
-    
     if old_ax is not None:
         sca(old_ax)
     
@@ -946,8 +1014,11 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_par : dict, optional
         Passes the given dictionary as a kwarg to the plotting function.
     output : boolean, optional
@@ -1180,8 +1251,11 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are
         Line2D properties.

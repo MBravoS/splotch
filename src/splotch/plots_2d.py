@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse, Rectangle, Patch
 from matplotlib.projections.polar import PolarAxes
 #from matplotlib.pyplot import colorbar, contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, gca, gcf, hexbin as mpl_hexbin
-from matplotlib.pyplot import contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, gca, gcf, hexbin as mpl_hexbin
+from matplotlib.pyplot import contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, sca, gca, gcf, hexbin as mpl_hexbin
 from matplotlib.pyplot import legend, pcolormesh, plot as mpl_plot, rcParams, scatter as mpl_scatter
 from matplotlib.transforms import Affine2D
 from mpl_toolkits.axisartist import floating_axes
@@ -23,7 +23,7 @@ from scipy.stats import binned_statistic, gaussian_kde
 from scipy.ndimage.filters import gaussian_filter
 
 from .colorbar import colorbar
-from .base_func import axes_handler, basehist2D, bin_axis, dict_splicer, percent_finder, plot_finalizer
+from .base_func import axes_handler, grid_handler, basehist2D, bin_axis, dict_splicer, percent_finder, plot_finalizer, _plot_finalizer
 from .defaults import Params
 
 
@@ -68,8 +68,11 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     output : boolean, optional
         If True, returns the edges and values of the underlying histogram plus the levels of the contours.
     plot_kw : dict, optional
@@ -92,11 +95,10 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -109,9 +111,10 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
     else:
         contourset = mpl_contour(x, y, z, **plot_par)
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)
     
     return contourset
 
@@ -170,8 +173,11 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     output : boolean, optional
         If True, returns the edges and values of the underlying histogram in addition to the default output of.
     plot_kw : dict, optional
@@ -209,11 +215,10 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         output = Params.contp_output
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if not isinstance(percent, ndarray):
         percent = array([percent]).flatten()
@@ -299,9 +304,10 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
             legend([Line2D([0, 1], [0, 1], color=plot_par['colors'][i], linestyle=plot_par['linestyles'][i], alpha=plot_par['alpha'][i]) for i in range(len(percent))],
                    labels, numpoints=1, loc=lab_loc)
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)
     
     if output:
         return(contourset, X, Y, Z.T)
@@ -351,8 +357,11 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
@@ -366,11 +375,10 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
@@ -393,9 +401,10 @@ def errorband(x, y, yerr, line=False, xlim=None, ylim=None,
     if label is not None:
         legend(loc=lab_loc)
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)
 
 
 ####################################
@@ -441,8 +450,11 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
@@ -456,11 +468,10 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     # Convert data to lists if needed
     if not isinstance(x, list): x = [x]
@@ -484,9 +495,11 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
         mpl_errorbar(x[i], y[i], xerr=xerr[i], yerr=yerr[i], label=label[i], **plot_par[i])
     if any(label):
         legend(loc=lab_loc)
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)
 
 
 ####################################
@@ -534,8 +547,11 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Patches properties.
     **kwargs: Patch properties, optional
@@ -549,11 +565,10 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if not isinstance(x, list): x = [x]
     if not isinstance(y, list): y = [y]
@@ -625,9 +640,11 @@ def errorbox(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     
     if any(label):
         legend(handles=boxhandles, labels=label, loc=lab_loc)
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)
 
 
 ####################################
@@ -691,8 +708,11 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     output : boolean, optional
         If True, returns the edges and values of the histogram.
     plot_kw : dict, optional
@@ -713,11 +733,10 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if type(bins) not in [list, tuple]:
         if bins is None:
@@ -802,10 +821,11 @@ def hexbin(x, y, bins=None, binlims=None, dens=True, scale=None,
         if cbar_invert:
             cbar.ax.invert_yaxis()
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    if old_ax is not None:
+        sca(old_ax)
+
     if output:
         return(hist_return.get_array(), hist_return.get_offsets())
 
@@ -873,8 +893,11 @@ def hist2D(x, y, weights=None, bins=None, bin_type=None, dens=True, scale=None, 
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     output : boolean, optional
         If True, returns the edges and values of the histogram.
     plot_kw : dict, optional
@@ -895,11 +918,10 @@ def hist2D(x, y, weights=None, bins=None, bin_type=None, dens=True, scale=None, 
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if not isinstance(bin_type, list):
         bin_type = [bin_type] * 2
@@ -944,9 +966,12 @@ def hist2D(x, y, weights=None, bins=None, bin_type=None, dens=True, scale=None, 
         cbar.set_label(clabel)
         if cbar_invert:
             cbar.ax.invert_yaxis()
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)
+    
     if output:
         return(Z.T, X, Y)
 
@@ -993,8 +1018,11 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Explicit dictionary of kwargs to be parsed to matplotlib pcolormesh function.
         Parameters will be overwritten if also given implicitly as a **kwarg.
@@ -1009,11 +1037,10 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if x is None:
         x = arange(len(im[:, 0]) + 1)
@@ -1040,10 +1067,10 @@ def img(im, x=None, y=None, xlim=None, ylim=None, clim=[None, None], cmin=0, xin
         if cbar_invert:
             cbar.ax.invert_yaxis()
     
-    plot_finalizer(False, False, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
+    _plot_finalizer(False, False, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    if old_ax is not None:
+        sca(old_ax)
 
 
 ####################################
@@ -1096,8 +1123,11 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Explicit dictionary of kwargs to be parsed to matplotlib scatter function.
         Parameters will be overwritten if also given implicitly as a **kwarg.
@@ -1113,11 +1143,10 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if (not isinstance(x, list)) or (len(shape(x)) == 1 and array(x).dtype is not dtype('O')):
         x = [x]
@@ -1173,11 +1202,12 @@ def scatter(x, y, c=None, xlim=None, ylim=None, clim=None, density=False, xinver
             cbar.ax.invert_yaxis()
     if any(label):
         legend(loc=lab_loc)
+
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
-    
+    if old_ax is not None:
+        sca(old_ax)
+
     return paths[0] if len(paths) == 1 else paths
 
 
@@ -1419,11 +1449,10 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
     """
     
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
     
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
@@ -1499,10 +1528,11 @@ def statband(x, y, bin_type=None, bins=None, stat_mid='mean', stat_low='std', st
         mpl_plot(x, y, **line_kw)
     if label is not None:
         legend(loc=lab_loc)
+
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
     
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    if old_ax is not None:
+        sca(old_ax)
 
 
 ####################################
@@ -1566,8 +1596,11 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
         Defines the position of the legend
     ax : pyplot.Axes, optional
         Use the given axes to make the plot, defaults to the current axes.
-    grid : boolean, optional
-        If not given defaults to the value defined in splotch.Params.
+    grid : boolean, dict or None
+        The grid behaviour, acts according to:
+         * If boolean, the grid is set on (True) or off (False).
+         * If dict, allows specific `.Line2D` properties of the grid to be set.
+         * If None, use default grid parameters if this is the initial plotting call, otherwise do nothing.
     plot_kw : dict, optional
         Passes the given dictionary as a kwarg to the plotting function. Valid kwargs are Line2D properties.
     **kwargs: Line2D properties, optional
@@ -1581,11 +1614,10 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
     """
 
     # Set the current axis
-    if ax is not None:
-        old_axes = axes_handler(ax)
-    else:
-        ax = gca()
-        old_axes = ax
+    if ax is None: ax = gca()
+    old_ax = axes_handler(ax)
+
+    gridpar = grid_handler(grid, ax)
 
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
@@ -1667,6 +1699,7 @@ def statbar(x, y, bin_type=None, bins=None, stat_cen='mean', bar_x=True, stat_y=
     if label is not None:
         legend(loc=lab_loc)
 
-    plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, grid)
-    if old_axes is not ax:
-        old_axes = axes_handler(old_axes)
+    _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
+    
+    if old_ax is not None:
+        sca(old_ax)

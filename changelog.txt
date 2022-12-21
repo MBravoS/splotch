@@ -1,3 +1,11 @@
+**0.6.4.0** (21/12/2022):
+
+* Fixed brokenplot()
+* brokenplot() now accepts ybreak
+* Added an 'overflow' argument which allows overflow of plotting area into the broken region, which fixed issues with ending gridlines not being visible.
+* brokenplot() now works for subplots... somehow?
+* legend correctly assigns to second axis.
+
 **0.6.3.0** (15/12/2022):
 
 * Added a temporary testing function: _plot_finalizer() which has a modified handling of the grid parameter

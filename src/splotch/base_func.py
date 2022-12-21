@@ -13,6 +13,8 @@ from matplotlib.pyplot import fill_between, fill_betweenx, gca, gcf, grid, sca, 
 from matplotlib.pyplot import xlabel as plt_xlabel, xlim as plt_xlim, xscale
 from matplotlib.pyplot import ylabel as plt_ylabel, ylim as plt_ylim, yscale
 
+from .defaults import Params
+
 ####################################
 # Boolean, unsigned integer, signed integer, float, complex.
 ####################################
@@ -57,7 +59,10 @@ def grid_handler(grid, ax=None):
     Parameters
     ----------
     grid : boolean, dict or None
-        The requested grid settings. If boolean, then a gridpar
+        The requested grid settings.
+         * If boolean, then the grid is set on (True) or off (False).
+         * If dict, then parameters in grid will be parsed into the plt.grid() function.
+         * If None and this is the initial plotting call, else do nothing.
     ax : Axes object or None
         The axis in which to check the current grid settings.
     
@@ -74,9 +79,15 @@ def grid_handler(grid, ax=None):
         if ax.has_data():
             return None  # i.e. do nothing
         else:
-            return dict(visible=rcParams['axes.grid'], which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
-    elif isinstance(grid, bool):
-        return dict(visible=grid, which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
+            grid = rcParams['axes.grid']
+
+    if isinstance(grid, bool):
+        if grid is True:  # only set additional grid properties if grid=True, otherwise warnings given.
+            return dict(visible=grid, which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'],
+                        color=Params.grid_color, alpha=Params.grid_alpha,
+                        linestyle=Params.grid_ls, linewidth=Params.grid_lw)
+        else:
+            return dict(visible=grid, which=rcParams['axes.grid.which'], axis=rcParams['axes.grid.axis'])
     elif isinstance(grid, dict):
         return grid
     else:
@@ -549,12 +560,12 @@ def _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinv
     if xlim is not None:
         ax.set_xlim(xlim)
     else:
-        ax.set_xlim(auto=True)
+        ax.autoscale(axis='x')
 
     if ylim is not None:
         ax.set_ylim(ylim)
     else:
-        ax.set_ylim(auto=True)
+        ax.autoscale(axis='y')
 
     if title is not None:
         ax.set_title(title)
