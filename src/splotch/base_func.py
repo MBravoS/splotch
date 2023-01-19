@@ -1,6 +1,8 @@
 ########################################################################
 ######### Base functions for axis_funcs, plots_1d and plots_2d #########
 ########################################################################
+from collections.abc import Iterable
+
 from warnings import warn
 from numbers import Number
 from math import ceil, floor
@@ -62,7 +64,7 @@ def grid_handler(grid, ax=None):
         The requested grid settings.
          * If boolean, then the grid is set on (True) or off (False).
          * If dict, then parameters in grid will be parsed into the plt.grid() function.
-         * If None and this is the initial plotting call, else do nothing.
+         * If None and this is the initial plotting call, set to rcParams, else do nothing.
     ax : Axes object or None
         The axis in which to check the current grid settings.
     
@@ -92,6 +94,55 @@ def grid_handler(grid, ax=None):
         return grid
     else:
         warn(f"grid must be given as either boolean, dict or None. Instead got {type(grid)}.")
+        return None
+
+
+###############################################
+# Handle various inputs to xlim/ylim parameters
+###############################################
+def lims_handler(lims, ax=None):
+    """ Handles xlim/ylim behaviour
+
+    Base-level function to handle the behaviour of inputs to the xlim/ylim parameters. If xlim/ylim is a valid tuple,
+    then set these as the limits. However, if xlim/ylim is None, first check whether this is the first plot call to this
+    axis, if so, set to 'auto' (i.e. autoscale), otherwise do nothing.
+
+    Parameters
+    ----------
+    lims : tuple, str or None
+        The requested values for xlim/ylim.
+         * If tuple, then return these values (if valid).
+         * If None and this is the initial plotting call, set to 'auto', else set to None
+         * If str, must be of the value 'auto' return.
+    ax : Axes object or None
+        The axis in which to check the current grid settings.
+    
+    Returns
+    -------
+    limspar : boolean
+        Returns the modified grid parameters as a dictionary.
+    """
+
+    if ax is None:
+        ax = gca()
+
+    if lims is None:
+        if ax.has_data():
+            return None  # i.e. do nothing
+        else:
+            return 'auto'
+
+    elif isinstance(lims, Iterable):
+        if isinstance(lims, str):
+            if lims != 'auto':
+                warn(f"Only 'auto' is accepted when giving lims as a str. Instead got {type(lims)}.")
+                return None
+            else:
+                return 'auto'
+        else:
+            return lims  # should we validate limits here?
+    else:
+        warn(f"lims must be given as either list-like, str or None. Instead got {type(lims)}.")
         return None
 
 
@@ -557,15 +608,15 @@ def _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinv
     if ylog:
         ax.set_yscale('log')
 
-    if xlim is not None:
-        ax.set_xlim(xlim)
-    else:
+    if xlim == 'auto':
         ax.autoscale(axis='x')
-
-    if ylim is not None:
-        ax.set_ylim(ylim)
     else:
+        ax.set_xlim(xlim)
+
+    if ylim == 'auto':
         ax.autoscale(axis='y')
+    else:
+        ax.set_ylim(ylim)
 
     if title is not None:
         ax.set_title(title)

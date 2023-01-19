@@ -16,7 +16,7 @@ from scipy.stats import binned_statistic
 from sympy import Expr, latex, sympify
 from sympy.utilities.lambdify import lambdify
 
-from .base_func import axes_handler, grid_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, _plot_finalizer, simpler_dict_splicer
+from .base_func import axes_handler, grid_handler, lims_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, _plot_finalizer, simpler_dict_splicer
 from .defaults import Params
 
 
@@ -83,7 +83,7 @@ def axline(x=None, y=None, a=None, b=None,
 
     """
 
-    # Set the current axis
+    # Get the relevant axis
     if ax is not None:
         if isinstance(ax, (list, tuple, ndarray)):
             if len(shape(ax)) > 1:  # If ax array is multi-dimensional, flatten it
@@ -152,9 +152,16 @@ def axline(x=None, y=None, a=None, b=None,
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)
 
-    lines = [[] for kk in range(len(ax))]  # Initialise list which contains each Line2D object
+    lines = [[]] * len(ax)  # Initialise list which contains each Line2D object
     for jj, axis in enumerate(ax):  # Loop over all axes
         gridpar = grid_handler(grid, axis)
+
+        print(lims_handler(xlim, axis), lims_handler(ylim, axis))
+
+        ax_xlim = axis.get_xlim() if lims_handler(xlim, axis) is None else xlim
+        ax_ylim = axis.get_ylim() if lims_handler(ylim, axis) is None else ylim
+
+        print(ax_xlim, ax_ylim)
 
         if (x is not None):
             for ii, xx in enumerate(x):
@@ -163,15 +170,10 @@ def axline(x=None, y=None, a=None, b=None,
             for ii, yy in enumerate(y):
                 lines[jj].append(axis.axhline(y=yy, **plot_par[ii], label=label[ii]))
         if (a is not None):
-            for ii, (aa, bb) in enumerate(zip(a, b)):
-                xLims = axis.get_xlim() if xlim is None else xlim
-                yLims = axis.get_ylim() if ylim is None else ylim
+            for ii, (aa, bb) in enumerate(zip(a, b)):  # Loop over all lines
+                lines[jj].append(axis.axline(xy1=(0, bb), slope=aa, label=label[ii], **plot_par[ii]))
 
-                lines[jj].append(axis.plot([xLims[0], xLims[1]], [aa * xLims[0] + bb, aa * xLims[1] + bb], label=label[ii], **plot_par[ii])[0])
-                axis.set_xlim(xLims)
-                axis.set_ylim(yLims)
-
-        _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, axis)
+        _plot_finalizer(xlog, ylog, ax_xlim, ax_ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, axis)
 
     if old_ax is not None:  # Reset the previously set axis
         sca(old_ax)
@@ -248,7 +250,7 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
         The additional axis object created.
     """
     
-    # Set the current axis
+    # Get the relevant axis
     ax1 = gca() if ax is None else ax
     old_ax = axes_handler(ax1)
 
@@ -284,11 +286,11 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
     # Perform first plot call to original axis
     lines = []
     for i in range(L):
-        lines += plt_plot(x[i], y[i], label=label[i], **plot_par[i])
+        lines += ax1.plot(x[i], y[i], label=label[i], **plot_par[i])
     
     # Get the axis limits if not already specified
-    xlims = ax1.get_xlim() if xlim is None else xlim
-    ylims = ax1.get_ylim() if ylim is None else ylim
+    xlims = ax1.get_xlim() if xlim in [None, 'auto'] else xlim
+    ylims = ax1.get_ylim() if ylim in [None, 'auto'] else ylim
     
     # Validate xbreak/ybreak
     if (xbreak is None and ybreak is None):
@@ -529,18 +531,20 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     
     """
     
-    # Set the current axis
+    # Get the relevant axis
     if ax is None: ax = gca()
     old_ax = axes_handler(ax)
 
     gridpar = grid_handler(grid, ax)
-        
+    xlim = lims_handler(xlim, ax)
+    ylim = lims_handler(ylim, ax)
+
     # Assign bounds if none given
     if (bounds is None):
         if orientation == 'horizontal':
-            bounds = xlim if xlim is not None else ax.get_xlim()
+            bounds = xlim if xlim not in [None, 'auto'] else ax.get_xlim()
         else:
-            bounds = ylim if ylim is not None else ax.get_ylim()
+            bounds = ylim if ylim not in [None, 'auto'] else ax.get_ylim()
     
     # Parse expression
     isfunc = False
@@ -747,11 +751,13 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         Otherwise, simply returns the `expr` that was given.
     """
 
-    # Set the current axis
+    # Get the relevant axis
     if ax is None: ax = gca()
     old_ax = axes_handler(ax)
 
     gridpar = grid_handler(grid, ax)
+    xlim = lims_handler(xlim, ax)
+    ylim = lims_handler(ylim, ax)
     
     # Assign bounds if none given
     if (bounds is None):
@@ -898,7 +904,7 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         for jj in range(len(expr)):
             end = array(abs(vararr - intervals[jj])).argmin()
             if any(isfunc):
-                lines.append(list(zip(vararr[start: end + 1], expr[jj](vararr[start: end + 1], **subsarr[ii]))))
+                lines.append(zip(vararr[start: end + 1], expr[jj](vararr[start: end + 1], **subsarr[ii])))
             else:
                 lamb = lambdify(var, expr[jj].subs(subsarr[ii]), modules='numpy')
                 if expr[jj].subs(subsarr[ii]).is_constant():
@@ -922,14 +928,6 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         sca(old_ax)
     
     return(curves[0] if len(curves) == 1 else curves)
-
-
-####################################
-# 1D histogram and binned statistics
-####################################
-########################################################################
-############## Definition of all wrappers for 1D plotting ##############
-########################################################################
 
 
 ####################################
@@ -1034,7 +1032,7 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
         Only provided if output is True.
     """
 
-    # Set the current axis
+    # Get the relevant axis
     if ax is None: ax = gca()
     old_ax = axes_handler(ax)
 
@@ -1073,7 +1071,6 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
         label = [label for i in range(L)]
     if is_number(xlim):
         xlim = [nanmean(data) - xlim * nanstd(data), nanmean(data) + xlim * nanstd(data)]
-
     if ylog is None:
         ylog = Params.hist1D_yaxis_log
     if hist_type is None:
@@ -1083,6 +1080,9 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
 
     if not isinstance(hist_type, (list, tuple, ndarray)):
         hist_type = [hist_type] * L
+
+    xlim = lims_handler(xlim, ax)
+    ylim = lims_handler(ylim, ax)
 
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     # plot_par={**plot_kw, **kwargs} # For Python > 3.5
@@ -1188,11 +1188,11 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     if any(label) and Params.legend_auto is True:
         legend(loc=lab_loc)
 
-    if ylim is None and orientation == 'vertical':  # Adjust ylims if None given.
+    if ylim == 'auto' and orientation == 'vertical':  # Adjust ylims if None given.
         if not ylog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
             ylim = [0, max(nanmax(y) * (1 + rcParams['axes.ymargin']), gca().get_ylim()[1])]
 
-    if xlim is None and orientation == 'horizontal':  # Adjust xlims if None given.
+    if xlim == 'auto' and orientation == 'horizontal':  # Adjust xlims if 'auto'.
         if not xlog and all([val is None for val in v]):  # These automatic limits do not apply when ylog=True or statistics are used.
             xlim = [0, max(nanmax(y) * (1 + rcParams['axes.xmargin']), gca().get_xlim()[1])]
 
@@ -1270,11 +1270,13 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
         A list of Line2D objects representing the plotted data.
     """
 
-    # Set the current axis
+    # Get the relevant axis
     if ax is None: ax = gca()
     old_ax = axes_handler(ax)
 
     gridpar = grid_handler(grid, ax)
+    xlim = lims_handler(xlim, ax)
+    ylim = lims_handler(ylim, ax)
 
     if not isinstance(x, list) or len(shape(x)) == 1:
         x = [x]
@@ -1298,7 +1300,7 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
 
     lines = []  # Initialising list which contains each line
     for i in range(L):
-        lines += plt_plot(x[i], y[i], label=label[i], **plot_par[i])
+        lines += ax.plot(x[i], y[i], label=label[i], **plot_par[i])
 
     if any(label):
         legend(loc=lab_loc)

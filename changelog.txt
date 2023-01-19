@@ -1,3 +1,9 @@
+**0.6.5.0** (19/01/2023):
+
+* Adjusted xlim/ylim behaviour to not overwrite previously assigned limits (currently only in plots_1d.py).
+* Added lims_handler() to base_func.py in order to process user's limits in a consistent format
+* Also changed splotch.axline() to now use matplotlib's axline() function, which allows for infinitely long diagonal lines.
+
 **0.6.4.0** (21/12/2022):
 
 * Fixed brokenplot()
