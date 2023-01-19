@@ -156,12 +156,8 @@ def axline(x=None, y=None, a=None, b=None,
     for jj, axis in enumerate(ax):  # Loop over all axes
         gridpar = grid_handler(grid, axis)
 
-        print(lims_handler(xlim, axis), lims_handler(ylim, axis))
-
         ax_xlim = axis.get_xlim() if lims_handler(xlim, axis) is None else xlim
         ax_ylim = axis.get_ylim() if lims_handler(ylim, axis) is None else ylim
-
-        print(ax_xlim, ax_ylim)
 
         if (x is not None):
             for ii, xx in enumerate(x):
