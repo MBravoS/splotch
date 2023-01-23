@@ -145,9 +145,7 @@ def axline(x=None, y=None, a=None, b=None,
         raise ValueError("Length of label list ({0}) must match the number of lines given ({1}).".format(len(label), L))
 
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par = plot_kw.copy()
-    plot_par.update(kwargs)
+    plot_par = {**plot_kw, **kwargs}
 
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)
@@ -269,8 +267,6 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
         
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
     plot_par = {**plot_kw, **kwargs}
-    # plot_par = plot_kw.copy()
-    # plot_par.update(kwargs)
     
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)
@@ -1081,9 +1077,7 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     ylim = lims_handler(ylim, ax)
 
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par = plot_kw.copy()
-    plot_par.update(kwargs)
+    plot_par = {**plot_kw, **kwargs}
 
     # Check if width is given as a kwarg
     if 'width' in plot_par.keys():
@@ -1287,9 +1281,7 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
         label = [label for i in range(L)]
 
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
-    # plot_par={**plot_kw, **kwargs} # For Python > 3.5
-    plot_par = plot_kw.copy()
-    plot_par.update(kwargs)
+    plot_par = {**plot_kw, **kwargs}
 
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)

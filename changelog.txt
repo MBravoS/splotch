@@ -1,3 +1,9 @@
+**0.6.5.1** (23/01/2023):
+
+* Changed plot_par combining to use python 3.5> dictionary expansion; i.e. dict = {**dict1, **dict2}
+* Added xlim/ylim handler functionality to plots_2d.py
+* Subsequently fixed bug in errorband which caused kwargs to remain in memory
+
 **0.6.5.0** (19/01/2023):
 
 * Adjusted xlim/ylim behaviour to not overwrite previously assigned limits (currently only in plots_1d.py).
