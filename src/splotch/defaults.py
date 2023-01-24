@@ -28,7 +28,7 @@ class Params:
     # Grids
     grid_color = 'grey'
     grid_alpha = 1.0
-    grid_ls = '--'
+    grid_ls = '-'
     grid_lw = 1.0
 
     # Legends

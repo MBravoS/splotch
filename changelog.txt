@@ -1,3 +1,7 @@
+**0.6.5.2** (24/01/2023):
+
+* Changed default grid linestyle to '-'.
+
 **0.6.5.1** (23/01/2023):
 
 * Changed plot_par combining to use python 3.5> dictionary expansion; i.e. dict = {**dict1, **dict2}
