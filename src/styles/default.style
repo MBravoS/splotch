@@ -720,7 +720,7 @@
 ## ***************************************************************************
 ## * CONTOUR PLOTS                                                           *
 ## ***************************************************************************
-cont_filled = False
+#cont_filled = False
 #cont_cmap = 'scicm.Stone'
 #cont_linestyle = ['solid', 'dashed', 'dotted']
 #contp_percent = [68.27, 95.45]
