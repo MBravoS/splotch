@@ -1,6 +1,6 @@
 # _splotch_: Simple PLOTs, Contours and Histograms
 
-[![Github release](https://img.shields.io/github/release/MBravoS/splotch.svg?label=tag&colorB=54ebff)](https://github.com/MBravoS/splotch/releases) [![PyPI version](https://img.shields.io/pypi/v/splotch.svg?colorB=ff0080)](https://pypi.python.org/pypi/splotch) [![License](https://img.shields.io/pypi/l/scicm.svg)](https://github.com/MBravoS/scicm/blob/main/LICENSE)
+[![Github release](https://img.shields.io/github/release/MBravoS/splotch.svg?label=tag&colorB=54ebff)](https://github.com/MBravoS/splotch/releases) [![PyPI version](https://img.shields.io/pypi/v/splotch.svg?colorB=ff0080)](https://pypi.python.org/pypi/splotch) [![License](https://img.shields.io/pypi/l/splotch.svg)](https://github.com/MBravoS/splotch/blob/master/LICENSE)
 
 <p align="center">
 <img src="/example_images/SPLOTCH_logo.png" alt="drawing" width="300"/>
