@@ -15,6 +15,7 @@ from matplotlib.colors import to_rgba_array
 from scipy.stats import binned_statistic
 from sympy import Expr, latex, sympify
 from sympy.utilities.lambdify import lambdify
+import inspect
 
 from .base_func import axes_handler, grid_handler, lims_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, _plot_finalizer, simpler_dict_splicer
 from .defaults import Params
@@ -430,7 +431,7 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
 ########################################
 def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, bounds=None, num=101,
           xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None,
-          title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
+          title=None, xlabel=None, ylabel=None, label=None, uselatex=True, ax=None, plot_kw={}, **kwargs):
     """Plot Mathematical Expressions
     
     Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
@@ -487,7 +488,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
         Sets the label of the x-axis.
     ylabel : str, optional
         Sets the label of the y-axis.
-    label : bool, str or list-like, optional (default: True)
+    label : bool, str or list-like, optional (default: True if `expr` is not callable)
         Sets the label(s) of the curve(s) for the legend. `label` can be one of:
             - `True`:
                 Creates a label for every curve defined by `subs`. The label will list all values
@@ -595,20 +596,33 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)
 
-    # Create the legend object
-    if bool(label) is False:  # label was `None` or `False`
+    # Set default label behaiviour
+    if label is None:
+        label = False if isfunc else True
+
+    # Create the labels
+    if label is False:
         labellist = [None] * L
     elif label is True:  # Auto-generate labels
-        if subsarr == [{}]:
+        if isfunc:
+            exprstr = expr.__name__
+            signature = inspect.signature(expr)  # get the signature of the function/lambda
+            pars = [str(par) for par in signature.parameters.values()]
+            
+            labellist = []
+            for ii in range(L):  # Make a label for each of sub values
+                labellist.append(f"{exprstr}(" + ", ".join(f"{par}={subsarr[ii][par]}" if par in list(subsarr[ii]) else f"{par}" for par in pars) + ")")
+
+        elif subsarr == [{}]:
             labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
         else:
             labellist = []
             exprstr = f"${latex(expr)}$" if uselatex else str(expr)
             for ii in range(L):  # Make a label for each of sub values
                 if uselatex:
-                    labellist.append(f"{exprstr} (" + "; ".join([f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
+                    labellist.append(f"{exprstr} {{" + ", ".join([f"${key}$={subsarr[ii][key]}" for key in list(subsarr[ii])]) + "}")
                 else:
-                    labellist.append(f"{exprstr} (" + "; ".join([f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
+                    labellist.append(f"{exprstr} {{" + ", ".join([f"{key}={subsarr[ii][key]}" for key in list(subsarr[ii])]) + "}")
     elif isinstance(label, str):  # A single string
         labellist = [label] * L
     else:
@@ -620,7 +634,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
                 labellist = label
         except TypeError:  # was not an iterable
             raise TypeError(f"`label` of type {type(label)} is not recognised.")
-                                 
+    
     # Create and plot the curves
     vararr = logspace(*log10(bounds), num=num) if xlog else linspace(*bounds, num=num)
     curves = [None] * L
@@ -654,7 +668,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
 ##################################################
 def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=None, intervals=[], permute=False, num=101,
                     xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, grid=None,
-                    title=None, xlabel=None, ylabel=None, label=True, uselatex=True, ax=None, plot_kw={}, **kwargs):
+                    title=None, xlabel=None, ylabel=None, label=None, uselatex=True, ax=None, plot_kw={}, **kwargs):
     """Plot Piecewise Mathematical Expressions
     
     Plot the curve(s) corresponding to mathematical expressions over a given range across the independent variable.
@@ -708,7 +722,7 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         Sets the label of the x-axis.
     ylabel : str, optional
         Sets the label of the y-axis.
-    label : bool, str or list-like, optional (default: True)
+    label : bool, str or list-like, optional (default: True if `expr` is not callable)
         Sets the label(s) of the curve(s) for the legend. `label` can be one of:
             - `True`:
                 Creates a label for every curve defined by `subs`. The label will list all values
@@ -762,23 +776,25 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     try:  # duck-type check
         _ = (k for k in expr)
         if isinstance(expr, str):
-            expr = [expr]
+            exprs = [expr]
         elif isinstance(expr, tuple):
-            expr = list(expr)
+            exprs = list(expr)
+        else:
+            exprs = expr
     except (TypeError):
-        expr = [expr]
+        exprs = [expr]
     
     # Parse expressions
-    isfunc = [False] * len(expr)
-    for ii in range(len(expr)):
-        if (isinstance(expr[ii], str)):
-            expr[ii] = sympify(expr[ii])
-        elif (callable(expr[ii])):
+    isfunc = [False] * len(exprs)
+    for ii in range(len(exprs)):
+        if (isinstance(exprs[ii], str)):
+            exprs[ii] = sympify(exprs[ii])
+        elif (callable(exprs[ii])):
             isfunc[ii] = True
-        elif (isinstance(expr[ii], Expr)):
+        elif (isinstance(exprs[ii], Expr)):
             pass
         else:
-            raise TypeError(f"Elements of `expr` must be of type `str`, sympy.Expr or callable, instead got {type(expr[ii])}.")
+            raise TypeError(f"Elements of `expr` must be of type `str`, sympy.Expr or callable, instead got {type(exprs[ii])}.")
             
     if not (all(isfunc) or all([not b for b in isfunc])):  # Must either be all expressions or all callables
         raise TypeError("`expr` cannot mix callable functions with expressions.")
@@ -790,12 +806,12 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         if isinstance(intervals, tuple):
             intervals = list(intervals)
         if len(intervals) == 0:  # if no intervals are given, set the interval to be the ending bound as a placeholder
-            if len(expr) == 1:
+            if len(exprs) == 1:
                 intervals = [bounds[-1]]
             else:
-                raise ValueError(f"No intervals given for {len(expr)} expressions.")
-        elif len(intervals) != len(expr) - 1:
-            raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(expr)} expressions.")
+                raise ValueError(f"No intervals given for {len(exprs)} expressions.")
+        elif len(intervals) != len(exprs) - 1:
+            raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(exprs)} expressions.")
         else:  # If intervals are given, ensure they are within the bounds given.
             if min(intervals) <= bounds[0]:
                 raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
@@ -811,9 +827,9 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         
     if subs is None: subs = dict()
     if not any(isfunc):  # expr contains Sympy expressions
-        symbols = expr[0].free_symbols
-        for ii in range(len(expr)):
-            symbols = expr[ii].free_symbols  # Get expression Symbols
+        # symbols = exprs[0].free_symbols  ## removing this line as probably not needed?
+        for ii in range(len(exprs)):
+            symbols = exprs[ii].free_symbols  # Get expression Symbols
             symbolkeys = [str(symb) for symb in symbols]  # convert these to strings, instead of sympy.Symbols
             
             if var is None:  # Assume independent variable is 'x', otherwise, assume the first symbol.
@@ -857,21 +873,36 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     # Create 'L' number of plot kwarg dictionaries to parse into each plot call
     plot_par = dict_splicer(plot_par, L, [1] * L)
 
-    # Create the legend object
-    if bool(label) is False:  # label was `None` or `False`
+    # Set default label behaiviour
+    if label is None:
+        label = False if isfunc else True
+
+    # Create the labels
+    if label is False:
         labellist = [None] * L
-    
     elif label is True:  # Auto-generate labels
-        if subsarr == [{}]:
-            labellist = [f"${latex(expr)}$" if uselatex else str(expr)]
+        if all(isfunc):
+            labellist = []
+            exprstr = "; ".join(str(exp.__name__) for exp in exprs)
+            
+            pars = []
+            for exp in exprs:
+                signature = inspect.signature(exp)  # get the signature of the function/lambda
+                pars += [str(par) for par in list(signature.parameters.values())[1:] if str(par) not in pars]
+            
+            for ii in range(L):  # Make a label for each of sub values
+                labellist.append(f"{exprstr} {{" + ", ".join(f"{par}={subsarr[ii][par]}" if par in list(subsarr[ii]) else f"{par}" for par in pars) + "}")
+                
+        elif subsarr == [{}]:
+            labellist = ["; ".join(f"${latex(exp)}$" for exp in exprs) if uselatex else "; ".join(exprs)]
         else:
             labellist = []
-            exprstr = f"${latex(expr)}$" if uselatex else str(expr)
+            exprstr = "; ".join(f"${latex(exp)}$" for exp in exprs) if uselatex else "; ".join(exprs)
             for ii in range(L):  # Make a label for each of sub values
                 if uselatex:
-                    labellist.append(f"{exprstr} (" + "; ".join([f"${key}$={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
+                    labellist.append(f"{exprstr} {{" + "; ".join([f"${key}$={subsarr[ii][key]}" for key in list(subsarr[ii])]) + "}")
                 else:
-                    labellist.append(f"{exprstr} (" + "; ".join([f"{key}={subsarr[ii][key]}" for jj, key in enumerate(list(subsarr[ii]))]) + ")")
+                    labellist.append(f"{exprstr} {{" + "; ".join([f"{key}={subsarr[ii][key]}" for key in list(subsarr[ii])]) + "}")
     
     elif isinstance(label, str):  # A single string
         labellist = [label] * L
@@ -890,13 +921,17 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     vararr = logspace(*log10(bounds), num=num) if xlog else linspace(*bounds, num=num)
     intervals.append(vararr[-1])
     curves = [None] * L
+
     for ii in range(L):
         lines = []
         start = 0
-        for jj in range(len(expr)):
+        for jj, exp in enumerate(exprs):
             end = array(abs(vararr - intervals[jj])).argmin()
-            if any(isfunc):
-                lines.append(zip(vararr[start: end + 1], expr[jj](vararr[start: end + 1], **subsarr[ii])))
+            if isfunc[jj]:
+                signature = inspect.signature(exp)
+                pars = [str(par) for par in signature.parameters.values()]
+                subs = {key: val for key, val in subsarr[ii].items() if key in pars}
+                lines.append(list(zip(vararr[start: end + 1], expr[jj](vararr[start: end + 1], **subs))))
             else:
                 lamb = lambdify(var, expr[jj].subs(subsarr[ii]), modules='numpy')
                 if expr[jj].subs(subsarr[ii]).is_constant():
@@ -910,7 +945,7 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
                     lines.append(list(zip(func(vararr[start: end + 1]), vararr[start: end + 1])))
                     
             start = end  # move to next interval
-
+        
         curves[ii] = LineCollection(lines, label=labellist[ii], **plot_par[ii])
         ax.add_collection(curves[ii])
 

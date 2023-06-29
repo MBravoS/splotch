@@ -1,3 +1,9 @@
+**0.6.6.0** (29/06/2023):
+
+* Added automatic labels to functions in splotch.curve() and splotch.curve_piecewise()
+* If label==True when expr is parsed as a function/lambda, can now generate an automatic label based on the callable name and variable names.
+* Fixed some bugs in splotch.curve_piecewise()
+
 **0.6.5.2** (24/01/2023):
 
 * Changed default grid linestyle to '-'.
