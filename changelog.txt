@@ -1,3 +1,9 @@
+**0.6.8.0** (04/10/2023):
+
+* Added is_listlike() to base_funcs, which checks whether a variable is iterable, but not a string.
+* Added is_listlike() checks to plots_2d.contourp()
+* Added other checks in contourp() for correct types and allowed values when giving bin_type
+
 **0.6.7.0** (04/10/2023):
 
 * Allowed errorbar() to return an output

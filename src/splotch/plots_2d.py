@@ -23,7 +23,7 @@ from scipy.stats import binned_statistic, gaussian_kde
 from scipy.ndimage.filters import gaussian_filter
 
 from .colorbar import colorbar
-from .base_func import axes_handler, grid_handler, lims_handler, basehist2D, bin_axis, dict_splicer, percent_finder, plot_finalizer, _plot_finalizer
+from .base_func import axes_handler, grid_handler, lims_handler, basehist2D, bin_axis, is_listlike, dict_splicer, percent_finder, plot_finalizer, _plot_finalizer
 from .defaults import Params
 
 
@@ -222,13 +222,20 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     xlim = lims_handler(xlim, ax)
     ylim = lims_handler(ylim, ax)
     
-    if not isinstance(percent, ndarray):
+    # Check for list-like behaviour
+    if not is_listlike(percent):
         percent = array([percent]).flatten()
     
-    if not isinstance(bin_type, (list, tuple, ndarray)):
+    if not is_listlike(bin_type):
+        if not isinstance(bin_type, str):
+            raise TypeError("bin_type must be a list-like object or a string")
         bin_type = [bin_type] * 2
+
+    for btype in bin_type:
+        if btype not in ['number', 'width', 'edges', 'equal']:
+            raise ValueError(f"bin_type must be one of: 'number', 'width', 'edges', 'equal'. Instead got {btype}")
     
-    if not isinstance(bins, (list, tuple)):
+    if not is_listlike(bins):
         if bins is None:
             bins = max([10, int(len(x)**0.4)])  # Defaults to min of 10 bins
         bins = [bins] * 2
