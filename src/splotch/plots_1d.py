@@ -634,7 +634,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
                 labellist = label
         except TypeError:  # was not an iterable
             raise TypeError(f"`label` of type {type(label)} is not recognised.")
-    
+
     # Create and plot the curves
     vararr = logspace(*log10(bounds), num=num) if xlog else linspace(*bounds, num=num)
     curves = [None] * L

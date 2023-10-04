@@ -1,3 +1,8 @@
+**0.6.7.0** (04/10/2023):
+
+* Allowed errorbar() to return an output
+* Added the 'o'/'offset' and 's'/'suptitle' options to adjust_text(). Offset is the text that appears above a axis spline when scientific notation is in use. Adjusting 'tick' also adjusts 'offset' unless it is already specified.
+
 **0.6.6.0** (29/06/2023):
 
 * Added automatic labels to functions in splotch.curve() and splotch.curve_piecewise()

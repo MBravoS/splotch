@@ -499,7 +499,7 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     plot_par = dict_splicer(plot_par, L, [1] * L)
     
     for i in range(L):
-        ax.errorbar(x[i], y[i], xerr=xerr[i], yerr=yerr[i], label=label[i], **plot_par[i])
+        output = ax.errorbar(x[i], y[i], xerr=xerr[i], yerr=yerr[i], label=label[i], **plot_par[i])
 
     if any(label):
         legend(loc=lab_loc)
@@ -508,6 +508,8 @@ def errorbar(x, y, xerr=None, yerr=None, xlim=None, ylim=None, xinvert=False, yi
     
     if old_ax is not None:
         sca(old_ax)
+
+    return output
 
 
 ####################################

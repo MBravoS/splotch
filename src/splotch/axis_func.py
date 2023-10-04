@@ -42,9 +42,10 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
         ==============================  =================================
         'x', 'xlabel'                    x-axis label
         'y', 'ylabel'                    y-axis label
-        'k', 'tick'                      Tick labels
+        'k', 'tick'                      Tick labels (incl. offset)
         't', 'title'                     Title
-        's', 'suptitle'                  Sup. title
+        's', 'suptitle'                  Super title
+        'o', 'offset'                    Offset text
         'l', 'legend'                    Legend text
         'L', 'legend title'              Legend title
         'c', 'colorbar'                  Color bar
@@ -73,8 +74,8 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
         ax = [ax]
 
     # Validate `which` value(s)
-    whichRef = ['x', 'y', 't', 's', 'k', 'l', 'L', 'c', 'T', 'a',
-                'xlabel', 'ylabel', 'title', 'suptitle', 'ticks', 'legend', 'legend title', 'colorbar', 'text', 'all']
+    whichRef = ['x', 'y', 'k', 'o', 't', 's', 'l', 'L', 'c', 'T', 'a',
+                'xlabel', 'ylabel', 'tick', 'offset', 'title', 'suptitle', 'legend', 'legend title', 'colorbar', 'text', 'all']
 
     try:  # check if iterable
         _ = (i for i in which)
@@ -131,16 +132,20 @@ def adjust_text(which=['x', 'y'], ax=None, text_kw={}, **kwargs):
                 texts = [a.xaxis.label]
             elif (lab in ['y', 'ylabel']):
                 texts = [a.yaxis.label]
+            elif (lab in ['k', 'ticks']):
+                texts += a.get_yticklabels()
+                texts += a.get_xticklabels()
+                if ('o' not in which and 'offset' not in which):  # check if offset text not already specified
+                    texts += [a.yaxis.get_offset_text(), a.xaxis.get_offset_text()]
+            elif (lab in ['o', 'offset']):
+                texts += [a.yaxis.get_offset_text(), a.xaxis.get_offset_text()]
             elif (lab in ['t', 'title']):
                 texts = [a.title]
-            elif (lab in ['s', 'suptitle']):  # Not implemented
-                texts = [a.title]
-            elif (lab in ['k', 'ticks']):
-                texts = append(a.get_yticklabels(), a.get_xticklabels())
+            elif (lab in ['s', 'suptitle']):
+                texts = [a.figure._suptitle]
             elif (lab in ['l', 'legend']):
                 for lgnd in lgnds:
                     texts += list(lgnd.get_texts())
-
             elif (lab in ['L', 'legend title']):
                 texts = [lgnd.get_title() for lgnd in lgnds]  # Get title in legend (if it exists)
             elif (lab in ['c', 'colorbar']):
