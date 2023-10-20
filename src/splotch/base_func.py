@@ -416,7 +416,7 @@ def is_listlike(var):
     """Base-level classifier for iterable objects (not strings)
 
     Determine whether the argument is list-like by being able to iterate. Lists, tuples, numpy arrays,
-    are considered like-like, whereas, strings, although iterable, are not considered list-like.
+    dictionaries are considered like-like, whereas, strings, although iterable, are not considered list-like.
 
     Parameters
     ----------
@@ -431,6 +431,7 @@ def is_listlike(var):
 
     if isinstance(var, str):
         return False
+
     try:
         _ = [i for i in var]
         return True

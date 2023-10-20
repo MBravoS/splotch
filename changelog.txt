@@ -1,3 +1,8 @@
+**0.6.9.0** (20/10/2023):
+
+* Adjusted all iterable checks to use is_listlike() base function rather than using isinstance()
+* Also made some changes to curve_piecewise() to be more generalised
+
 **0.6.8.0** (04/10/2023):
 
 * Added is_listlike() to base_funcs, which checks whether a variable is iterable, but not a string.

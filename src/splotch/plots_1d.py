@@ -17,7 +17,7 @@ from sympy import Expr, latex, sympify
 from sympy.utilities.lambdify import lambdify
 import inspect
 
-from .base_func import axes_handler, grid_handler, lims_handler, bin_axis, dict_splicer, is_numeric, is_number, plot_finalizer, _plot_finalizer, simpler_dict_splicer
+from .base_func import axes_handler, grid_handler, lims_handler, bin_axis, dict_splicer, is_numeric, is_number, is_listlike, plot_finalizer, _plot_finalizer, simpler_dict_splicer
 from .defaults import Params
 
 
@@ -86,7 +86,7 @@ def axline(x=None, y=None, a=None, b=None,
 
     # Get the relevant axis
     if ax is not None:
-        if isinstance(ax, (list, tuple, ndarray)):
+        if is_listlike(ax):
             if len(shape(ax)) > 1:  # If ax array is multi-dimensional, flatten it
                 ax = array(ax).flatten()
         else:
@@ -100,15 +100,18 @@ def axline(x=None, y=None, a=None, b=None,
     if not (any([is_numeric(var) for var in [x, y, a, b]])):  # If nothing has been specified
         raise TypeError("axline() missing one of optional arguments: 'x', 'y', 'a' or 'b'")
 
-    for i, val in enumerate([x, y, a, b]):
-        if (val is not None):
-            try:  # Test whether the parameter is iterable
-                _ = (k for k in val)
-            except TypeError:  # If not, convert to a list
-                if (i == 0): x = [x]
-                elif (i == 1): y = [y]
-                elif (i == 2): a = [a]
-                elif (i == 3): b = [b]
+    # If parameter given and it is not a list-like object, convert to list
+    if x and not is_listlike(x):
+        x = [x]
+
+    if y and not is_listlike(y):
+        y = [y]
+
+    if a and not is_listlike(a):
+        a = [a]
+
+    if b and not is_listlike(b):
+        b = [b]
 
     if (x is not None and y is not None):  # Check whether both x and y were specified
         raise ValueError("'x' and 'y' cannot be both specified")
@@ -251,7 +254,7 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
 
     gridpar = grid_handler(grid, ax1)
 
-    if not isinstance(x, (list, tuple, ndarray)) or len(shape(x)) == 1:
+    if not is_listlike(x) or len(shape(x)) == 1:
         x = [x]
 
     L = len(x)
@@ -260,10 +263,10 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
         y = x
         x = [arange(len(x[i])) for i in range(L)]
     else:
-        if not isinstance(y, (list, tuple, ndarray)) or len(shape(y)) == 1:
+        if not is_listlike(y) or len(shape(y)) == 1:
             y = [y]
 
-    if not isinstance(label, (list, tuple, ndarray)) or len(shape(label)) == 1:
+    if not is_listlike(label) or len(shape(label)) == 1:
         label = [label] * L
         
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
@@ -293,7 +296,7 @@ def brokenplot(x, y=None, xbreak=None, ybreak=None, xlim=None, ylim=None, sep=0.
         raise ValueError("Cannot specify both xbreak and ybreak.")
 
     breaks = xbreak if xbreak else ybreak
-    if not isinstance(breaks, (list, tuple, ndarray)):
+    if not is_listlike(breaks):
         breaks = (breaks,) * 2
     else:
         if len(breaks) == 1:
@@ -564,7 +567,9 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
                     var = 'x'  # if 'x' in symbolkeys or len(symbolkeys)==0 else symbolkeys[0]
         
         # Validate the substitution variable names
-        if subs is None: subs = dict()
+        if subs is None:
+            subs = dict()
+
         if (var in list(subs)):
             raise ValueError(f"Independent variable '{var}' should not be in subs")
             
@@ -574,7 +579,7 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
         
         # Check for missing substitution variables
         missing = set(symbolkeys) - set(subs) - set(var)
-        if len(missing) > 0:
+        if missing:
             raise TypeError(f"`expr` missing {len(missing)} required substitution variable{'s' if len(missing) > 1 else ''}: {list(missing)}")
     
     # The lengths of each substitute value list, len=1 if just a single value
@@ -626,13 +631,12 @@ def curve(expr, var=None, subs={}, orientation='horizontal', permute=False, boun
     elif isinstance(label, str):  # A single string
         labellist = [label] * L
     else:
-        try:  # Test whether the parameter is iterable
-            _ = (k for k in label)
+        if is_listlike(label):
             if (len(label) != L):
                 raise TypeError(f"Number of labels ({len(label)}) does not match the number of curves ({L}).")
             else:
                 labellist = label
-        except TypeError:  # was not an iterable
+        else:  # was not an iterable
             raise TypeError(f"`label` of type {type(label)} is not recognised.")
 
     # Create and plot the curves
@@ -773,19 +777,17 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
             bounds = ylim if ylim is not None else ax.get_ylim()
 
     # Check if iterable
-    try:  # duck-type check
-        _ = (k for k in expr)
-        if isinstance(expr, str):
-            exprs = [expr]
-        elif isinstance(expr, tuple):
-            exprs = list(expr)
+    if is_listlike(expr):
+        if isinstance(expr, dict):
+            exprs = list(expr.values())
         else:
-            exprs = expr
-    except (TypeError):
+            exprs = list(expr)
+    else:  # a string or something else
         exprs = [expr]
-    
+
     # Parse expressions
     isfunc = [False] * len(exprs)
+    
     for ii in range(len(exprs)):
         if (isinstance(exprs[ii], str)):
             exprs[ii] = sympify(exprs[ii])
@@ -800,26 +802,27 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         raise TypeError("`expr` cannot mix callable functions with expressions.")
         
     # Validate intervals is given in the correct format and the correct number given within the bounds.
-    try:
-        _ = (k for k in intervals)
-        
-        if isinstance(intervals, tuple):
-            intervals = list(intervals)
-        if len(intervals) == 0:  # if no intervals are given, set the interval to be the ending bound as a placeholder
-            if len(exprs) == 1:
+    if is_listlike(intervals):
+        if len(intervals) == 0:
+            if len(exprs) == 1:  # if no intervals are given, set the interval to be the ending bound as a placeholder
                 intervals = [bounds[-1]]
             else:
                 raise ValueError(f"No intervals given for {len(exprs)} expressions.")
         elif len(intervals) != len(exprs) - 1:
             raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(exprs)} expressions.")
-        else:  # If intervals are given, ensure they are within the bounds given.
-            if min(intervals) <= bounds[0]:
-                raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
-            elif max(intervals) >= bounds[1]:
-                raise ValueError(f"The maximum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
-    except (TypeError):
+    else:
         intervals = [intervals]
+        if len(intervals) != len(exprs) - 1:
+            raise ValueError(f"There should be N-1 intervals for N expressions, instead received {len(intervals)} intervals for {len(exprs)} expressions.")
+    
+    # Ensure they are within the bounds given.
+    if min(intervals) < bounds[0]:
+        raise ValueError(f"The minimum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
+    elif max(intervals) > bounds[1]:
+        raise ValueError(f"The maximum interval value should be within the current bounds ({bounds[0]}, {bounds[1]}).")
 
+    intervals = list(intervals)
+    
     # Validate the substitution variable names
     symbolkeysArr = []
     if (var in list(subs)):
@@ -878,26 +881,27 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         label = False if isfunc else True
 
     # Create the labels
+    print('label', label)
     if label is False:
         labellist = [None] * L
     elif label is True:  # Auto-generate labels
         if all(isfunc):
             labellist = []
-            exprstr = "; ".join(str(exp.__name__) for exp in exprs)
+            exprstr = "; ".join(str(expr.__name__) for expr in exprs)
             
             pars = []
-            for exp in exprs:
-                signature = inspect.signature(exp)  # get the signature of the function/lambda
+            for expr in exprs:
+                signature = inspect.signature(expr)  # get the signature of the function/lambda
                 pars += [str(par) for par in list(signature.parameters.values())[1:] if str(par) not in pars]
             
             for ii in range(L):  # Make a label for each of sub values
                 labellist.append(f"{exprstr} {{" + ", ".join(f"{par}={subsarr[ii][par]}" if par in list(subsarr[ii]) else f"{par}" for par in pars) + "}")
                 
         elif subsarr == [{}]:
-            labellist = ["; ".join(f"${latex(exp)}$" for exp in exprs) if uselatex else "; ".join(exprs)]
+            labellist = ["; ".join(f"${latex(expr)}$" for expr in exprs) if uselatex else "; ".join(exprs)]
         else:
             labellist = []
-            exprstr = "; ".join(f"${latex(exp)}$" for exp in exprs) if uselatex else "; ".join(exprs)
+            exprstr = "; ".join(f"${latex(expr)}$" for expr in exprs) if uselatex else "; ".join(exprs)
             for ii in range(L):  # Make a label for each of sub values
                 if uselatex:
                     labellist.append(f"{exprstr} {{" + "; ".join([f"${key}$={subsarr[ii][key]}" for key in list(subsarr[ii])]) + "}")
@@ -908,15 +912,13 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
         labellist = [label] * L
     
     else:
-        try:  # Test whether the parameter is iterable
-            _ = (k for k in label)
-        except TypeError:  # was not an iterable
+        if not is_listlike(label):
             raise TypeError(f"`label` of type {type(label)} is not recognised.")
             
         if (len(label) != L):
             raise TypeError(f"Number of labels ({len(label)}) does not match the number of curves ({L}).")
-        else:
-            labellist = label
+        
+        labellist = label
 
     vararr = logspace(*log10(bounds), num=num) if xlog else linspace(*bounds, num=num)
     intervals.append(vararr[-1])
@@ -925,16 +927,16 @@ def curve_piecewise(expr, var=None, subs={}, orientation='horizontal', bounds=No
     for ii in range(L):
         lines = []
         start = 0
-        for jj, exp in enumerate(exprs):
+        for jj, expr in enumerate(exprs):
             end = array(abs(vararr - intervals[jj])).argmin()
             if isfunc[jj]:
-                signature = inspect.signature(exp)
+                signature = inspect.signature(expr)
                 pars = [str(par) for par in signature.parameters.values()]
                 subs = {key: val for key, val in subsarr[ii].items() if key in pars}
-                lines.append(list(zip(vararr[start: end + 1], expr[jj](vararr[start: end + 1], **subs))))
+                lines.append(list(zip(vararr[start: end + 1], expr(vararr[start: end + 1], **subs))))
             else:
-                lamb = lambdify(var, expr[jj].subs(subsarr[ii]), modules='numpy')
-                if expr[jj].subs(subsarr[ii]).is_constant():
+                lamb = lambdify(var, expr.subs(subsarr[ii]), modules='numpy')
+                if expr.subs(subsarr[ii]).is_constant():
                     func = lambda x: full_like(x, lamb(x))
                 else:
                     func = lambda x: lamb(array(x))
@@ -1065,7 +1067,7 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
 
     gridpar = grid_handler(grid, ax)
 
-    if not isinstance(data, (list, tuple, ndarray)):
+    if not is_listlike(data):
         data = [data]
     elif isinstance(data, ndarray):
         if (len(shape(data)) == 1 and data.dtype is not dtype('O')):
@@ -1073,28 +1075,28 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
 
     L = len(data)
 
-    if not isinstance(bin_type, (list, tuple)):
+    if not is_listlike(bin_type):
         bin_type = [bin_type] * L
-    if not isinstance(bins, (list, tuple, ndarray)) or (len(shape(bin_type)) == 1):
+    if not is_listlike(bins) or (len(shape(bin_type)) == 1):
         if bins is not None:
             bins = [bins] * L
         else:
             bins = [int((len(d))**0.4) for d in data]
-    if not isinstance(weights, (list, tuple, ndarray)) or (len(shape(weights)) == 1):
+    if not is_listlike(weights) or (len(shape(weights)) == 1):
         weights = [weights] * L
-    if not isinstance(dens, (list, tuple)):
+    if not is_listlike(dens):
         dens = [dens] * L
-    if not isinstance(cumul, (list, tuple)):
+    if not is_listlike(cumul):
         cumul = [cumul] * L
-    if not isinstance(scale, (list, tuple, ndarray)):
+    if not is_listlike(scale):
         scale = [scale] * L
-    if not isinstance(v, (list, tuple, ndarray)) or (len(shape(v)) == 1):
+    if not is_listlike(v) or (len(shape(v)) == 1):
         v = [v] * L
-    if not isinstance(nmin, (list, tuple, ndarray)) or (len(shape(nmin)) == 1):
+    if not is_listlike(nmin) or (len(shape(nmin)) == 1):
         nmin = [nmin] * L
-    if not isinstance(vstat, (list, tuple)):
+    if not is_listlike(vstat):
         vstat = [vstat] * L
-    if not isinstance(label, (list, tuple)):
+    if not is_listlike(label):
         label = [label for i in range(L)]
     if is_number(xlim):
         xlim = [nanmean(data) - xlim * nanstd(data), nanmean(data) + xlim * nanstd(data)]
@@ -1105,7 +1107,7 @@ def hist(data, bin_type=None, bins=None, dens=True, cumul=None, scale=None, weig
     if output is None:
         output = Params.hist1D_output
 
-    if not isinstance(hist_type, (list, tuple, ndarray)):
+    if not is_listlike(hist_type):
         hist_type = [hist_type] * L
 
     xlim = lims_handler(xlim, ax)
@@ -1303,16 +1305,19 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
     xlim = lims_handler(xlim, ax)
     ylim = lims_handler(ylim, ax)
 
-    if not isinstance(x, list) or len(shape(x)) == 1:
+    if not is_listlike(x) or len(shape(x)) == 1:
         x = [x]
+
     L = len(x)
+    
     if y is None:
         y = x
         x = [arange(len(x[i])) for i in range(L)]
     else:
-        if not isinstance(y, list) or len(shape(y)) == 1:
+        if not is_listlike(y) or len(shape(y)) == 1:
             y = [y]
-    if not isinstance(label, list):
+
+    if not is_listlike(label):
         label = [label for i in range(L)]
 
     # Combine the `explicit` plot_kw dictionary with the `implicit` **kwargs dictionary
@@ -1327,6 +1332,7 @@ def plot(x, y=None, xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=Fal
 
     if any(label):
         legend(loc=lab_loc)
+
     _plot_finalizer(xlog, ylog, xlim, ylim, title, xlabel, ylabel, xinvert, yinvert, gridpar, ax)
 
     if old_ax is not ax:
