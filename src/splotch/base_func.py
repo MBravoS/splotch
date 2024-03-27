@@ -410,6 +410,36 @@ def is_number(var):
 
 
 ####################################
+# General check for list-like
+####################################
+def is_listlike(var):
+    """Base-level classifier for iterable objects (not strings)
+
+    Determine whether the argument is list-like by being able to iterate. Lists, tuples, numpy arrays,
+    dictionaries are considered like-like, whereas, strings, although iterable, are not considered list-like.
+
+    Parameters
+    ----------
+    var : any type
+        The var to check.
+
+    Returns
+    -------
+    is_listlike : `bool`
+        True if the array is list-like, False if not.
+    """
+
+    if isinstance(var, str):
+        return False
+
+    try:
+        _ = [i for i in var]
+        return True
+    except TypeError:  # catch when for loop fails
+        return False  # not list-like
+
+
+####################################
 # Levels for contourp
 ####################################
 def percent_finder(data, p):
@@ -693,8 +723,6 @@ def step_fillerx(x, y, **kwargs):
     fill_betweenx(x, temp_y, step='pre', **kwargs)
 
     return(None)
-
-
 
 
 ####################################

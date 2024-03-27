@@ -1,6 +1,28 @@
-**0.6.5.3** (28/03/2024):
+**0.6.9.1** (28/03/2024):
 
 * Fixed issue in contourp due to the changes to axes.get_lines.prop_cycler in matplotlib v3.8
+
+**0.6.9.0** (20/10/2023):
+
+* Adjusted all iterable checks to use is_listlike() base function rather than using isinstance()
+* Also made some changes to curve_piecewise() to be more generalised
+
+**0.6.8.0** (04/10/2023):
+
+* Added is_listlike() to base_funcs, which checks whether a variable is iterable, but not a string.
+* Added is_listlike() checks to plots_2d.contourp()
+* Added other checks in contourp() for correct types and allowed values when giving bin_type
+
+**0.6.7.0** (04/10/2023):
+
+* Allowed errorbar() to return an output
+* Added the 'o'/'offset' and 's'/'suptitle' options to adjust_text(). Offset is the text that appears above a axis spline when scientific notation is in use. Adjusting 'tick' also adjusts 'offset' unless it is already specified.
+
+**0.6.6.0** (29/06/2023):
+
+* Added automatic labels to functions in splotch.curve() and splotch.curve_piecewise()
+* If label==True when expr is parsed as a function/lambda, can now generate an automatic label based on the callable name and variable names.
+* Fixed some bugs in splotch.curve_piecewise()
 
 **0.6.5.2** (24/01/2023):
 
