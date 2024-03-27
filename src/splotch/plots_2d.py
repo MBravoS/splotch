@@ -122,8 +122,10 @@ def contour(z, x=None, y=None, filled=None, xlim=None, ylim=None, xinvert=False,
 ####################################
 # Contours from density histograms
 ####################################
-def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0.0, max_spacing=True, xlim=None, ylim=None, xinvert=False, yinvert=False,
-             xlog=False, ylog=False, title=None, labels=None, xlabel=None, ylabel=None, lab_loc=0, ax=None, grid=None, output=None, plot_kw={}, **kwargs):
+def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0.0, max_spacing=True,
+             xlim=None, ylim=None, xinvert=False, yinvert=False, xlog=False, ylog=False, title=None,
+             labels=None, xlabel=None, ylabel=None, lab_loc=0, ax=None, grid=None, output=None,
+             plot_kw={}, **kwargs):
     """Contour function, encircling the highest density regions that contain the given percentages of the sample.
 
     Parameters
@@ -209,7 +211,9 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         filled = Params.cont_filled
     if percent is None:
         percent = Params.contp_percent
-    if 'cmap' not in kwargs.keys() and 'cmap' not in plot_kw.keys() and 'colors' not in kwargs.keys() and 'colors' not in plot_kw.keys():
+    cmap_check = 'cmap' not in kwargs.keys() and 'cmap' not in plot_kw.keys()
+    cmap_check &= 'colors' not in kwargs.keys() and 'colors' not in plot_kw.keys()
+    if cmap_check:
         plot_kw['cmap'] = Params.cont_cmap
     if output is None:
         output = Params.contp_output
@@ -243,14 +247,14 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
     
     # if drawing <4 lines with no color specified, use 'solid', 'dashed' and then 'dotted'
     if not filled and len(percent) < 4 and 'colors' not in plot_par.keys():
-        plot_par['colors'] = [next(ax._get_lines.prop_cycler)['color']] * len(percent)
+        plot_par['colors'] = ['C0'] * len(percent)
     
     if 'colors' in plot_par.keys():
         if isinstance(plot_par['colors'], str):
             plot_par['colors'] = [plot_par['colors'] for i in range(len(percent))]
         if 'cmap' in plot_par.keys():
             plot_par.pop('cmap')
-    elif max_spacing:
+    elif max_spacing and 'cmap' in plot_par.keys():
         if isinstance(plot_par['cmap'], str):
             plot_par['cmap'] = get_cmap(plot_par['cmap'])
         plot_par['colors'] = [plot_par['cmap'](i) for i in linspace(0, 1, len(percent))]

@@ -22,7 +22,7 @@ copyright = '2019, Matías Bravo & Robin Cook'
 author = 'Matías Bravo & Robin Cook'
 
 # The full version, including alpha/beta/rc tags
-release = '0.6.5.2'
+release = '0.6.5.3'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True

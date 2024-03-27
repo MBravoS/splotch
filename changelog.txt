@@ -1,3 +1,7 @@
+**0.6.5.3** (28/03/2024):
+
+* Fixed issue in contourp due to the changes to axes.get_lines.prop_cycler in matplotlib v3.8
+
 **0.6.5.2** (24/01/2023):
 
 * Changed default grid linestyle to '-'.
