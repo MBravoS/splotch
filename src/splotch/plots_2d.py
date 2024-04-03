@@ -231,13 +231,13 @@ def contourp(x, y, percent=None, filled=None, bin_type=None, bins=None, smooth=0
         percent = array([percent]).flatten()
     
     if not is_listlike(bin_type):
-        if not isinstance(bin_type, str):
+        if not isinstance(bin_type, str) and bin_type is not None:
             raise TypeError("bin_type must be a list-like object or a string")
         bin_type = [bin_type] * 2
 
     for btype in bin_type:
-        if btype not in ['number', 'width', 'edges', 'equal']:
-            raise ValueError(f"bin_type must be one of: 'number', 'width', 'edges', 'equal'. Instead got {btype}")
+        if btype not in ['number', 'width', 'edges', 'equal', None]:
+            raise ValueError(f"bin_type must be one of: 'number', 'width', 'edges', 'equal', None. Instead got {btype}")
     
     if not is_listlike(bins):
         if bins is None:

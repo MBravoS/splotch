@@ -1,3 +1,7 @@
+**0.6.9.2** (03/04/2024):
+
+* Fixed bug introduced with changes on the checks in contourp, where the default value for bin_type (None) would raise an error.
+
 **0.6.9.1** (28/03/2024):
 
 * Fixed issue in contourp due to the changes to axes.get_lines.prop_cycler in matplotlib v3.8
