@@ -6,14 +6,13 @@ from warnings import warn
 from functools import partial
 from numpy import arange, array, dtype, degrees, diff, floor, full, histogram, linspace, log10, meshgrid, nan, nanpercentile, nanmin, nanmedian
 from numpy import nanmax, nanstd, ndarray, ones, pi, radians, round as np_round, shape, size, sqrt, std, unique, vstack, where, zeros
-from matplotlib.cm import get_cmap
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse, Rectangle, Patch
 from matplotlib.projections.polar import PolarAxes
 #from matplotlib.pyplot import colorbar, contour as mpl_contour, contourf, errorbar as mpl_errorbar, fill_between, gca, gcf, hexbin as mpl_hexbin
-from matplotlib.pyplot import contour as mpl_contour, contourf, fill_between, sca, gca, gcf, hexbin as mpl_hexbin
+from matplotlib.pyplot import contour as mpl_contour, contourf, fill_between, sca, gca, gcf, get_cmap, hexbin as mpl_hexbin
 from matplotlib.pyplot import legend, pcolormesh, plot as mpl_plot, rcParams, scatter as mpl_scatter
 from matplotlib.transforms import Affine2D
 from mpl_toolkits.axisartist import floating_axes

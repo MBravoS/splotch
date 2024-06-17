@@ -1,3 +1,7 @@
+**0.6.9.3** (18/06/2024):
+
+* Fixed issue with importing matplotlib.cm.get_cmap due to deprecation in v3.9.
+
 **0.6.9.2** (03/04/2024):
 
 * Fixed bug introduced with changes on the checks in contourp, where the default value for bin_type (None) would raise an error.
